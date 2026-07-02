@@ -1,9 +1,14 @@
 #!/usr/bin/env node
-// scripts/craft-check.js — deterministic craft rule checker for CRAFT-01/02/05/07/15
+// scripts/craft-check.js — deterministic craft rule checker for DAG-01/02/04/05/06/07
 // Zero dependencies. Usage: node scripts/craft-check.js <chapter-path>
+'use strict';
 
-const fs = require('node:fs');
+const fs   = require('node:fs');
 const path = require('node:path');
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
 const TRANSLITERATED_TERMS = [
   'charis', 'agape', 'phileo', 'eros', 'storge',
@@ -13,87 +18,266 @@ const TRANSLITERATED_TERMS = [
   'ahavah', 'nephesh', 'echad', 'koinonia', 'metanoia'
 ];
 
-const PULPIT_SEAM_REGEX = /^(So|Now|And so|Let us|Let me|Here'?s where|Here'?s the thing|You see|Listen|Church|Friend)[\s,.!?]/i;
-const PROVENANCE_REGEX = /^<!-- provenance: (.+):(\d+) -->$/;
-const VERSION_STAMP_REGEX = /^<!-- generated-by: dag-book-crafter v\d+\.\d+\.\d+ -->$/m;
-const READER_THOUGHT_REGEX = /(?:^>\s*\*"|^\*")[^"*]{5,200}\?["*]/gm;
+const STORY_MARKER_RE   = /^(One day|Years ago|I remember|When I was|Once,|Some years ago|There was a time|Picture this|Imagine)/i;
+const VERSION_STAMP_RE  = /^<!-- generated-by: dag-book-crafter v\d+\.\d+\.\d+ -->$/m;
+const PROVENANCE_ANY_RE = /^<!-- provenance: /m;
+const PROVENANCE_OK_RE  = /^<!-- provenance: .+:\d+ -->$/m;
+const HEDGING_RE        = /\b(some scholars|it could be argued|arguably|studies suggest|research shows|one might|it seems that|in my view|perhaps we might|broadly speaking|to some extent|many believe)\b/i;
+const KEY_STMT_RE       = /^[A-Z][^\n]{20,160}[.!]$/m;
+const CAPS_QUOTE_RE     = /^>.*\b[A-Z]{3,}(?:[ ,][A-Z]{2,}){2,}/m;
+const SCRIPTURE_REF_RE  = /^>\s*--\s*.+/;
+const VERSE_RE          = /\b([1-3]\s)?[A-Z][a-z]+\.?\s\d+:\d+/;
+const CLIFFHANGER_RE    = /(in the next chapter|we will see|but that is another|what comes next|we have not talked about|there is something we|\.\.\.\s*$)/i;
 
-function checkCraft01(content, chapterPath) {
-  const firstLine = content.split('\n')[0];
-  const match = firstLine.match(PROVENANCE_REGEX);
-  if (!match) {
-    return { pass: false, evidence: 'missing or malformed provenance comment', citations: ['line 1'] };
-  }
-  const refPath = match[1];
-  const refLine = match[2];
-  const projectRoot = path.dirname(path.dirname(path.resolve(chapterPath)));
-  const resolved = path.resolve(projectRoot, refPath);
-  if (!fs.existsSync(resolved)) {
-    return { pass: false, evidence: `provenance path does not exist: ${refPath}`, citations: ['line 1'] };
-  }
-  const lines = fs.readFileSync(resolved, 'utf8').split('\n');
-  if (lines.length < parseInt(refLine, 10)) {
-    return { pass: false, evidence: `provenance line ${refLine} beyond end of ${refPath} (${lines.length} lines)`, citations: ['line 1'] };
-  }
-  return { pass: true, evidence: `provenance resolves to ${refPath}:${refLine}`, citations: ['line 1'] };
+// ---------------------------------------------------------------------------
+// Text utilities
+// ---------------------------------------------------------------------------
+
+function getBodyText(content) {
+  return content
+    .replace(/<!--\s*METADATA[\s\S]*?-->/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/^#.*$/gm, '');
 }
 
-function checkCraft02(content) {
-  const regex = new RegExp(`\\b(?:\\*)?(${TRANSLITERATED_TERMS.join('|')})(?:\\*)?\\b`, 'gi');
-  const matches = [...content.matchAll(regex)];
-  const distinct = new Set(matches.map(m => m[1].toLowerCase()));
-  const citations = matches.slice(0, 5).map(m => `offset ${m.index}`);
-  if (distinct.size > 3) {
-    return { pass: false, evidence: `${distinct.size} distinct terms (cap 3): ${[...distinct].join(', ')}`, citations };
-  }
-  return { pass: true, evidence: `${distinct.size} distinct terms: ${[...distinct].join(', ') || 'none'}`, citations };
+function getAuthorProseText(content) {
+  return getBodyText(content)
+    .split('\n')
+    .filter(l => { const t = l.trim(); return t && !t.startsWith('>') && !t.startsWith('#'); })
+    .join(' ');
 }
 
-function checkCraft05(content) {
-  const paragraphs = content.split(/\n\n+/);
-  const hits = [];
-  paragraphs.forEach((p, i) => {
-    const trimmed = p.trim();
-    if (!trimmed) return;
-    if (trimmed.startsWith('#') || trimmed.startsWith('<!--')) return;
-    if (PULPIT_SEAM_REGEX.test(trimmed)) {
-      hits.push({ paragraph: i, phrase: trimmed.split(/\s+/).slice(0, 2).join(' ') });
+function countWords(text) {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+// ---------------------------------------------------------------------------
+// STAMP
+// ---------------------------------------------------------------------------
+
+function checkStamp(content) {
+  if (VERSION_STAMP_RE.test(content)) {
+    return { pass: true, evidence: 'version stamp present' };
+  }
+  return { pass: false, evidence: 'version stamp missing — must match <!-- generated-by: dag-book-crafter vX.Y.Z -->' };
+}
+
+// ---------------------------------------------------------------------------
+// PROVENANCE
+// ---------------------------------------------------------------------------
+
+function checkProvenance(content) {
+  if (!PROVENANCE_ANY_RE.test(content)) {
+    return { pass: true, evidence: 'no provenance comment declared (topic-brief mode — OK)' };
+  }
+  if (PROVENANCE_OK_RE.test(content)) {
+    return { pass: true, evidence: 'provenance comment present and well-formed' };
+  }
+  return { pass: false, evidence: 'provenance comment malformed — must be <!-- provenance: path:line -->' };
+}
+
+// ---------------------------------------------------------------------------
+// DAG-01: Verse-or-Declaration Opener
+// ---------------------------------------------------------------------------
+
+function checkDag01(content) {
+  for (const para of content.split(/\n\n+/)) {
+    const t = para.trim();
+    if (!t) continue;
+    if (t.startsWith('<!--')) continue;
+    if (t.startsWith('#')) continue;
+    if (t.startsWith('>')) {
+      return { pass: true, evidence: 'opener is a scripture blockquote (anchor_scripture type — valid)' };
     }
-  });
-  if (hits.length) {
-    return {
-      pass: false,
-      evidence: `${hits.length} pulpit-seam starts detected`,
-      citations: hits.map(h => `para ${h.paragraph}: "${h.phrase}"`)
-    };
+    if (STORY_MARKER_RE.test(t)) {
+      const marker = t.split(/\s+/).slice(0, 4).join(' ');
+      return { pass: false, evidence: `story-marker opener detected: "${marker}..."` };
+    }
+    return { pass: true, evidence: 'opener is a declaration or definition (not a story marker)' };
   }
-  return { pass: true, evidence: '0 pulpit-seam starts detected', citations: [] };
+  return { pass: true, evidence: 'no body paragraph found to check' };
 }
 
-function checkCraft07(content) {
-  const matches = [...content.matchAll(READER_THOUGHT_REGEX)];
-  if (matches.length < 2) {
+// ---------------------------------------------------------------------------
+// DAG-02: Scripture Block Density
+// ---------------------------------------------------------------------------
+
+function extractScriptureBlocks(content) {
+  const lines  = content.split('\n');
+  const blocks = [];
+  let current  = [];
+
+  const flush = () => {
+    if (!current.length) return;
+    const last        = current[current.length - 1];
+    const hasRefLine  = SCRIPTURE_REF_RE.test(last);
+    const hasVerseRef = current.some(l => VERSE_RE.test(l));
+    if (hasRefLine || hasVerseRef) {
+      const refLine        = current.find(l => SCRIPTURE_REF_RE.test(l)) || '';
+      const hasTranslation = /\([A-Z]{2,5}\)\s*$/.test(refLine);
+      blocks.push({ refLine, hasTranslation });
+    }
+    current = [];
+  };
+
+  for (const line of lines) {
+    if (line.trim().startsWith('>')) { current.push(line.trim()); }
+    else { flush(); }
+  }
+  flush();
+  return blocks;
+}
+
+function checkDag02(content) {
+  const bodyWords  = countWords(getBodyText(content));
+  const blocks     = extractScriptureBlocks(content);
+  const count      = blocks.length;
+  const byDensity  = bodyWords > 0 ? Math.ceil(bodyWords / 350) : 0;
+  const needed     = Math.max(3, byDensity);
+  const ratio      = bodyWords > 0 ? (count / (bodyWords / 350)).toFixed(2) : 'N/A';
+  const translated = blocks.filter(b => b.hasTranslation).length;
+
+  return {
+    pass: count >= needed,
+    evidence: `${count} scripture block(s), ${bodyWords} body words, density ratio ${ratio} (need >=3 and >=1 per 350 words, so need ${needed})`,
+    scripture_count: count,
+    body_words: bodyWords,
+    required: needed,
+    translated_blocks: translated
+  };
+}
+
+// ---------------------------------------------------------------------------
+// DAG-04: Key Statement Emphasis (flag-only — always pass:true)
+// ---------------------------------------------------------------------------
+
+function checkDag04(content) {
+  let hasKeyStatement = false;
+  for (const para of content.split(/\n\n+/)) {
+    const t = para.trim();
+    if (!t || t.startsWith('>') || t.startsWith('#') || t.startsWith('<!--')) continue;
+    const nonBlankLines = t.split('\n').filter(l => l.trim());
+    if (nonBlankLines.length === 1 && KEY_STMT_RE.test(t)) {
+      hasKeyStatement = true;
+      break;
+    }
+  }
+  const hasCapsInQuote = CAPS_QUOTE_RE.test(content);
+  return {
+    pass: true,
+    evidence: `key_statement: ${hasKeyStatement}, caps_in_quote: ${hasCapsInQuote}`,
+    has_key_statement: hasKeyStatement,
+    has_caps_in_quote: hasCapsInQuote
+  };
+}
+
+// ---------------------------------------------------------------------------
+// DAG-05: Chapter Word Count
+// ---------------------------------------------------------------------------
+
+function checkDag05(content) {
+  const body      = getBodyText(content);
+  const wordCount = countWords(body);
+  let target      = null;
+  const metaM     = content.match(/<!--\s*METADATA([\s\S]*?)-->/i);
+  if (metaM) {
+    const tM = metaM[1].match(/target_count\s*:\s*(\d+)/);
+    if (tM) target = parseInt(tM[1], 10);
+  }
+  const cap      = target ? Math.round(target * 1.5) : 2500;
+  const tooShort = wordCount < 400;
+
+  if (wordCount > cap) {
     return {
       pass: false,
-      evidence: `${matches.length} reader-thought lines (need >=2)`,
-      citations: matches.map(m => `offset ${m.index}`)
+      evidence: `word count ${wordCount} exceeds cap ${cap}${target ? ` (target ${target} x1.5)` : ' (default 2500)'}`,
+      word_count: wordCount, cap, target, too_short: false
     };
   }
   return {
     pass: true,
-    evidence: `${matches.length} reader-thought lines`,
-    citations: matches.map(m => `offset ${m.index}`)
+    evidence: `word count ${wordCount}${tooShort ? ' (FLAG: < 400 — may be too short)' : ''}`,
+    word_count: wordCount, cap, target, too_short: tooShort
   };
 }
 
-function checkCraft15(content) {
-  // Version stamp must appear within first 3 lines.
-  const firstThree = content.split('\n').slice(0, 3).join('\n');
-  if (VERSION_STAMP_REGEX.test(firstThree)) {
-    return { pass: true, evidence: 'version stamp present in first 3 lines', citations: [] };
-  }
-  return { pass: false, evidence: 'version stamp missing from first 3 lines', citations: [] };
+// ---------------------------------------------------------------------------
+// DAG-06: Plain Language
+// ---------------------------------------------------------------------------
+
+function checkDag06(content) {
+  const prose = getAuthorProseText(content);
+
+  const hedgeM     = prose.match(HEDGING_RE);
+  const hasHedging = !!hedgeM;
+
+  const termRe    = new RegExp(`\\b(${TRANSLITERATED_TERMS.join('|')})\\b`, 'gi');
+  const termHits  = [...prose.matchAll(termRe)];
+  const distinct  = new Set(termHits.map(m => m[1].toLowerCase()));
+  const termCount = distinct.size;
+  const termFail  = termCount > 1;
+
+  const rawSents   = prose.match(/[^.!?]*[.!?]+/g) || [];
+  const sentLens   = rawSents.map(s => s.trim().split(/\s+/).filter(Boolean).length).filter(n => n > 0);
+  const avgSentLen = sentLens.length ? sentLens.reduce((a, b) => a + b, 0) / sentLens.length : 0;
+  const sentFlag   = avgSentLen > 18;
+
+  return {
+    pass: !hasHedging && !termFail,
+    evidence: [
+      hasHedging ? `hedging: "${hedgeM[0]}"` : 'no hedging',
+      termFail
+        ? `${termCount} distinct transliterated terms (cap 1): ${[...distinct].join(', ')}`
+        : `${termCount} transliterated term(s)`,
+      `avg sentence ${avgSentLen.toFixed(1)} words${sentFlag ? ' (FLAG: >18)' : ''}`
+    ].join('; '),
+    has_hedging: hasHedging,
+    hedging_phrase: hasHedging ? hedgeM[0] : null,
+    transliterated_term_count: termCount,
+    distinct_terms: [...distinct],
+    avg_sentence_length: parseFloat(avgSentLen.toFixed(1)),
+    sentence_length_flag: sentFlag
+  };
 }
+
+// ---------------------------------------------------------------------------
+// DAG-07: Direct Address and Exhortation Close (flag-only — always pass:true)
+// ---------------------------------------------------------------------------
+
+function checkDag07(content) {
+  const prose      = getAuthorProseText(content);
+  const proseWords = countWords(prose);
+  const youHits    = [...prose.matchAll(/\byou\b|\byour\b|\byourself\b/gi)];
+  const youPer1k   = proseWords > 0 ? (youHits.length / proseWords) * 1000 : 0;
+  const qCount     = (content.match(/\?/g) || []).length;
+
+  const paras     = content.split(/\n\n+/).filter(p => p.trim());
+  const finalPara = (paras[paras.length - 1] || '').trim();
+  const cliffMatch = CLIFFHANGER_RE.test(finalPara);
+
+  const sents   = finalPara.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+  const lastSent = (sents[sents.length - 1] || '').trim();
+  const cliffhanger = cliffMatch || lastSent.endsWith('?');
+
+  return {
+    pass: !cliffhanger,
+    evidence: [
+      `you-density: ${youPer1k.toFixed(1)}/1k (${youPer1k >= 8 ? 'OK' : 'FLAG: need >=8'})`,
+      `questions: ${qCount} (${qCount >= 4 ? 'OK' : 'FLAG: need >=4'})`,
+      `cliffhanger: ${cliffhanger ? 'FLAG' : 'OK'}`
+    ].join('; '),
+    you_density: parseFloat(youPer1k.toFixed(1)),
+    you_count: youHits.length,
+    question_count: qCount,
+    cliffhanger,
+    you_pass: youPer1k >= 8,
+    question_pass: qCount >= 4
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Main — single chapter mode
+// ---------------------------------------------------------------------------
 
 function main() {
   const chapterPath = process.argv[2];
@@ -102,126 +286,90 @@ function main() {
     process.exit(2);
   }
   let content;
-  try {
-    content = fs.readFileSync(chapterPath, 'utf8');
-  } catch (err) {
-    console.error(`Error reading ${chapterPath}: ${err.message}`);
-    process.exit(2);
-  }
+  try { content = fs.readFileSync(chapterPath, 'utf8'); }
+  catch (err) { console.error(`Error reading ${chapterPath}: ${err.message}`); process.exit(2); }
+
   const chapterId = path.basename(chapterPath, path.extname(chapterPath));
   const result = {
     chapter_id: chapterId,
     checks: {
-      'CRAFT-01': checkCraft01(content, chapterPath),
-      'CRAFT-02': checkCraft02(content),
-      'CRAFT-05': checkCraft05(content),
-      'CRAFT-07': checkCraft07(content),
-      'CRAFT-15': checkCraft15(content)
+      STAMP:      checkStamp(content),
+      PROVENANCE: checkProvenance(content),
+      'DAG-01':   checkDag01(content),
+      'DAG-02':   checkDag02(content),
+      'DAG-04':   checkDag04(content),
+      'DAG-05':   checkDag05(content),
+      'DAG-06':   checkDag06(content),
+      'DAG-07':   checkDag07(content)
     }
   };
   console.log(JSON.stringify(result, null, 2));
-  const anyFail = Object.values(result.checks).some(c => !c.pass);
-  process.exit(anyFail ? 1 : 0);
+  process.exit(Object.values(result.checks).some(c => !c.pass) ? 1 : 0);
 }
 
 // ---------------------------------------------------------------------------
-// Phase 13 — Novelty / De-duplication engine (Tier 1 + Tier 2)
+// Novelty / De-duplication engine
 // ---------------------------------------------------------------------------
 
 function parseNoveltyArgs(argv) {
   const args = argv.slice(2);
-  const out = { tier: 'both', dna: null, dir: null };
+  const out  = { tier: 'both', dna: null, dir: null };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--novelty') continue;
-    if (a === '--tier') { out.tier = args[++i]; continue; }
-    if (a === '--dna') { out.dna = args[++i]; continue; }
+    if (a === '--tier')    { out.tier = args[++i]; continue; }
+    if (a === '--dna')     { out.dna  = args[++i]; continue; }
     if (!a.startsWith('--') && !out.dir) { out.dir = a; continue; }
   }
   if (!out.dir) {
     console.error('Usage: craft-check.js --novelty [--tier 1|2|both] [--dna <book-dna.md>] <project-dir>');
     process.exit(2);
   }
-  if (!out.dna) {
-    out.dna = path.join(out.dir, 'book-dna.md');
-  }
+  if (!out.dna) out.dna = path.join(out.dir, 'book-dna.md');
   return out;
 }
 
-// Minimal flat YAML parser for the refrains block. Returns [] if the block
-// is missing or malformed. Only handles the specific shape documented in
-// Phase 13 RESEARCH Pattern 4 (a list of -phrase:/max_uses:/scope: entries
-// under a top-level `refrains:` key).
 function readRefrainsFromDna(dnaPath) {
   if (!dnaPath || !fs.existsSync(dnaPath)) return [];
-  const text = fs.readFileSync(dnaPath, 'utf8');
-  const lines = text.split('\n');
+  const text    = fs.readFileSync(dnaPath, 'utf8');
+  const lines   = text.split('\n');
   const refrains = [];
   let inBlock = false;
   let current = null;
+
   for (const raw of lines) {
-    // Detect the start of a `refrains:` key (top-level or inside a fenced
-    // code block). Tolerate leading whitespace.
-    if (/^\s*refrains\s*:\s*$/.test(raw)) {
-      inBlock = true;
-      current = null;
-      continue;
-    }
-    // An already-inline empty list: `refrains: []` — treat as empty block.
-    if (/^\s*refrains\s*:\s*\[\s*\]\s*$/.test(raw)) {
-      return [];
-    }
+    if (/^\s*refrains\s*:\s*$/.test(raw))           { inBlock = true; current = null; continue; }
+    if (/^\s*refrains\s*:\s*\[\s*\]\s*$/.test(raw)) { return []; }
     if (!inBlock) continue;
-    // End of block heuristics: blank line after we have parsed ≥1 entry, a
-    // new top-level key, a markdown heading, or a code fence close.
-    if (/^```/.test(raw.trim())) { inBlock = false; continue; }
-    if (/^#{1,6}\s/.test(raw)) { inBlock = false; continue; }
-    if (/^[a-zA-Z_][\w-]*\s*:/.test(raw) && !/^\s/.test(raw)) {
-      // new top-level key — end block
-      inBlock = false;
-      continue;
-    }
-    if (/^\s*$/.test(raw)) {
-      // blank line — only ends block if we already captured something
-      if (refrains.length > 0) { inBlock = false; }
-      continue;
-    }
-    // Entry line: `  - phrase: "..."`
-    const entryStart = raw.match(/^\s*-\s*phrase\s*:\s*(.+?)\s*$/);
-    if (entryStart) {
-      if (current) refrains.push(current);
-      current = { phrase: stripQuotes(entryStart[1]), max_uses: 1, scope: 'whole_book' };
-      continue;
-    }
-    const maxMatch = raw.match(/^\s*max_uses\s*:\s*(.+?)\s*$/);
-    if (maxMatch && current) {
-      const v = stripQuotes(maxMatch[1]);
-      current.max_uses = v === 'unlimited' ? Infinity : parseInt(v, 10);
-      continue;
-    }
-    const scopeMatch = raw.match(/^\s*scope\s*:\s*(.+?)\s*$/);
-    if (scopeMatch && current) {
-      current.scope = stripQuotes(scopeMatch[1]);
-      continue;
-    }
+    if (/^```/.test(raw.trim()))                     { inBlock = false; continue; }
+    if (/^#{1,6}\s/.test(raw))                       { inBlock = false; continue; }
+    if (/^[a-zA-Z_][\w-]*\s*:/.test(raw) && !/^\s/.test(raw)) { inBlock = false; continue; }
+    if (/^\s*$/.test(raw)) { if (refrains.length > 0) inBlock = false; continue; }
+
+    const em = raw.match(/^\s*-\s*phrase\s*:\s*(.+?)\s*$/);
+    if (em) { if (current) refrains.push(current); current = { phrase: stripQ(em[1]), max_uses: 1, scope: 'whole_book' }; continue; }
+    const mm = raw.match(/^\s*max_uses\s*:\s*(.+?)\s*$/);
+    if (mm && current) { const v = stripQ(mm[1]); current.max_uses = v === 'unlimited' ? Infinity : parseInt(v, 10); continue; }
+    const sm = raw.match(/^\s*scope\s*:\s*(.+?)\s*$/);
+    if (sm && current) { current.scope = stripQ(sm[1]); continue; }
   }
   if (current) refrains.push(current);
   return refrains;
 }
 
-function stripQuotes(s) {
+function stripQ(s) {
   s = s.trim();
-  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
-    return s.slice(1, -1);
-  }
-  return s;
+  return ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")))
+    ? s.slice(1, -1) : s;
 }
 
+// Normalise text for shingling — strips comments, blockquotes, "May you" lines, markdown
 function normaliseForShingling(text) {
   return text
-    .replace(/<!--[\s\S]*?-->/g, ' ')     // strip HTML comments
-    .replace(/^>.*$/gm, ' ')               // strip blockquote lines (scripture) — BEFORE lowercase
-    .replace(/[*_`#>\[\]()]/g, ' ')        // strip markdown punctuation
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/^>.*$/gm, ' ')
+    .replace(/^May you .*$/gm, ' ')
+    .replace(/[*_`#>\[\]()]/g, ' ')
     .toLowerCase()
     .replace(/[^\w\s'-]/g, ' ')
     .replace(/\s+/g, ' ')
@@ -230,15 +378,14 @@ function normaliseForShingling(text) {
 
 function shingles(tokens, n) {
   const out = [];
-  for (let i = 0; i + n <= tokens.length; i++) {
-    out.push({ phrase: tokens.slice(i, i + n).join(' '), start: i });
-  }
+  for (let i = 0; i + n <= tokens.length; i++) out.push({ phrase: tokens.slice(i, i + n).join(' '), start: i });
   return out;
 }
 
 function findCrossFileRepeats(files, refrains, n) {
-  const index = new Map();
+  const index        = new Map();
   const tokensByFile = new Map();
+
   for (const f of files) {
     const tokens = normaliseForShingling(f.text).split(' ').filter(Boolean);
     tokensByFile.set(f.path, tokens);
@@ -247,96 +394,62 @@ function findCrossFileRepeats(files, refrains, n) {
       index.get(phrase).push({ file: f.path, start });
     }
   }
-  const repeatedSpans = [];
+
+  const refrainShingleMap = new Map();
+  for (const r of refrains) {
+    const toks = normaliseForShingling(r.phrase).split(' ').filter(Boolean);
+    if (toks.length < n) continue;
+    for (const { phrase } of shingles(toks, n)) refrainShingleMap.set(phrase, r);
+  }
+
+  const refrainFirstShingle = new Map();
+  for (const r of refrains) {
+    const toks = normaliseForShingling(r.phrase).split(' ').filter(Boolean);
+    if (toks.length < n) continue;
+    refrainFirstShingle.set(r.phrase, toks.slice(0, n).join(' '));
+  }
+
   const refrainOveruse = [];
-  // Build a set of refrain-derived shingle prefixes (first n tokens of each
-  // refrain phrase). Any shingle that matches a refrain prefix is tracked
-  // against the refrain budget, not reported as a generic repeated_span.
-  const refrainShingleMap = new Map(); // shinglePhrase -> refrain entry
   for (const r of refrains) {
-    const tokens = normaliseForShingling(r.phrase).split(' ').filter(Boolean);
-    if (tokens.length < n) continue;
-    // Track every shingle that comes from the refrain so longer refrains
-    // still get fully whitelisted.
-    for (const { phrase } of shingles(tokens, n)) {
-      refrainShingleMap.set(phrase, r);
-    }
-  }
-  // Refrain occurrence counting: count how many times the FIRST shingle of
-  // the refrain appears in the corpus — that is the refrain's occurrence
-  // count (since each occurrence of the full refrain starts with that
-  // first shingle exactly once).
-  const refrainFirstShingle = new Map(); // refrain phrase -> first shingle
-  for (const r of refrains) {
-    const tokens = normaliseForShingling(r.phrase).split(' ').filter(Boolean);
-    if (tokens.length < n) continue;
-    refrainFirstShingle.set(r.phrase, tokens.slice(0, n).join(' '));
-  }
-  for (const r of refrains) {
-    const firstShingle = refrainFirstShingle.get(r.phrase);
-    if (!firstShingle) continue;
-    const locs = index.get(firstShingle) || [];
+    const fs2 = refrainFirstShingle.get(r.phrase);
+    if (!fs2) continue;
+    const locs        = index.get(fs2) || [];
     const distinctFiles = [...new Set(locs.map(l => l.file))];
-    const maxUses = r.max_uses === Infinity ? Infinity : r.max_uses;
-    if (locs.length > maxUses) {
-      refrainOveruse.push({
-        phrase: r.phrase,
-        max_uses: maxUses,
-        actual_occurrences: locs.length,
-        files: distinctFiles
-      });
-    }
+    const maxUses     = r.max_uses === Infinity ? Infinity : r.max_uses;
+    if (locs.length > maxUses) refrainOveruse.push({ phrase: r.phrase, max_uses: maxUses, actual_occurrences: locs.length, files: distinctFiles });
   }
-  // Grow shingle matches into maximal common substrings. For each shingle
-  // that appears in ≥2 distinct files, extend forward as long as the next
-  // token matches at all locations in lock-step. Then dedupe by taking the
-  // longest span that starts at each location.
+
   const rawSpans = [];
   for (const [phrase, locs] of index) {
     if (refrainShingleMap.has(phrase)) continue;
     const distinctFiles = new Set(locs.map(l => l.file));
     if (distinctFiles.size < 2) continue;
-    // Grow: find max extension k such that at every location, tokens[start..start+n+k]
-    // are identical.
     let k = 0;
     while (true) {
-      let ok = true;
-      let ref = null;
+      let ok = true, ref = null;
       for (const loc of locs) {
         const toks = tokensByFile.get(loc.file);
         if (loc.start + n + k >= toks.length) { ok = false; break; }
-        const nextTok = toks[loc.start + n + k];
-        if (ref === null) ref = nextTok;
-        else if (nextTok !== ref) { ok = false; break; }
+        const next = toks[loc.start + n + k];
+        if (ref === null) ref = next; else if (next !== ref) { ok = false; break; }
       }
       if (!ok) break;
       k++;
     }
-    const firstLoc = locs[0];
-    const firstToks = tokensByFile.get(firstLoc.file);
-    const fullPhrase = firstToks.slice(firstLoc.start, firstLoc.start + n + k).join(' ');
-    rawSpans.push({ phrase: fullPhrase, occurrences: locs, span_length: n + k });
+    const fl   = locs[0];
+    const ftoks = tokensByFile.get(fl.file);
+    rawSpans.push({ phrase: ftoks.slice(fl.start, fl.start + n + k).join(' '), occurrences: locs, span_length: n + k });
   }
-  // Dedupe: collapse sub-spans whose (file,start) pairs are entirely covered
-  // by a longer span. Keep the longest distinct maximal span per occurrence set.
+
   rawSpans.sort((a, b) => b.span_length - a.span_length);
   const kept = [];
-  const coveredKeys = new Set();
   for (const sp of rawSpans) {
-    // A span is redundant if ALL of its occurrence keys are already covered
-    // by a longer kept span. Use (file, start, span_length) key for the
-    // specific match region.
     let redundant = true;
     for (const loc of sp.occurrences) {
-      // Check if there is a kept span that covers (loc.file, loc.start)
       let covered = false;
       for (const k of kept) {
         for (const kloc of k.occurrences) {
-          if (kloc.file === loc.file &&
-              loc.start >= kloc.start &&
-              loc.start + sp.span_length <= kloc.start + k.span_length) {
-            covered = true; break;
-          }
+          if (kloc.file === loc.file && loc.start >= kloc.start && loc.start + sp.span_length <= kloc.start + k.span_length) { covered = true; break; }
         }
         if (covered) break;
       }
@@ -344,170 +457,128 @@ function findCrossFileRepeats(files, refrains, n) {
     }
     if (!redundant) kept.push(sp);
   }
-  for (const sp of kept) {
-    repeatedSpans.push({ phrase: sp.phrase, occurrences: sp.occurrences });
-  }
-  return { repeatedSpans, refrainOveruse };
+
+  return { repeatedSpans: kept.map(sp => ({ phrase: sp.phrase, occurrences: sp.occurrences })), refrainOveruse };
 }
 
-const VULN_ANCHORS = [
-  'i stood', 'i sat', 'i was', 'i felt', 'i remember', 'i tried', 'i could not',
-  'my hands', 'my chest', 'the counter', 'the kitchen'
-];
+// ---------------------------------------------------------------------------
+// Illustration-echo check (replaces vulnerability-beat reuse)
+// ---------------------------------------------------------------------------
 
-function extractVulnParagraphs(text) {
-  const paragraphs = text.split(/\n\n+/);
-  const out = [];
-  for (const p of paragraphs) {
-    const normalised = normaliseForShingling(p);
-    if (!VULN_ANCHORS.some(a => normalised.includes(a))) continue;
-    // Pull every sentence that contains an anchor and emit a 6-word
-    // signature starting at the anchor. This lets the same paragraph
-    // contribute multiple signatures (e.g., "i stood" AND "my hands").
-    const sentences = p.split(/(?<=[.!?])\s+/);
-    for (const s of sentences) {
-      const sNorm = normaliseForShingling(s);
-      // Emit a signature for EVERY anchor present in the sentence, so that
-      // both "i stood" and "my hands" (if co-occurring) contribute separate
-      // 10-word spans to the cross-file comparison.
-      for (const anchor of VULN_ANCHORS) {
-        const idx = sNorm.indexOf(anchor);
-        if (idx < 0) continue;
-        const tokens = sNorm.slice(idx).split(' ').filter(Boolean);
-        if (tokens.length < 6) continue;
-        const sig = tokens.slice(0, 10).join(' ');
-        out.push({ paragraph: p, signature: sig });
-      }
-    }
-  }
-  return out;
+const ILLUS_OPENER_RE = /^(Years ago|One day|Some years ago|I remember|When I was)\b/i;
+
+function extractIllustrations(text) {
+  return text.split(/\n\n+/).filter(p => ILLUS_OPENER_RE.test(p.trim()));
 }
 
-function findVulnerabilityBeatReuse(files) {
-  const hits = [];
-  const vulnMap = [];
-  for (const f of files) {
-    for (const v of extractVulnParagraphs(f.text)) {
-      vulnMap.push({ file: f.path, signature: v.signature });
-    }
-  }
-  const seen = new Set();
-  for (let i = 0; i < vulnMap.length; i++) {
-    for (let j = i + 1; j < vulnMap.length; j++) {
-      if (vulnMap[i].signature === vulnMap[j].signature &&
-          vulnMap[i].file !== vulnMap[j].file) {
-        const key = `${vulnMap[i].file}|${vulnMap[j].file}|${vulnMap[i].signature}`;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        hits.push({
-          type: 'vulnerability_beat_reuse',
-          source: vulnMap[i].file,
-          duplicate: vulnMap[j].file,
-          note: 'paragraph signature match'
-        });
+function findIllustrationEcho(files) {
+  const rich  = files.map(f => ({ path: f.path, illustrations: extractIllustrations(f.text) })).filter(f => f.illustrations.length > 0);
+  const hits  = [];
+  for (let i = 0; i < rich.length; i++) {
+    for (let j = i + 1; j < rich.length; j++) {
+      const fa = rich[i], fb = rich[j];
+      for (const illA of fa.illustrations) {
+        const tokA = normaliseForShingling(illA).split(' ').filter(Boolean);
+        const shinA = new Set();
+        for (let k = 0; k + 6 <= tokA.length; k++) shinA.add(tokA.slice(k, k + 6).join(' '));
+        for (const illB of fb.illustrations) {
+          const tokB = normaliseForShingling(illB).split(' ').filter(Boolean);
+          let found = false;
+          for (let k = 0; !found && k + 6 <= tokB.length; k++) {
+            if (shinA.has(tokB.slice(k, k + 6).join(' '))) found = true;
+          }
+          if (found) hits.push({ type: 'illustration_echo', source: fa.path, duplicate: fb.path, note: '6+ word overlap between time-marker illustration paragraphs' });
+        }
       }
     }
   }
   return hits;
 }
 
-const STOPWORDS = new Set(['the','a','an','of','on','in','over','to','and','at']);
+// ---------------------------------------------------------------------------
+// Key-statement distinctness (replaces vehicleDistinctness / central_image)
+// ---------------------------------------------------------------------------
+
+const KS_STOP = new Set([
+  'the','a','an','of','on','in','over','to','and','at','is','are','was','were',
+  'be','been','being','have','has','had','do','does','did','for','not','with',
+  'this','that','it','he','she','they','we','you','i','my','your','his','her',
+  'its','our','their','or','but','if','as','by','from','so'
+]);
+
+function parseKeyStatements(dnaText) {
+  const out = [];
+  const re  = /key_statement\s*:\s*(.+?)\s*$/gm;
+  let m;
+  while ((m = re.exec(dnaText)) !== null) {
+    const stmt = m[1].trim().replace(/^["']|["']$/g, '');
+    if (stmt) out.push(stmt);
+  }
+  return out;
+}
+
+function normKS(stmt) {
+  return stmt.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(t => t && !KS_STOP.has(t));
+}
+
+function jaccard(a, b) {
+  const sa = new Set(a), sb = new Set(b);
+  const inter = [...sa].filter(t => sb.has(t)).length;
+  const union  = new Set([...sa, ...sb]).size;
+  return union ? inter / union : 0;
+}
+
+function findKeyStatementDuplicates(keyStatements, refrains) {
+  if (keyStatements.length < 2) return [];
+  const rfNorms = new Set(refrains.map(r => normKS(r.phrase).join(' ')));
+  const norms   = keyStatements.map(normKS);
+  const hits    = [];
+  for (let i = 0; i < keyStatements.length; i++) {
+    for (let j = i + 1; j < keyStatements.length; j++) {
+      const ov = jaccard(norms[i], norms[j]);
+      if (ov >= 0.8) {
+        const na = norms[i].join(' '), nb = norms[j].join(' ');
+        if (!rfNorms.has(na) && !rfNorms.has(nb)) {
+          hits.push({ type: 'key_statement_duplicate', statement_a: keyStatements[i], statement_b: keyStatements[j], overlap: parseFloat(ov.toFixed(2)) });
+        }
+      }
+    }
+  }
+  return hits;
+}
+
+// ---------------------------------------------------------------------------
+// Tier-2 enrichment checks (unchanged from original)
+// ---------------------------------------------------------------------------
 
 function parseChapterMap(dnaPath) {
   if (!dnaPath || !fs.existsSync(dnaPath)) return [];
   const text = fs.readFileSync(dnaPath, 'utf8');
-  const out = [];
-  const re = /^-\s+Ch\s+(\d+)\s+central_image:\s*(.+)$/gm;
+  const out  = [];
+  const re   = /^-\s+Ch\s+(\d+)\s+central_image:\s*(.+)$/gm;
   let m;
-  while ((m = re.exec(text))) {
-    out.push({ chapter: parseInt(m[1], 10), vehicle: m[2].trim() });
-  }
+  while ((m = re.exec(text))) out.push({ chapter: parseInt(m[1], 10), vehicle: m[2].trim() });
   return out;
-}
-
-function vehicleDistinctness(chapterMap) {
-  if (chapterMap.length < 2) return [];
-  const tokenSets = chapterMap.map(c => ({
-    chapter: c.chapter,
-    vehicle: c.vehicle,
-    tokens: new Set(
-      c.vehicle.toLowerCase().replace(/[^\w\s-]/g, ' ').split(/\s+/).filter(t => t && !STOPWORDS.has(t))
-    )
-  }));
-  // Detect a dominant word: any content word appearing in >=2 chapter vehicles.
-  const wordCounts = {};
-  for (const ts of tokenSets) {
-    for (const w of ts.tokens) wordCounts[w] = (wordCounts[w] || 0) + 1;
-  }
-  const dominant = Object.entries(wordCounts)
-    .filter(([, n]) => n >= 2)
-    .sort((a, b) => b[1] - a[1])
-    .map(([w]) => w);
-  if (dominant.length) {
-    const word = dominant[0];
-    const affected = tokenSets.filter(ts => ts.tokens.has(word));
-    return [{
-      vehicle_family: word,
-      files: affected.map(ts => `edited/ch0${ts.chapter}-final.md`),
-      note: `dominant word "${word}" appears in ${affected.length} chapter vehicles`
-    }];
-  }
-  // Fallback: pairwise Jaccard >= 0.6
-  const hits = [];
-  for (let i = 0; i < tokenSets.length; i++) {
-    for (let j = i + 1; j < tokenSets.length; j++) {
-      const a = tokenSets[i], b = tokenSets[j];
-      const intersection = [...a.tokens].filter(t => b.tokens.has(t));
-      const union = new Set([...a.tokens, ...b.tokens]);
-      const jaccard = union.size ? intersection.length / union.size : 0;
-      if (jaccard >= 0.6) {
-        hits.push({
-          vehicle_family: intersection.join(' ') || 'shared',
-          files: [`edited/ch0${a.chapter}-final.md`, `edited/ch0${b.chapter}-final.md`],
-          jaccard: Number(jaccard.toFixed(2))
-        });
-      }
-    }
-  }
-  return hits;
 }
 
 function runTier2(dir, chapterMap) {
   const enrichDir = fs.existsSync(path.join(dir, 'enrichments'))
-    ? path.join(dir, 'enrichments')
-    : path.join(dir, 'enriched');
-  const hits = {
-    discussion_question_stems: [],
-    prayer_point_repetition: [],
-    vulnerability_bleed_to_summary: [],
-    vehicle_reuse_in_backmatter: []
-  };
+    ? path.join(dir, 'enrichments') : path.join(dir, 'enriched');
+  const hits = { discussion_question_stems: [], prayer_point_repetition: [], vulnerability_bleed_to_summary: [], vehicle_reuse_in_backmatter: [] };
   if (!fs.existsSync(enrichDir)) return hits;
-  const enrichFiles = fs.readdirSync(enrichDir)
-    .filter(f => f.endsWith('.md'))
-    .map(f => ({
-      path: path.join('enrichments', f),
-      text: fs.readFileSync(path.join(enrichDir, f), 'utf8')
-    }));
 
-  // Rule 1: discussion-question stems. Parse items under a `## Discussion
-  // Questions` section (numbered or bulleted list) plus any sentence
-  // ending in `?` as a safety net. Strip the leading list marker.
+  const enrichFiles = fs.readdirSync(enrichDir).filter(f => f.endsWith('.md')).map(f => ({
+    path: path.join('enrichments', f),
+    text: fs.readFileSync(path.join(enrichDir, f), 'utf8')
+  }));
+
+  // Rule 1: discussion-question stems
   const stemMap = new Map();
   for (const f of enrichFiles) {
     const items = [];
-    // Extract the Discussion Questions section
-    const sectionMatch = f.text.match(/##\s*Discussion Questions[\s\S]*?(?=\n##\s|\n$|$)/i);
-    if (sectionMatch) {
-      const section = sectionMatch[0];
-      for (const line of section.split('\n')) {
-        const m = line.match(/^\s*(?:\d+\.\s+|[-*]\s+)(.+?)\s*$/);
-        if (m) items.push(m[1]);
-      }
-    }
-    // Fallback: any explicit ? sentences
-    const qMatches = (f.text.match(/[^.!?\n]*\?/g) || []);
-    for (const q of qMatches) items.push(q);
+    const sm = f.text.match(/##\s*Discussion Questions[\s\S]*?(?=\n##\s|\n$|$)/i);
+    if (sm) { for (const line of sm[0].split('\n')) { const lm = line.match(/^\s*(?:\d+\.\s+|[-*]\s+)(.+?)\s*$/); if (lm) items.push(lm[1]); } }
+    for (const q of (f.text.match(/[^.!?\n]*\?/g) || [])) items.push(q);
     for (const q of items) {
       const norm = normaliseForShingling(q).split(' ').filter(Boolean);
       if (norm.length < 8) continue;
@@ -516,151 +587,120 @@ function runTier2(dir, chapterMap) {
       stemMap.get(stem).add(f.path);
     }
   }
-  for (const [stem, files] of stemMap) {
-    if (files.size >= 2) hits.discussion_question_stems.push({ stem, files: [...files] });
-  }
+  for (const [stem, files] of stemMap) { if (files.size >= 2) hits.discussion_question_stems.push({ stem, files: [...files] }); }
 
   // Rule 2: prayer-point repetition (theological-gated)
-  const voiceProfilePath = path.join(dir, 'voice-profile.md');
-  const altVoiceProfilePath = path.join(dir, '..', 'voice-profile.md');
-  const vpPath = fs.existsSync(voiceProfilePath)
-    ? voiceProfilePath
-    : (fs.existsSync(altVoiceProfilePath) ? altVoiceProfilePath : null);
-  const isTheological = vpPath &&
-    /## Theological Framework/.test(fs.readFileSync(vpPath, 'utf8'));
-  if (isTheological) {
-    const result = findCrossFileRepeats(enrichFiles, [], 6);
-    for (const r of result.repeatedSpans) {
-      if (/\b(father|god|lord|ask|pray)\b/.test(r.phrase)) {
-        hits.prayer_point_repetition.push({
-          phrase: r.phrase,
-          files: [...new Set(r.occurrences.map(o => o.file))],
-          theological_gated: true
-        });
-      }
+  const vpPath = [path.join(dir, 'voice-profile.md'), path.join(dir, '..', 'voice-profile.md')].find(p => fs.existsSync(p));
+  if (vpPath && /## Theological Framework/.test(fs.readFileSync(vpPath, 'utf8'))) {
+    const cross = findCrossFileRepeats(enrichFiles, [], 6);
+    for (const r of cross.repeatedSpans) {
+      if (/\b(father|god|lord|ask|pray)\b/.test(r.phrase)) hits.prayer_point_repetition.push({ phrase: r.phrase, files: [...new Set(r.occurrences.map(o => o.file))], theological_gated: true });
     }
   }
 
-  // Rule 3: vulnerability bleed from edited/chN-final.md into a DIFFERENT chapter's enrichments
+  // Rule 3: vulnerability bleed
   const editedDir = path.join(dir, 'edited');
   if (fs.existsSync(editedDir)) {
-    const editedFiles = fs.readdirSync(editedDir).filter(f => /^ch\d+-final\.md$/.test(f));
-    for (const ef of editedFiles) {
-      const chNum = (ef.match(/ch(\d+)/) || [])[1];
-      const editedText = fs.readFileSync(path.join(editedDir, ef), 'utf8');
-      const vulnSigs = extractVulnParagraphs(editedText).map(v => v.signature).filter(Boolean);
+    const vulnAnchors = ['i stood','i sat','i was','i felt','i remember','i tried','i could not','my hands','my chest','the counter','the kitchen'];
+    for (const ef of fs.readdirSync(editedDir).filter(f => /^ch\d+-final\.md$/.test(f))) {
+      const chNum     = (ef.match(/ch(\d+)/) || [])[1];
+      const normEd    = normaliseForShingling(fs.readFileSync(path.join(editedDir, ef), 'utf8'));
       for (const enr of enrichFiles) {
-        const enrChNum = (enr.path.match(/ch(\d+)/) || [])[1];
-        if (enrChNum === chNum) continue;
-        const enrNorm = normaliseForShingling(enr.text);
-        for (const sig of vulnSigs) {
-          if (sig && enrNorm.includes(sig)) {
-            hits.vulnerability_bleed_to_summary.push({
-              source_chapter: `ch${chNum}`,
-              duplicate_file: enr.path,
-              span: sig
-            });
-          }
+        const enrCh = (enr.path.match(/ch(\d+)/) || [])[1];
+        if (enrCh === chNum) continue;
+        const normEnr = normaliseForShingling(enr.text);
+        for (const anchor of vulnAnchors) {
+          const idx = normEd.indexOf(anchor);
+          if (idx < 0) continue;
+          const sig = normEd.slice(idx).split(' ').filter(Boolean).slice(0, 10).join(' ');
+          if (sig && normEnr.includes(sig)) hits.vulnerability_bleed_to_summary.push({ source_chapter: `ch${chNum}`, duplicate_file: enr.path, span: sig });
         }
       }
     }
   }
 
-  // Rule 4: vehicle reuse in back matter — chapter N's vehicle in chapter M's enrichments
+  // Rule 4: vehicle reuse in back matter
   for (const ch of chapterMap) {
-    const vehicleNorm = normaliseForShingling(ch.vehicle);
-    if (!vehicleNorm) continue;
+    const vNorm = normaliseForShingling(ch.vehicle);
+    if (!vNorm) continue;
     for (const enr of enrichFiles) {
-      const enrChNumMatch = enr.path.match(/ch(\d+)/);
-      if (!enrChNumMatch) continue;
-      const enrChNum = parseInt(enrChNumMatch[1], 10);
-      if (enrChNum === ch.chapter) continue;
-      const enrNorm = normaliseForShingling(enr.text);
-      if (enrNorm.includes(vehicleNorm)) {
-        hits.vehicle_reuse_in_backmatter.push({
-          vehicle: ch.vehicle,
-          source_chapter: `ch${ch.chapter}`,
-          duplicate_file: enr.path
-        });
-      }
+      const enrChM = enr.path.match(/ch(\d+)/);
+      if (!enrChM || parseInt(enrChM[1], 10) === ch.chapter) continue;
+      if (normaliseForShingling(enr.text).includes(vNorm)) hits.vehicle_reuse_in_backmatter.push({ vehicle: ch.vehicle, source_chapter: `ch${ch.chapter}`, duplicate_file: enr.path });
     }
   }
-
   return hits;
 }
 
+// ---------------------------------------------------------------------------
+// mainNovelty
+// ---------------------------------------------------------------------------
+
 function mainNovelty() {
-  const opts = parseNoveltyArgs(process.argv);
+  const opts      = parseNoveltyArgs(process.argv);
   const projectDir = path.resolve(opts.dir);
-  if (!fs.existsSync(projectDir)) {
-    console.error(`Project directory does not exist: ${projectDir}`);
-    process.exit(2);
-  }
-  const refrains = readRefrainsFromDna(opts.dna);
-  const chapterMap = parseChapterMap(opts.dna);
+  if (!fs.existsSync(projectDir)) { console.error(`Project directory does not exist: ${projectDir}`); process.exit(2); }
+
+  const refrains      = readRefrainsFromDna(opts.dna);
+  const chapterMap    = parseChapterMap(opts.dna);
+  const dnaText       = (opts.dna && fs.existsSync(opts.dna)) ? fs.readFileSync(opts.dna, 'utf8') : '';
+  const keyStatements = parseKeyStatements(dnaText);
 
   const tier1Files = [];
   const fmDir = path.join(projectDir, 'front-matter');
   if (fs.existsSync(fmDir)) {
     for (const f of fs.readdirSync(fmDir).filter(f => f.endsWith('.md'))) {
-      tier1Files.push({
-        path: path.join('front-matter', f),
-        text: fs.readFileSync(path.join(fmDir, f), 'utf8')
-      });
+      tier1Files.push({ path: path.join('front-matter', f), text: fs.readFileSync(path.join(fmDir, f), 'utf8') });
     }
   }
   const edDir = path.join(projectDir, 'edited');
   if (fs.existsSync(edDir)) {
     for (const f of fs.readdirSync(edDir).filter(f => /^ch\d+-final\.md$/.test(f))) {
-      tier1Files.push({
-        path: path.join('edited', f),
-        text: fs.readFileSync(path.join(edDir, f), 'utf8')
-      });
+      tier1Files.push({ path: path.join('edited', f), text: fs.readFileSync(path.join(edDir, f), 'utf8') });
     }
   }
 
-  let repeatedSpans = [];
-  let crossArtefactHits = [];
-  let centralImageReuse = [];
-  let refrainOveruse = [];
-  let tier2Hits = {
-    discussion_question_stems: [],
-    prayer_point_repetition: [],
-    vulnerability_bleed_to_summary: [],
-    vehicle_reuse_in_backmatter: []
-  };
+  let repeatedSpans    = [];
+  let illustrationEcho = [];
+  let keyStatementDups = [];
+  let refrainOveruse   = [];
+  let tier2Hits = { discussion_question_stems: [], prayer_point_repetition: [], vulnerability_bleed_to_summary: [], vehicle_reuse_in_backmatter: [] };
 
   if (opts.tier === '1' || opts.tier === 'both') {
-    const cross = findCrossFileRepeats(tier1Files, refrains, 6);
-    repeatedSpans = cross.repeatedSpans;
-    refrainOveruse = cross.refrainOveruse;
-    crossArtefactHits = findVulnerabilityBeatReuse(tier1Files);
-    centralImageReuse = vehicleDistinctness(chapterMap);
+    const cross      = findCrossFileRepeats(tier1Files, refrains, 6);
+    repeatedSpans    = cross.repeatedSpans;
+    refrainOveruse   = cross.refrainOveruse;
+    illustrationEcho = findIllustrationEcho(tier1Files);
+    keyStatementDups = findKeyStatementDuplicates(keyStatements, refrains);
   }
   if (opts.tier === '2' || opts.tier === 'both') {
     tier2Hits = runTier2(projectDir, chapterMap);
   }
 
   const anyTier2 = Object.values(tier2Hits).some(arr => arr.length > 0);
-  const flag = repeatedSpans.length > 0 || crossArtefactHits.length > 0 ||
-               centralImageReuse.length > 0 || refrainOveruse.length > 0 || anyTier2;
+  const flag     = repeatedSpans.length > 0 || illustrationEcho.length > 0 ||
+                   keyStatementDups.length > 0 || refrainOveruse.length > 0 || anyTier2;
 
   const result = {
     mode: 'novelty',
     tier: opts.tier,
     project_dir: projectDir,
     repeated_spans: repeatedSpans,
-    cross_artefact_hits: crossArtefactHits,
-    central_image_reuse: centralImageReuse,
+    illustration_echo: illustrationEcho,
+    key_statement_duplicates: keyStatementDups,
     refrain_overuse: refrainOveruse,
     tier2_hits: tier2Hits,
-    tier2: tier2Hits, // alias for test-harness compatibility
+    tier2: tier2Hits,
     flag,
     novelty_dedup: flag ? 'fail' : 'pass'
   };
   console.log(JSON.stringify(result, null, 2));
   process.exit(flag ? 1 : 0);
 }
+
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
 
 if (process.argv.includes('--novelty')) {
   mainNovelty();

@@ -1,18 +1,111 @@
 {
-  "tier1": {
-    "repeated_spans": [
-      { "phrase": "a weak spirit cannot stand against the pressure of life", "min_occurrences": 2, "files": ["front-matter/foreword.md", "edited/ch02-final.md"] }
-    ],
-    "illustration_reuse": [
-      { "source_file": "edited/ch01-final.md", "duplicate_file": "edited/ch03-final.md", "note": "everyday analogy ('Years ago, a young man from a farming village enlisted...') appears in near-identical form in both chapters" }
-    ],
-    "key_statement_reuse": [
-      { "files": ["edited/ch02-final.md", "edited/ch03-final.md"], "note": "ch02 key statement ('You cannot have victory unless you first decide to be strong.') and ch03 key statement ('Unless you decide to be strong, you cannot have victory.') share the same token set reordered" }
-    ],
-    "refrain_overuse": [
-      { "phrase": "Strength is a decision before it is a feeling.", "max_uses": 1, "actual_occurrences": 2, "files": ["edited/ch01-final.md", "edited/ch03-final.md"] }
-    ]
-  },
+  "repeated_spans": [
+    {
+      "phrase": "when the first physical test came his arms were too tired to hold his weapon steady he had courage enough what he lacked was the strength that comes only from consistent preparation he eventually learned this but he lost months he could not recover do not make the same mistake strengthen yourself before the battle not during it",
+      "occurrences": [
+        {
+          "file": "edited/ch01-final.md",
+          "start": 275
+        },
+        {
+          "file": "edited/ch03-final.md",
+          "start": 284
+        }
+      ]
+    },
+    {
+      "phrase": "years ago a young man from a farming village enlisted to be a soldier he arrived at the barracks with",
+      "occurrences": [
+        {
+          "file": "edited/ch01-final.md",
+          "start": 231
+        },
+        {
+          "file": "edited/ch03-final.md",
+          "start": 248
+        }
+      ]
+    },
+    {
+      "phrase": "but his body was entirely unprepared when the first long march came he fell behind",
+      "occurrences": [
+        {
+          "file": "edited/ch01-final.md",
+          "start": 257
+        },
+        {
+          "file": "edited/ch03-final.md",
+          "start": 269
+        }
+      ]
+    },
+    {
+      "phrase": "a weak spirit cannot stand against the pressure of life this is",
+      "occurrences": [
+        {
+          "file": "front-matter/foreword.md",
+          "start": 71
+        },
+        {
+          "file": "edited/ch02-final.md",
+          "start": 107
+        }
+      ]
+    },
+    {
+      "phrase": "decide today that you will be strong",
+      "occurrences": [
+        {
+          "file": "front-matter/foreword.md",
+          "start": 225
+        },
+        {
+          "file": "edited/ch01-final.md",
+          "start": 516
+        }
+      ]
+    },
+    {
+      "phrase": "before it is a feeling decide today",
+      "occurrences": [
+        {
+          "file": "edited/ch01-final.md",
+          "start": 511
+        },
+        {
+          "file": "edited/ch03-final.md",
+          "start": 473
+        }
+      ]
+    }
+  ],
+  "illustration_echo": [
+    {
+      "type": "illustration_echo",
+      "source": "edited/ch01-final.md",
+      "duplicate": "edited/ch03-final.md",
+      "note": "6+ word overlap between time-marker illustration paragraphs"
+    }
+  ],
+  "key_statement_duplicates": [
+    {
+      "type": "key_statement_duplicate",
+      "statement_a": "You cannot have victory unless you first decide to be strong.",
+      "statement_b": "Unless you decide to be strong, you cannot have victory.",
+      "overlap": 0.83
+    }
+  ],
+  "refrain_overuse": [
+    {
+      "phrase": "Strength is a decision before it is a feeling.",
+      "max_uses": 1,
+      "actual_occurrences": 2,
+      "files": [
+        "edited/ch01-final.md",
+        "edited/ch03-final.md"
+      ]
+    }
+  ],
   "tier2": {
     "discussion_question_stems": [],
     "prayer_point_repetition": [],

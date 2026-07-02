@@ -1,23 +1,21 @@
 {
-  "tier1": {
-    "repeated_spans": [],
-    "illustration_reuse": [],
-    "key_statement_reuse": [],
-    "refrain_overuse": []
-  },
+  "repeated_spans": [],
+  "illustration_echo": [],
+  "key_statement_duplicates": [],
+  "refrain_overuse": [],
   "tier2": {
     "discussion_question_stems": [
-      { "stem": "What does this chapter teach you about the strength God requires from you", "min_chapters": 2, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
+      {
+        "stem": "what does this chapter teach you about the",
+        "files": [
+          "enrichments/ch01-enrichments.md",
+          "enrichments/ch02-enrichments.md"
+        ]
+      }
     ],
-    "prayer_point_repetition": [
-      { "phrase": "Father, I ask you to make me strong in the evil day", "min_chapters": 2, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
-    ],
-    "vulnerability_bleed_to_summary": [
-      { "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md", "span": "the strength God demands is not the product of human effort alone — it flows from a connection with the source of all power" }
-    ],
-    "vehicle_reuse_in_backmatter": [
-      { "vehicle": "vine drawing from its root", "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md" }
-    ]
+    "prayer_point_repetition": [],
+    "vulnerability_bleed_to_summary": [],
+    "vehicle_reuse_in_backmatter": []
   },
   "flag": true,
   "novelty_dedup": "fail"

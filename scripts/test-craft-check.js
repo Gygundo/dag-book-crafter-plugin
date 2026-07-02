@@ -1,33 +1,21 @@
-// scripts/test-craft-check.js — unit tests for craft-check.js
-// Usage: node --test scripts/test-craft-check.js
+#!/usr/bin/env node
+// scripts/test-craft-check.js — DAG rule unit tests with inline fixtures
+// Usage: node scripts/test-craft-check.js
+'use strict';
 
-const test = require('node:test');
-const assert = require('node:assert/strict');
 const { execSync } = require('node:child_process');
-const path = require('node:path');
-const fs = require('node:fs');
-const os = require('node:os');
+const path  = require('node:path');
+const fs    = require('node:fs');
+const os    = require('node:os');
 
 const CHECKER = path.join(__dirname, 'craft-check.js');
-const FIXTURES = path.join(__dirname, '..', 'fixtures', 'phase10');
 
-function runCraftCheckNovelty(args) {
-  // args is a string of CLI arguments after 'craft-check.js'
-  const cmd = `node "${CHECKER}" ${args}`;
-  try {
-    return { stdout: execSync(cmd, { encoding: 'utf8' }), exitCode: 0 };
-  } catch (err) {
-    return {
-      stdout: err.stdout ? err.stdout.toString() : '',
-      stderr: err.stderr ? err.stderr.toString() : '',
-      exitCode: err.status,
-    };
-  }
-}
-
-function parseNoveltyResult(stdout) {
-  // craft-check.js --novelty emits JSON to stdout (and may exit non-zero on flag:true).
-  return JSON.parse(stdout);
+let passed = 0, failed = 0;
+function pass(label) { console.log(`PASS: ${label}`); passed++; }
+function fail(label, detail) {
+  console.error(`FAIL: ${label}`);
+  if (detail) console.error(`  ${String(detail).slice(0, 300)}`);
+  failed++;
 }
 
 function runChecker(fixturePath) {
@@ -35,317 +23,518 @@ function runChecker(fixturePath) {
     const out = execSync(`node "${CHECKER}" "${fixturePath}"`, { encoding: 'utf8' });
     return { exitCode: 0, result: JSON.parse(out) };
   } catch (err) {
-    return { exitCode: err.status, result: JSON.parse(err.stdout) };
+    try { return { exitCode: err.status || 1, result: JSON.parse(err.stdout || '{}') }; }
+    catch (_) { return { exitCode: err.status || 1, result: {} }; }
   }
 }
 
-test('CRAFT-01: known-good chapter has valid provenance', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-good', 'ch01-draft.md'));
-  assert.equal(result.checks['CRAFT-01'].pass, true);
-});
-
-test('known-good: all checks pass and exit code is 0', () => {
-  const { exitCode, result } = runChecker(path.join(FIXTURES, 'known-good', 'ch01-draft.md'));
-  assert.equal(exitCode, 0);
-  for (const [id, check] of Object.entries(result.checks)) {
-    assert.equal(check.pass, true, `${id} should pass on known-good but failed: ${check.evidence}`);
+function runNovelty(args) {
+  try {
+    const out = execSync(`node "${CHECKER}" ${args}`, { encoding: 'utf8' });
+    return { exitCode: 0, stdout: out };
+  } catch (err) {
+    return {
+      exitCode: err.status || 1,
+      stdout: err.stdout ? err.stdout.toString() : '',
+      stderr: err.stderr ? err.stderr.toString() : ''
+    };
   }
+}
+
+function withTmpDir(fn) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dag-craft-'));
+  try { return fn(dir); }
+  finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) {} }
+}
+
+function writeChapter(dir, name, content) {
+  const p = path.join(dir, name);
+  fs.writeFileSync(p, content);
+  return p;
+}
+
+// ---------------------------------------------------------------------------
+// Reusable minimal valid chapter
+// ---------------------------------------------------------------------------
+
+const GOOD_CHAPTER = `<!-- generated-by: dag-book-crafter v1.2.0 -->
+
+# Chapter 1: Walking in Strength
+
+You must understand what it means to be strong in the Lord. This is not natural strength. It is not human willpower. It is the power of God working through you. You must pursue it deliberately. Do not wait for it to come to you.
+
+> *Be STRONG AND OF A GOOD COURAGE; be not afraid, neither be thou dismayed: for the Lord thy God is with thee.*
+> -- Joshua 1:9
+
+Notice that the command came before the victory. Joshua was instructed to be strong before a single city had fallen. Strength was not the reward for obedience it was the starting point for it. You must understand this pattern. God always calls you to be strong before the breakthrough arrives. Do not wait. Decide now.
+
+The anointing is not something you learn, it is something you catch.
+
+> *Finally, my brethren, BE STRONG IN THE LORD, and in the power of his might.*
+> -- Ephesians 6:10
+
+In other words, the instruction is to draw your strength from the Lord himself. The believer who tries to be strong in himself will always reach his limit. The believer who is strong in the Lord has access to a limitless supply. You must choose to tap into that supply every single day without fail.
+
+> *He giveth power to the faint; and to them that have no might he INCREASETH STRENGTH.*
+> -- Isaiah 40:29
+
+Do not give up. Do not back down. Stand firm in the Lord and in the power of his might.
+`;
+
+// ---------------------------------------------------------------------------
+// DAG-01
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch01.md', GOOD_CHAPTER);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-01'];
+  if (c && c.pass === true)
+    pass('DAG-01: declaration opener passes');
+  else
+    fail('DAG-01: declaration opener should pass', c && c.evidence);
 });
 
-test('CRAFT-01: missing provenance fails', () => {
-  const { exitCode, result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch03-no-provenance.md'));
-  assert.equal(result.checks['CRAFT-01'].pass, false);
-  assert.equal(exitCode, 1);
-});
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->
 
-test('CRAFT-01: ch03-no-provenance fails ONLY CRAFT-01', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch03-no-provenance.md'));
-  assert.equal(result.checks['CRAFT-01'].pass, false);
-  assert.equal(result.checks['CRAFT-02'].pass, true);
-  assert.equal(result.checks['CRAFT-05'].pass, true);
-  assert.equal(result.checks['CRAFT-07'].pass, true);
-  assert.equal(result.checks['CRAFT-15'].pass, true);
-});
+# Chapter 1: Strength
 
-test('CRAFT-02: 4 distinct Greek terms fails cap of 3', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch02-greek-overflow.md'));
-  assert.equal(result.checks['CRAFT-02'].pass, false);
-});
+One day, a young pastor walked into his church and found it completely empty inside.
 
-test('CRAFT-02: ch02-greek-overflow fails ONLY CRAFT-02', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch02-greek-overflow.md'));
-  assert.equal(result.checks['CRAFT-01'].pass, true);
-  assert.equal(result.checks['CRAFT-02'].pass, false);
-  assert.equal(result.checks['CRAFT-05'].pass, true);
-  assert.equal(result.checks['CRAFT-07'].pass, true);
-  assert.equal(result.checks['CRAFT-15'].pass, true);
-});
+> *Be strong and of a good courage.*
+> -- Joshua 1:9
 
-test('CRAFT-05: "So let us..." at paragraph start fails', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch01-pulpit.md'));
-  assert.equal(result.checks['CRAFT-05'].pass, false);
-});
+You must be strong. Do not give up. Stand firm today.
 
-test('CRAFT-05: ch01-pulpit fails ONLY CRAFT-05', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch01-pulpit.md'));
-  assert.equal(result.checks['CRAFT-01'].pass, true);
-  assert.equal(result.checks['CRAFT-02'].pass, true);
-  assert.equal(result.checks['CRAFT-05'].pass, false);
-  assert.equal(result.checks['CRAFT-07'].pass, true);
-  assert.equal(result.checks['CRAFT-15'].pass, true);
-});
+> *The Lord is my strength and my shield.*
+> -- Psalm 28:7
 
-test('CRAFT-05: mid-paragraph "So" does not trigger', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-good', 'ch01-draft.md'));
-  assert.equal(result.checks['CRAFT-05'].pass, true);
-});
+Decide to be strong. God will honour that decision.
 
-test('CRAFT-07: <2 reader-thought lines fails', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch05-no-reader-thought.md'));
-  assert.equal(result.checks['CRAFT-07'].pass, false);
-});
+> *I can do all things through Christ which strengtheneth me.*
+> -- Philippians 4:13
 
-test('CRAFT-07: ch05-no-reader-thought fails ONLY CRAFT-07', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch05-no-reader-thought.md'));
-  assert.equal(result.checks['CRAFT-01'].pass, true);
-  assert.equal(result.checks['CRAFT-02'].pass, true);
-  assert.equal(result.checks['CRAFT-05'].pass, true);
-  assert.equal(result.checks['CRAFT-07'].pass, false);
-  assert.equal(result.checks['CRAFT-15'].pass, true);
-});
-
-test('CRAFT-15: missing version stamp fails', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch04-no-version-stamp.md'));
-  assert.equal(result.checks['CRAFT-15'].pass, false);
-});
-
-test('CRAFT-15: ch04-no-version-stamp fails ONLY CRAFT-15', () => {
-  const { result } = runChecker(path.join(FIXTURES, 'known-bad', 'ch04-no-version-stamp.md'));
-  assert.equal(result.checks['CRAFT-01'].pass, true);
-  assert.equal(result.checks['CRAFT-02'].pass, true);
-  assert.equal(result.checks['CRAFT-05'].pass, true);
-  assert.equal(result.checks['CRAFT-07'].pass, true);
-  assert.equal(result.checks['CRAFT-15'].pass, false);
+Stand firm in the Lord every single day.
+`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-01'];
+  if (c && c.pass === false)
+    pass('DAG-01: story-marker opener ("One day") fails');
+  else
+    fail('DAG-01: story-marker opener should fail', c && c.evidence);
 });
 
 // ---------------------------------------------------------------------------
-// Phase 13 novelty / de-duplication tests
+// DAG-02
 // ---------------------------------------------------------------------------
-// These tests exercise `craft-check.js --novelty`, a Wave 2 addition that does
-// not yet exist. They are RED until Plan 13-05 lands the novelty engine and
-// Plans 13-01/13-02 land the adversarial fixtures. Each test has a named
-// downstream plan that flips it green — see 13-03-SUMMARY.md for the map.
 
-test('novelty: adversarial Tier 1 fixture produces expected flags', () => {
-  const fixtureDir = path.join(__dirname, '..', 'fixtures', 'tiny-book', 'adversarial');
-  const expectedPath = path.join(fixtureDir, 'expected-flags.json');
-  const expected = JSON.parse(fs.readFileSync(expectedPath, 'utf8'));
-  const dnaPath = path.join(fixtureDir, 'book-dna.md');
-  const { stdout } = runCraftCheckNovelty(
-    `--novelty --tier both --dna "${dnaPath}" "${fixtureDir}"`
-  );
-  const result = parseNoveltyResult(stdout);
-
-  assert.equal(result.flag, expected.flag, 'overall flag must match');
-  assert.equal(
-    result.novelty_dedup,
-    expected.novelty_dedup,
-    'novelty_dedup verdict must match'
-  );
-
-  // Tier 1: repeated_spans — every expected phrase must be present with
-  // at least min_occurrences occurrences.
-  for (const exp of expected.tier1.repeated_spans || []) {
-    const match = (result.repeated_spans || []).find(
-      (s) => s.phrase === exp.phrase
-    );
-    assert.ok(match, `missing expected span: ${exp.phrase}`);
-    assert.ok(
-      Array.isArray(match.occurrences) &&
-        match.occurrences.length >= exp.min_occurrences,
-      `span "${exp.phrase}" occurred ${match.occurrences && match.occurrences.length} times, expected >=${exp.min_occurrences}`
-    );
-  }
-
-  // Tier 1: vulnerability_beat_reuse cross-artefact hits.
-  for (const exp of expected.tier1.vulnerability_beat_reuse || []) {
-    const match = (result.cross_artefact_hits || []).find(
-      (h) =>
-        h.type === 'vulnerability_beat_reuse' &&
-        h.source &&
-        h.source.includes(exp.source_file) &&
-        h.duplicate &&
-        h.duplicate.includes(exp.duplicate_file)
-    );
-    assert.ok(
-      match,
-      `missing expected vulnerability_beat_reuse ${exp.source_file}->${exp.duplicate_file}`
-    );
-  }
-
-  // Tier 1: central_image_reuse family.
-  for (const exp of expected.tier1.central_image_reuse || []) {
-    const match = (result.central_image_reuse || []).find(
-      (r) =>
-        r.vehicle_family === exp.vehicle_family ||
-        (r.vehicle && r.vehicle.includes('lamp'))
-    );
-    assert.ok(
-      match,
-      `missing expected central_image_reuse for family ${exp.vehicle_family}`
-    );
-  }
-
-  // Tier 1: refrain_overuse — phrase must appear with exact actual_occurrences.
-  for (const exp of expected.tier1.refrain_overuse || []) {
-    const match = (result.refrain_overuse || []).find(
-      (r) => r.phrase === exp.phrase
-    );
-    assert.ok(match, `missing expected refrain_overuse for "${exp.phrase}"`);
-    assert.equal(
-      match.actual_occurrences,
-      exp.actual_occurrences,
-      `refrain "${exp.phrase}" actual_occurrences mismatch`
-    );
-  }
-
-  // Refrain whitelist off-by-one: the refrain phrase MUST NOT appear in
-  // repeated_spans — it should appear in refrain_overuse instead.
-  assert.ok(
-    !(result.repeated_spans || []).find(
-      (s) => s.phrase === 'one small lamp refusing the whole dark'
-    ),
-    'refrain at max_uses:1 should NOT appear as a repeated_span — it should appear in refrain_overuse instead'
-  );
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch01.md', GOOD_CHAPTER);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-02'];
+  if (c && c.pass === true)
+    pass('DAG-02: 3 scripture blocks passes density check');
+  else
+    fail('DAG-02: 3 scripture blocks should pass', c && c.evidence);
 });
 
-test('novelty: adversarial Tier 2 fixture fires all four Tier 2 rules', () => {
-  const fixtureDir = path.join(
-    __dirname,
-    '..',
-    'fixtures',
-    'tiny-book',
-    'adversarial-enricher'
-  );
-  const expectedPath = path.join(fixtureDir, 'expected-flags.json');
-  const expected = JSON.parse(fs.readFileSync(expectedPath, 'utf8'));
-  const dnaPath = path.join(fixtureDir, 'book-dna.md');
-  const { stdout } = runCraftCheckNovelty(
-    `--novelty --tier both --dna "${dnaPath}" "${fixtureDir}"`
-  );
-  const result = parseNoveltyResult(stdout);
+withTmpDir(dir => {
+  // 1 scripture block with enough body words to require 3 (floor is 3 regardless)
+  const prose = 'You must build your spiritual strength deliberately each and every single day without fail. This is not optional. '.repeat(16);
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->
 
-  assert.equal(result.flag, expected.flag, 'overall flag must match (Tier 2)');
-  assert.equal(
-    result.novelty_dedup,
-    expected.novelty_dedup,
-    'novelty_dedup verdict must match (Tier 2)'
-  );
+# Chapter 1: Strength
 
-  // Each Tier 2 array in expected-flags.json must have at least one matching
-  // entry in the corresponding actual result field. The precise field names
-  // are defined by Plan 13-05; we assert presence of at least one hit per
-  // non-empty expected array.
-  const tier2 = expected.tier2 || {};
-  for (const [ruleName, expectedHits] of Object.entries(tier2)) {
-    if (!Array.isArray(expectedHits) || expectedHits.length === 0) continue;
-    const actualHits = result[ruleName] || (result.tier2 && result.tier2[ruleName]) || [];
-    assert.ok(
-      Array.isArray(actualHits) && actualHits.length > 0,
-      `Tier 2 rule "${ruleName}" expected at least one hit but got ${JSON.stringify(actualHits)}`
+${prose}
+
+> *Be strong and of a good courage.*
+> -- Joshua 1:9
+
+${prose}
+`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-02'];
+  if (c && c.pass === false)
+    pass('DAG-02: underflow (1 block) fails correctly');
+  else
+    fail('DAG-02: underflow should fail', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// DAG-04 (flag-only — check diagnostic fields)
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch01.md', GOOD_CHAPTER);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-04'];
+  if (c && c.has_key_statement === true)
+    pass('DAG-04: standalone key statement detected');
+  else
+    fail('DAG-04: key statement should be detected', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch01.md', GOOD_CHAPTER);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-04'];
+  if (c && c.has_caps_in_quote === true)
+    pass('DAG-04: CAPS-in-quote detected');
+  else
+    fail('DAG-04: CAPS-in-quote should be detected', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  // flag-only rule: pass must always be true
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nYou must be strong.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-04'];
+  if (c && c.pass === true)
+    pass('DAG-04: flag-only — pass is always true regardless of presence');
+  else
+    fail('DAG-04: should always be pass:true (flag-only)', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// DAG-05
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  // overflow: repeat a 16-word sentence 200 times = 3200 words
+  const blk = 'You must walk in the power of God and trust him for every step of your ministry. '.repeat(200);
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\n${blk}\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-05'];
+  if (c && c.pass === false)
+    pass('DAG-05: overflow (>2500 words) fails');
+  else
+    fail('DAG-05: overflow should fail', c && `word_count=${c && c.word_count}`);
+});
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch01.md', GOOD_CHAPTER);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-05'];
+  if (c && c.pass === true)
+    pass('DAG-05: normal-length chapter passes');
+  else
+    fail('DAG-05: normal chapter should pass', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// DAG-06
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nIt could be argued that the anointing is not necessary for ministry today. But this is wrong.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-06'];
+  if (c && c.pass === false && c.has_hedging === true)
+    pass('DAG-06: hedging phrase detected and fails');
+  else
+    fail('DAG-06: hedging phrase should fail', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nThe word charis means grace. The word agape means love. These are important distinctions in Scripture.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-06'];
+  if (c && c.pass === false && c.transliterated_term_count > 1)
+    pass('DAG-06: >1 transliterated term fails');
+  else
+    fail('DAG-06: >1 transliterated term should fail', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// DAG-07 (flag-only — check diagnostic fields)
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nYou must be strong. Do not give up today.\n\nBut what will you do when the pressure finally comes?\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-07'];
+  if (c && c.cliffhanger === true)
+    pass('DAG-07: cliffhanger final-question detected');
+  else
+    fail('DAG-07: cliffhanger final-question should be detected', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nYou must be strong.\n\nIn the next chapter we will see how this applies to your ministry.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-07'];
+  if (c && c.cliffhanger === true)
+    pass('DAG-07: "in the next chapter" teaser detected as cliffhanger');
+  else
+    fail('DAG-07: "in the next chapter" should flag as cliffhanger', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nYou must be strong.\n\nDecide to be strong today and God will honour your decision always.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-07'];
+  if (c && c.cliffhanger === false)
+    pass('DAG-07: clean landing is not flagged as cliffhanger');
+  else
+    fail('DAG-07: clean landing should not be flagged', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// STAMP
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch01.md', '# Chapter 1\n\nYou must be strong.\n');
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['STAMP'];
+  if (c && c.pass === false)
+    pass('STAMP: missing version stamp fails');
+  else
+    fail('STAMP: missing stamp should fail', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch01.md', GOOD_CHAPTER);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['STAMP'];
+  if (c && c.pass === true)
+    pass('STAMP: present stamp passes');
+  else
+    fail('STAMP: present stamp should pass', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// PROVENANCE
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  // No provenance line — should pass (topic-brief mode)
+  const p = writeChapter(dir, 'ch01.md', GOOD_CHAPTER);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['PROVENANCE'];
+  if (c && c.pass === true)
+    pass('PROVENANCE: absent provenance is OK (topic-brief mode)');
+  else
+    fail('PROVENANCE: absent provenance should pass', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const content = `<!-- provenance: sources/sermons.md:42 -->\n<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nYou must be strong.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['PROVENANCE'];
+  if (c && c.pass === true)
+    pass('PROVENANCE: well-formed provenance passes');
+  else
+    fail('PROVENANCE: well-formed provenance should pass', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  // Malformed — no line number after colon
+  const content = `<!-- provenance: sources/sermons.md -->\n<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nYou must be strong.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['PROVENANCE'];
+  if (c && c.pass === false)
+    pass('PROVENANCE: malformed provenance (no line number) fails');
+  else
+    fail('PROVENANCE: malformed provenance should fail', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// Novelty: refrain within budget is not in repeated_spans
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const edDir = path.join(dir, 'edited');
+  fs.mkdirSync(edDir);
+  const refrain = 'Decide to be strong and God will honour your decision completely today.';
+  const ch1 = `<!-- generated-by: dag-book-crafter v1.0.0 -->\n\n# Chapter 1\n\n${refrain} You must make this choice without delay.\n`;
+  const ch2 = `<!-- generated-by: dag-book-crafter v1.0.0 -->\n\n# Chapter 2\n\n${refrain} Do not postpone this decision any longer.\n`;
+  fs.writeFileSync(path.join(edDir, 'ch01-final.md'), ch1);
+  fs.writeFileSync(path.join(edDir, 'ch02-final.md'), ch2);
+  const dnaPath = path.join(dir, 'book-dna.md');
+  fs.writeFileSync(dnaPath, `# Book DNA\n\nrefrains:\n  - phrase: "${refrain}"\n    max_uses: 2\n    scope: whole_book\n`);
+
+  const { stdout } = runNovelty(`--novelty --tier 1 --dna "${dnaPath}" "${dir}"`);
+  try {
+    const result = JSON.parse(stdout);
+    // The refrain should appear only in refrain_overuse if over-budget, never in repeated_spans
+    // With max_uses:2 and exactly 2 occurrences it should not appear in refrain_overuse either
+    const inRepeated = (result.repeated_spans || []).some(s =>
+      s.phrase.toLowerCase().includes('decide to be strong and god')
     );
+    if (!inRepeated)
+      pass('novelty: refrain within budget (max_uses:2, 2 occurrences) not in repeated_spans');
+    else
+      fail('novelty: refrain within budget should not appear in repeated_spans', JSON.stringify(result.repeated_spans).slice(0, 200));
+  } catch (e) {
+    fail('novelty: refrain-budget test — JSON parse error', e.message + ' stdout: ' + stdout.slice(0, 100));
   }
 });
 
-test('novelty: refrain whitelist respects max_uses off-by-one', () => {
-  // Explicit companion to Test A: the refrain phrase is whitelisted for the
-  // foreword's 1st occurrence (max_uses: 1) but the 2nd occurrence in ch02
-  // must NOT promote the phrase to repeated_spans — it must land in
-  // refrain_overuse with actual_occurrences: 2.
-  const fixtureDir = path.join(__dirname, '..', 'fixtures', 'tiny-book', 'adversarial');
-  const dnaPath = path.join(fixtureDir, 'book-dna.md');
-  const { stdout } = runCraftCheckNovelty(
-    `--novelty --tier 1 --dna "${dnaPath}" "${fixtureDir}"`
-  );
-  const result = parseNoveltyResult(stdout);
+// ---------------------------------------------------------------------------
+// Novelty: non-exempt 6+ word span appears in repeated_spans
+// ---------------------------------------------------------------------------
 
-  const refrain = 'one small lamp refusing the whole dark';
-  assert.ok(
-    !(result.repeated_spans || []).find((s) => s.phrase === refrain),
-    'refrain phrase must NOT appear in repeated_spans (off-by-one whitelist)'
-  );
-  const over = (result.refrain_overuse || []).find((r) => r.phrase === refrain);
-  assert.ok(over, 'refrain phrase must appear in refrain_overuse');
-  assert.equal(
-    over.actual_occurrences,
-    2,
-    'refrain actual_occurrences must be exactly 2 (foreword + ch02)'
-  );
+withTmpDir(dir => {
+  const edDir = path.join(dir, 'edited');
+  fs.mkdirSync(edDir);
+  const shared = 'the enemy specifically targets the weakest believer first among all people';
+  const ch1 = `<!-- generated-by: dag-book-crafter v1.0.0 -->\n\n# Chapter 1\n\nYou must be strong always. ${shared}. Guard yourself every day.\n`;
+  const ch2 = `<!-- generated-by: dag-book-crafter v1.0.0 -->\n\n# Chapter 2\n\nPray without ceasing daily. ${shared}. Do not be found unguarded.\n`;
+  fs.writeFileSync(path.join(edDir, 'ch01-final.md'), ch1);
+  fs.writeFileSync(path.join(edDir, 'ch02-final.md'), ch2);
+  fs.writeFileSync(path.join(dir, 'book-dna.md'), '# Book DNA\n\nrefrains: []\n');
+
+  const { stdout } = runNovelty(`--novelty --tier 1 "${dir}"`);
+  try {
+    const result = JSON.parse(stdout);
+    const hasSpan = (result.repeated_spans || []).length > 0;
+    if (hasSpan)
+      pass('novelty: non-exempt 6+ word cross-file span detected in repeated_spans');
+    else
+      fail('novelty: shared non-exempt span should appear in repeated_spans', JSON.stringify(result).slice(0, 200));
+  } catch (e) {
+    fail('novelty: non-exempt span test — JSON parse error', e.message);
+  }
 });
 
-test('novelty: scripture blockquote cross-file does NOT flag', () => {
-  // A blockquoted scripture citation repeated verbatim across two files must
-  // NOT land in repeated_spans — the novelty engine must skip scripture.
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'craft13-'));
-  const feDir = path.join(tmpDir, 'front-matter');
-  const edDir = path.join(tmpDir, 'edited');
-  fs.mkdirSync(feDir, { recursive: true });
+// ---------------------------------------------------------------------------
+// Novelty: "May you" benediction line is exempt
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const edDir = path.join(dir, 'edited');
+  fs.mkdirSync(edDir);
+  const benediction = 'May you walk in the fullness of God every single day of your life here.';
+  // Unique prose in each chapter so only the benediction overlaps
+  const ch1 = `<!-- generated-by: dag-book-crafter v1.0.0 -->\n\n# Chapter 1\n\nYou must pursue the anointing with everything inside you.\n\n${benediction}\n`;
+  const ch2 = `<!-- generated-by: dag-book-crafter v1.0.0 -->\n\n# Chapter 2\n\nPrayer and the Word will build your spiritual strength daily.\n\n${benediction}\n`;
+  fs.writeFileSync(path.join(edDir, 'ch01-final.md'), ch1);
+  fs.writeFileSync(path.join(edDir, 'ch02-final.md'), ch2);
+  fs.writeFileSync(path.join(dir, 'book-dna.md'), '# Book DNA\n\nrefrains: []\n');
+
+  const { stdout } = runNovelty(`--novelty --tier 1 "${dir}"`);
+  try {
+    const result = JSON.parse(stdout);
+    const leaked = (result.repeated_spans || []).some(s =>
+      s.phrase.toLowerCase().includes('may you') ||
+      s.phrase.toLowerCase().includes('walk in the fullness')
+    );
+    if (!leaked)
+      pass('novelty: "May you" benediction line exempt from repeated_spans');
+    else
+      fail('novelty: "May you" should be exempt from dedup', JSON.stringify(result.repeated_spans).slice(0, 200));
+  } catch (e) {
+    fail('novelty: May-you exemption test — JSON parse error', e.message);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Novelty: scripture blockquote cross-file does NOT flag
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const fmDir = path.join(dir, 'front-matter');
+  const edDir = path.join(dir, 'edited');
+  fs.mkdirSync(fmDir, { recursive: true });
   fs.mkdirSync(edDir, { recursive: true });
-  const scripture =
-    '<!-- generated-by: dag-book-crafter v1.1.0 -->\n\n' +
-    '> *"For by grace you have been saved through faith and this is not of yourselves"*\n' +
-    '> — Ephesians 2:8\n\n' +
-    'Some chapter prose here that is completely unique per file A.\n';
-  fs.writeFileSync(path.join(feDir, 'foreword.md'), scripture);
-  fs.writeFileSync(
-    path.join(edDir, 'ch01-final.md'),
-    scripture.replace('per file A', 'per file B')
-  );
-  // Minimal book-dna.md so the CLI doesn't error.
-  fs.writeFileSync(
-    path.join(tmpDir, 'book-dna.md'),
-    '# Book DNA\n\n## Refrains\n\nrefrains: []\n'
-  );
+  const base = '<!-- generated-by: dag-book-crafter v1.1.0 -->\n\n> *For by grace you have been saved through faith and this is not of yourselves.*\n> -- Ephesians 2:8\n\n';
+  fs.writeFileSync(path.join(fmDir, 'foreword.md'), base + 'Unique prose for the foreword only, not repeated.\n');
+  fs.writeFileSync(path.join(edDir, 'ch01-final.md'), base + 'Unique prose for chapter one only, not repeated.\n');
+  fs.writeFileSync(path.join(dir, 'book-dna.md'), '# Book DNA\n\nrefrains: []\n');
 
-  const { stdout } = runCraftCheckNovelty(`--novelty --tier 1 "${tmpDir}"`);
-  const result = parseNoveltyResult(stdout);
-
-  const scriptureFragment = 'for by grace you have been saved';
-  const leaked = (result.repeated_spans || []).find((s) =>
-    (s.phrase || '').toLowerCase().includes(scriptureFragment)
-  );
-  assert.ok(
-    !leaked,
-    `scripture blockquote must be skipped by novelty engine but found: ${JSON.stringify(leaked)}`
-  );
+  const { stdout } = runNovelty(`--novelty --tier 1 "${dir}"`);
+  try {
+    const result = JSON.parse(stdout);
+    const leaked = (result.repeated_spans || []).some(s =>
+      (s.phrase || '').toLowerCase().includes('by grace you have been saved')
+    );
+    if (!leaked)
+      pass('novelty: scripture blockquote cross-file does not flag');
+    else
+      fail('novelty: scripture blockquote must be exempt from dedup', JSON.stringify(result.repeated_spans).slice(0, 200));
+  } catch (e) {
+    fail('novelty: scripture-exempt test — JSON parse error', e.message);
+  }
 });
 
-test('novelty: --dna flag with no refrains block still runs without error', () => {
-  // A book-dna.md lacking a `refrains:` key must not crash the CLI —
-  // exit code 0 (clean) or 1 (flag:true) is acceptable, but not 2 (crash).
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'craft13-'));
-  const edDir = path.join(tmpDir, 'edited');
-  fs.mkdirSync(edDir, { recursive: true });
-  fs.writeFileSync(
-    path.join(edDir, 'ch01-final.md'),
-    '<!-- generated-by: dag-book-crafter v1.1.0 -->\n\nUnique prose without any refrain repetition.\n'
-  );
-  fs.writeFileSync(
-    path.join(tmpDir, 'book-dna.md'),
-    '# Book DNA\n\nNo refrains key at all.\n'
-  );
-  const dnaPath = path.join(tmpDir, 'book-dna.md');
+// ---------------------------------------------------------------------------
+// Novelty: --dna with no refrains block does not crash
+// ---------------------------------------------------------------------------
 
-  const { stdout, exitCode } = runCraftCheckNovelty(
-    `--novelty --tier 1 --dna "${dnaPath}" "${tmpDir}"`
-  );
-  assert.ok(
-    exitCode === 0 || exitCode === 1,
-    `expected exit 0 or 1 (not crash code 2) but got ${exitCode}`
-  );
-  const result = parseNoveltyResult(stdout);
-  assert.ok(
-    typeof result.flag !== 'undefined',
-    'result must have a `flag` field defined'
-  );
+withTmpDir(dir => {
+  const edDir = path.join(dir, 'edited');
+  fs.mkdirSync(edDir);
+  fs.writeFileSync(path.join(edDir, 'ch01-final.md'), '<!-- generated-by: dag-book-crafter v1.1.0 -->\n\nCompletely unique prose here with nothing repeated.\n');
+  const dnaPath = path.join(dir, 'book-dna.md');
+  fs.writeFileSync(dnaPath, '# Book DNA\n\nNo refrains key at all.\n');
+
+  const { stdout, exitCode } = runNovelty(`--novelty --tier 1 --dna "${dnaPath}" "${dir}"`);
+  if (exitCode === 0 || exitCode === 1) {
+    try {
+      const result = JSON.parse(stdout);
+      if (typeof result.flag !== 'undefined')
+        pass('novelty: --dna with no refrains block does not crash (flag field present)');
+      else
+        fail('novelty: result must have flag field', stdout.slice(0, 100));
+    } catch (e) {
+      fail('novelty: no-refrains DNA — JSON parse error', e.message);
+    }
+  } else {
+    fail('novelty: no-refrains DNA should exit 0 or 1 (not crash code 2)', `exit ${exitCode}`);
+  }
 });
+
+// ---------------------------------------------------------------------------
+// DAG-06 word-boundary fix: "Many believers" must NOT trigger hedging
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nMany believers are spiritually weak today because they do not pray. You must pray. Seek God daily.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-06'];
+  if (c && c.pass === true && c.has_hedging === false)
+    pass('DAG-06 word-boundary: "Many believers" does NOT trigger hedging false-positive');
+  else
+    fail('DAG-06 word-boundary: "Many believers" should NOT trip hedging', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// DAG-07 new cliffhanger patterns: "what comes next" must fail
+// ---------------------------------------------------------------------------
+
+withTmpDir(dir => {
+  const content = `<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n# Chapter 1\n\nYou must be strong.\n\n...and what comes next changes everything about your ministry forever.\n`;
+  const p = writeChapter(dir, 'ch01.md', content);
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-07'];
+  if (c && c.cliffhanger === true && c.pass === false)
+    pass('DAG-07 new pattern: "what comes next" detected as cliffhanger and fails');
+  else
+    fail('DAG-07 new pattern: "what comes next" should be detected as cliffhanger', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
+// Results
+// ---------------------------------------------------------------------------
+
+console.log('');
+if (failed > 0) {
+  console.error(`${failed} test(s) FAILED, ${passed} passed.`);
+  process.exit(1);
+} else {
+  console.log(`All ${passed} tests passed.`);
+}

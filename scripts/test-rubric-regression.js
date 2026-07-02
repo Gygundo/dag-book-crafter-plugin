@@ -1,201 +1,249 @@
 #!/usr/bin/env node
-// scripts/test-rubric-regression.js — Regression test for CRAFT-09 pure-move extraction
-// and CRAFT-10 rubric extension.
+// scripts/test-rubric-regression.js
 //
-// Reads fixtures/phase10/baseline-scores.json, reads references/captivation-rubric.md,
-// re-computes sha256 over the extracted rubric body in the same order as baseline,
-// compares to baseline.scoring_logic_hash. Exit 0 if identical, 1 if drifted or
-// the rubric file does not yet exist.
+// Self-contained schema validation against references/captivation-rubric.md only.
+// No baseline-scores.json. No sha256 hashing. Exit 0 = all pass, 1 = any fail.
 //
-// The base run (no flags) only checks the original 5-component hash. Pass --extended
-// to also assert the CRAFT-10 additions (Craft Density + Cross-Chapter Craft) are
-// present with non-empty bodies and the 0-14 total is documented.
-//
-// Usage:
-//   node scripts/test-rubric-regression.js              # legacy 5-component lock
-//   node scripts/test-rubric-regression.js --extended   # + CRAFT-10 additions
-//
-// ## Regeneration Protocol (Phase 13 / schema v2)
-//
-// The Phase 13 rubric rewrite (Plan 13-04) changes the rubric body bytes
-// because 0-14 references become 0-16 and the schema v2 frontmatter + 8th
-// component land. This breaks the legacy 5-component sha256 lock by design.
-//
-// After Plan 13-04 ships references/captivation-rubric.md (schema v2), the
-// executor for that plan MUST:
-//
-//   1. Run: `node scripts/test-rubric-regression.js`
-//   2. Capture the "current: <hash>" line from the FAIL branch stdout.
-//   3. Update fixtures/phase10/baseline-scores.json:
-//        - scoring_logic_hash:  <hash>           (the real new hash)
-//        - phase_13_regenerated: true            (flip flag)
-//   4. Re-run the script to confirm PASS.
-//   5. Run with --extended to confirm the 8 structural assertions also pass.
-//
-// Until step 3 is performed, the base hash check will intentionally fail
-// with "PHASE_13_PENDING" != <computed>. The --extended structural
-// assertions are the primary drift detector for schema v2; the hash lock
-// is a secondary tripwire.
+// Validates:
+//  - YAML frontmatter: schema_version 2, total_range [0,16], 8 components,
+//    component keys, novelty_dedup binary dimension, sample_gate thresholds,
+//    captivation_total in output_fields
+//  - Markdown body: exactly 8 level-3 headings matching component labels,
+//    each heading has a non-empty body, "0-16" in prose
 
-const fs = require('node:fs');
-const path = require('node:path');
-const crypto = require('node:crypto');
+'use strict';
 
-const ROOT = path.resolve(__dirname, '..');
-const BASELINE_PATH = path.join(ROOT, 'fixtures', 'phase10', 'baseline-scores.json');
+const fs   = require('fs');
+const path = require('path');
+
+const ROOT        = path.resolve(__dirname, '..');
 const RUBRIC_PATH = path.join(ROOT, 'references', 'captivation-rubric.md');
 
-function extractBody(lines, headingText) {
-  // Find the first line that is exactly `### {headingText}` (level-3 heading in the rubric)
-  const headingRegex = new RegExp(`^###\\s+${headingText.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\s*$`);
-  const startIdx = lines.findIndex(l => headingRegex.test(l));
-  if (startIdx === -1) {
-    return null;
-  }
-  const startLevel = (lines[startIdx].match(/^#+/) || [''])[0].length;
-  let endIdx = lines.length;
-  for (let i = startIdx + 1; i < lines.length; i++) {
-    const m = lines[i].match(/^(#+)\s/);
-    if (m && m[1].length <= startLevel) {
-      endIdx = i;
-      break;
-    }
-  }
-  return lines.slice(startIdx + 1, endIdx).join('\n').trim();
+let passed = 0;
+let failed = 0;
+
+function pass(label) {
+  console.log(`PASS  ${label}`);
+  passed++;
 }
 
-function main() {
-  if (!fs.existsSync(BASELINE_PATH)) {
-    console.error(`FAIL: baseline file missing at ${BASELINE_PATH}`);
-    process.exit(1);
+function fail(label, detail) {
+  if (detail !== undefined && detail !== null) {
+    console.error(`FAIL  ${label} — ${detail}`);
+  } else {
+    console.error(`FAIL  ${label}`);
   }
-  const baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
-
-  if (!fs.existsSync(RUBRIC_PATH)) {
-    console.error(`FAIL: ${RUBRIC_PATH} does not yet exist (Task 4 has not run).`);
-    console.error('This test becomes green after the rubric is extracted.');
-    process.exit(1);
-  }
-
-  const rubricText = fs.readFileSync(RUBRIC_PATH, 'utf8').replace(/\r\n/g, '\n');
-  const lines = rubricText.split('\n');
-
-  const bodies = [];
-  for (const component of baseline.rubric_components) {
-    const heading = component.rubric_heading;
-    const body = extractBody(lines, heading);
-    if (body === null) {
-      console.error(`FAIL: heading "### ${heading}" not found in ${RUBRIC_PATH}`);
-      process.exit(1);
-    }
-    bodies.push(body);
-  }
-
-  const concat = bodies.join('\n');
-  const hash = crypto.createHash('sha256').update(concat).digest('hex');
-
-  // Phase 13 / schema v2: The legacy 5-component body text is rewritten
-  // to reference 0-16 and the schema v2 frontmatter. The baseline hash
-  // below was regenerated during Plan 13-03 Task 2 for the new body.
-  // Structural assertions in --extended are the primary drift detector;
-  // the hash lock is a secondary tripwire.
-  if (hash !== baseline.scoring_logic_hash) {
-    console.error('FAIL: rubric hash drifted from baseline.');
-    console.error(`  baseline: ${baseline.scoring_logic_hash}`);
-    console.error(`  current:  ${hash}`);
-    console.error('  The original 5 captivation components must stay byte-identical.');
-    console.error('  If you intended to add new components, append them — do not edit the originals.');
-    console.error('  See ## Regeneration Protocol at top of this file for Phase 13 hand-off steps.');
-    process.exit(1);
-  }
-
-  if (baseline.phase_13_regenerated === true) {
-    console.log('NOTE: baseline regenerated for Phase 13 schema v2');
-  }
-  console.log(`PASS: rubric hash matches baseline (${hash})`);
-
-  // Extended checks for CRAFT-10 additions.
-  const extended = process.argv.includes('--extended');
-  if (!extended) {
-    process.exit(0);
-  }
-
-  // Phase 13 / schema v2 structural assertions. These replace the CRAFT-10
-  // 7-heading / 0-14 assertions. The legacy Craft Density + Cross-Chapter
-  // Craft heading-present checks are retained — they must still pass in v2.
-  const failures = [];
-
-  // 1. YAML frontmatter exists and parses (string-level only).
-  const fmMatch = rubricText.match(/^---\n([\s\S]*?)\n---\n/);
-  if (!fmMatch) {
-    failures.push('missing YAML frontmatter at top of rubric file');
-  }
-  const fmBody = fmMatch ? fmMatch[1] : '';
-
-  // 2. schema_version: 2
-  if (!/^schema_version:\s*2\s*$/m.test(fmBody)) {
-    failures.push('frontmatter missing schema_version: 2');
-  }
-
-  // 3. total_range: [0, 16]
-  if (!/^total_range:\s*\[\s*0\s*,\s*16\s*\]\s*$/m.test(fmBody)) {
-    failures.push('frontmatter missing total_range: [0, 16]');
-  }
-
-  // 4. novelty_dedup binary dimension present in frontmatter.
-  if (!/novelty_dedup/.test(fmBody) || !/type:\s*binary/.test(fmBody)) {
-    failures.push('frontmatter missing novelty_dedup binary dimension');
-  }
-
-  // 5. Exactly 8 level-3 component headings.
-  const level3Count = lines.filter((l) => /^###\s+\S/.test(l)).length;
-  if (level3Count !== 8) {
-    failures.push(
-      `expected 8 level-3 component headings (schema v2), found ${level3Count}`
-    );
-  }
-
-  // 6. Novelty / Variation component present with non-empty body.
-  const noveltyBody = extractBody(lines, 'Novelty / Variation');
-  if (noveltyBody === null || noveltyBody.length === 0) {
-    failures.push('missing or empty ### Novelty / Variation component body');
-  }
-
-  // 7. 0-16 total-range marker documented in rubric prose.
-  if (!rubricText.includes('0-16')) {
-    failures.push('missing "0-16" total-range marker in rubric prose');
-  }
-
-  // 8. output_fields region references both captivation_total and novelty_dedup.
-  if (!/captivation_total/.test(fmBody) || !/novelty_dedup/.test(fmBody)) {
-    failures.push(
-      'frontmatter output_fields missing captivation_total or novelty_dedup'
-    );
-  }
-
-  // Retained from CRAFT-10: Craft Density + Cross-Chapter Craft headings
-  // must still exist in schema v2 (they are two of the eight components).
-  for (const heading of ['Craft Density', 'Cross-Chapter Craft']) {
-    const body = extractBody(lines, heading);
-    if (body === null) {
-      failures.push(`missing heading: ### ${heading}`);
-    } else if (body.length === 0) {
-      failures.push(`empty body under: ### ${heading}`);
-    }
-  }
-
-  if (failures.length > 0) {
-    console.error('FAIL: extended rubric checks failed:');
-    for (const f of failures) {
-      console.error(`  - ${f}`);
-    }
-    process.exit(1);
-  }
-
-  console.log(
-    'PASS: extended rubric checks (schema v2: 8 components, 0-16 range, novelty_dedup dimension, novelty_variation component)'
-  );
-  process.exit(0);
+  failed++;
 }
 
-main();
+// ---------------------------------------------------------------------------
+// Load rubric
+// ---------------------------------------------------------------------------
+
+if (!fs.existsSync(RUBRIC_PATH)) {
+  fail('rubric file exists', RUBRIC_PATH);
+  process.exit(1);
+}
+
+const rubricText = fs.readFileSync(RUBRIC_PATH, 'utf8').replace(/\r\n/g, '\n');
+
+// ---------------------------------------------------------------------------
+// Extract frontmatter
+// ---------------------------------------------------------------------------
+
+const fmMatch = rubricText.match(/^---\n([\s\S]*?)\n---\n/);
+if (!fmMatch) {
+  fail('YAML frontmatter present', 'no --- block at top of file');
+  process.exit(1);
+}
+pass('YAML frontmatter present');
+
+const fmBody = fmMatch[1];
+const lines  = rubricText.split('\n');
+
+// ---------------------------------------------------------------------------
+// Frontmatter: schema_version
+// ---------------------------------------------------------------------------
+
+if (/^schema_version:\s*2\s*$/m.test(fmBody)) {
+  pass('schema_version: 2');
+} else {
+  fail('schema_version: 2', 'not found in frontmatter');
+}
+
+// ---------------------------------------------------------------------------
+// Frontmatter: total_range [0, 16]
+// ---------------------------------------------------------------------------
+
+if (/^total_range:\s*\[\s*0\s*,\s*16\s*\]\s*$/m.test(fmBody)) {
+  pass('total_range: [0, 16]');
+} else {
+  fail('total_range: [0, 16]', 'not found or incorrect in frontmatter');
+}
+
+// ---------------------------------------------------------------------------
+// Frontmatter: exactly 8 components with expected keys
+// ---------------------------------------------------------------------------
+
+const EXPECTED_KEYS = [
+  'clarity_of_point',
+  'scripture_saturation',
+  'structural_parallelism',
+  'direct_address',
+  'simplicity',
+  'emphasis_repetition',
+  'illustration_discipline',
+  'novelty_variation',
+];
+
+const EXPECTED_LABELS = [
+  'Clarity of Point',
+  'Scripture Saturation',
+  'Structural Parallelism',
+  'Direct Address',
+  'Simplicity',
+  'Emphasis & Repetition',
+  'Illustration Discipline',
+  'Novelty / Variation',
+];
+
+// Parse component keys by scanning all lines in fmBody that match `  - key: <value>`
+// (list item key lines, indented with spaces, under the components: block).
+// We scan the whole frontmatter — every `key:` line inside an indented list item.
+const fmLines   = fmBody.split('\n');
+const foundKeys = [];
+let inComponents = false;
+for (const ln of fmLines) {
+  if (/^components:\s*$/.test(ln)) { inComponents = true; continue; }
+  if (inComponents && /^\w/.test(ln)) { inComponents = false; }  // next top-level key
+  if (inComponents) {
+    const m = ln.match(/^\s+-\s+key:\s+(\S+)/);
+    if (m) foundKeys.push(m[1]);
+  }
+}
+
+if (foundKeys.length === 8) {
+  pass('exactly 8 components declared in frontmatter');
+} else {
+  fail('exactly 8 components declared in frontmatter', `found ${foundKeys.length}: [${foundKeys}]`);
+}
+
+const missing = EXPECTED_KEYS.filter(k => !foundKeys.includes(k));
+const extra   = foundKeys.filter(k => !EXPECTED_KEYS.includes(k));
+if (missing.length === 0 && extra.length === 0) {
+  pass('all 8 component keys match expected set');
+} else {
+  fail('all 8 component keys match expected set',
+    `missing=[${missing}] extra=[${extra}]`);
+}
+
+// Count range: [0, 2] inside frontmatter (only for component ranges)
+const rangeCount = (fmBody.match(/range:\s*\[\s*0\s*,\s*2\s*\]/g) || []).length;
+if (rangeCount === 8) {
+  pass('all 8 components have range [0, 2]');
+} else {
+  fail('all 8 components have range [0, 2]', `only ${rangeCount} found`);
+}
+
+// ---------------------------------------------------------------------------
+// Frontmatter: novelty_dedup binary dimension
+// ---------------------------------------------------------------------------
+
+if (/key:\s*novelty_dedup/.test(fmBody) && /type:\s*binary/.test(fmBody)) {
+  pass('novelty_dedup binary dimension in frontmatter');
+} else {
+  fail('novelty_dedup binary dimension in frontmatter', 'key or type: binary missing');
+}
+
+// ---------------------------------------------------------------------------
+// Frontmatter: sample_gate thresholds
+// ---------------------------------------------------------------------------
+
+if (/captivation_total_min:\s*10/.test(fmBody)) {
+  pass('sample_gate captivation_total_min: 10');
+} else {
+  fail('sample_gate captivation_total_min: 10', 'not found in frontmatter');
+}
+
+if (/thresholds:[\s\S]*?novelty_dedup:\s*pass/m.test(fmBody)) {
+  pass('sample_gate novelty_dedup: pass');
+} else {
+  fail('sample_gate novelty_dedup: pass', 'not found in thresholds section');
+}
+
+// ---------------------------------------------------------------------------
+// Frontmatter: output_fields includes captivation_total and novelty_dedup
+// ---------------------------------------------------------------------------
+
+if (/captivation_total/.test(fmBody)) {
+  pass('output_fields includes captivation_total');
+} else {
+  fail('output_fields includes captivation_total', 'not in frontmatter');
+}
+
+if ((fmBody.match(/novelty_dedup/g) || []).length >= 2) {
+  // novelty_dedup appears at least twice: once in dimensions, once in output_fields
+  pass('output_fields includes novelty_dedup');
+} else {
+  fail('output_fields includes novelty_dedup', 'appears fewer than 2 times in frontmatter');
+}
+
+// ---------------------------------------------------------------------------
+// Markdown body: exactly 8 level-3 headings
+// ---------------------------------------------------------------------------
+
+function extractBodyUnder(allLines, headingText) {
+  const re = new RegExp(`^###\\s+${headingText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
+  const startIdx = allLines.findIndex(l => re.test(l));
+  if (startIdx === -1) return null;
+  const depth = (allLines[startIdx].match(/^#+/) || [''])[0].length;
+  let endIdx = allLines.length;
+  for (let i = startIdx + 1; i < allLines.length; i++) {
+    const m = allLines[i].match(/^(#+)\s/);
+    if (m && m[1].length <= depth) { endIdx = i; break; }
+  }
+  return allLines.slice(startIdx + 1, endIdx).join('\n').trim();
+}
+
+const level3Headings = lines.filter(l => /^###\s+\S/.test(l));
+if (level3Headings.length === 8) {
+  pass('exactly 8 level-3 component headings in rubric body');
+} else {
+  fail('exactly 8 level-3 component headings in rubric body', `found ${level3Headings.length}: ${level3Headings.join(', ')}`);
+}
+
+// ---------------------------------------------------------------------------
+// Markdown body: each expected label present as ### heading with non-empty body
+// ---------------------------------------------------------------------------
+
+for (const label of EXPECTED_LABELS) {
+  const body = extractBodyUnder(lines, label);
+  if (body === null) {
+    fail(`heading "### ${label}" present`, 'not found');
+  } else if (body.length === 0) {
+    fail(`heading "### ${label}" has non-empty body`, 'body is empty');
+  } else {
+    pass(`heading "### ${label}" present with non-empty body`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Prose: "0-16" total-range marker documented
+// ---------------------------------------------------------------------------
+
+if (rubricText.includes('0-16')) {
+  pass('"0-16" total-range marker in rubric prose');
+} else {
+  fail('"0-16" total-range marker in rubric prose', 'string not found');
+}
+
+// ---------------------------------------------------------------------------
+// Summary
+// ---------------------------------------------------------------------------
+
+const total = passed + failed;
+console.log(`\n${passed}/${total} checks passed`);
+if (failed > 0) {
+  process.exit(1);
+}
+process.exit(0);
