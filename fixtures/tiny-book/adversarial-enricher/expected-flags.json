@@ -1,0 +1,24 @@
+{
+  "tier1": {
+    "repeated_spans": [],
+    "vulnerability_beat_reuse": [],
+    "central_image_reuse": [],
+    "refrain_overuse": []
+  },
+  "tier2": {
+    "discussion_question_stems": [
+      { "stem": "what does this chapter reveal about the character of god when you are afraid", "min_chapters": 2, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
+    ],
+    "prayer_point_repetition": [
+      { "phrase": "father i ask you to meet me in the dark", "min_chapters": 2, "theological_gated": true, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
+    ],
+    "vulnerability_bleed_to_summary": [
+      { "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md", "span": "my hands would not stop shaking as i tried to pray" }
+    ],
+    "vehicle_reuse_in_backmatter": [
+      { "vehicle": "phone glow over the ceiling", "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md" }
+    ]
+  },
+  "flag": true,
+  "novelty_dedup": "fail"
+}

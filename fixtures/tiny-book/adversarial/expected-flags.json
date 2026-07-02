@@ -1,0 +1,25 @@
+{
+  "tier1": {
+    "repeated_spans": [
+      { "phrase": "i stood at the kitchen counter with both hands flat on the wood and nothing spiritual to say", "min_occurrences": 2, "files": ["front-matter/foreword.md", "edited/ch02-final.md"] },
+      { "phrase": "the weight of it pressed on my chest", "min_occurrences": 2, "files": ["edited/ch01-final.md", "edited/ch03-final.md"] }
+    ],
+    "vulnerability_beat_reuse": [
+      { "source_file": "front-matter/foreword.md", "duplicate_file": "edited/ch02-final.md", "note": "kitchen counter scene reused" }
+    ],
+    "central_image_reuse": [
+      { "vehicle_family": "lamp", "files": ["edited/ch01-final.md", "edited/ch02-final.md", "edited/ch03-final.md"] }
+    ],
+    "refrain_overuse": [
+      { "phrase": "one small lamp refusing the whole dark", "max_uses": 1, "actual_occurrences": 2 }
+    ]
+  },
+  "tier2": {
+    "discussion_question_stems": [],
+    "prayer_point_repetition": [],
+    "vulnerability_bleed_to_summary": [],
+    "vehicle_reuse_in_backmatter": []
+  },
+  "flag": true,
+  "novelty_dedup": "fail"
+}

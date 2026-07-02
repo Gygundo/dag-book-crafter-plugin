@@ -1,0 +1,13 @@
+{
+  "name": "dag-book-crafter",
+  "version": "1.0.0",
+  "description": "Writes short, easy-to-read, topical Christian books in the teaching style of Dag Heward-Mills — plain declarations, numbered points, scripture-anchored chapters, professional .docx output.",
+  "author": {
+    "name": "David",
+    "email": "david@encounterchurch.co.za"
+  },
+  "homepage": "https://github.com/gygundo/dag-book-crafter-plugin",
+  "repository": "https://github.com/gygundo/dag-book-crafter-plugin",
+  "license": "MIT",
+  "keywords": ["book", "writing", "publishing", "theology", "docx", "non-fiction", "topical"]
+}

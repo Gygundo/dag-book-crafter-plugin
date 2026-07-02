@@ -1,0 +1,14 @@
+# Release build output (Phase 11 scripts/release.sh — D-24)
+dist/
+
+# Sample skill fixture run artefacts (D-10 — never committed, never shipped)
+fixtures/tiny-book/run/
+
+# Dev-only operational notes (D-22)
+DEV-NOTES.md
+
+# macOS cruft
+.DS_Store
+
+# Node (craft-check.js is zero-dep but leave room)
+node_modules/

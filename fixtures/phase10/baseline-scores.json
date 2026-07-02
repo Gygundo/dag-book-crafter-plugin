@@ -1,0 +1,45 @@
+{
+  "version": "pre-extraction",
+  "captured_at": "2026-04-15",
+  "rubric_components": [
+    {
+      "id": "pacing_variety",
+      "max": 2,
+      "source_location": "skills/editor/SKILL.md §2.4 lines 120-134",
+      "rubric_heading": "Pacing Variety"
+    },
+    {
+      "id": "emotional_connection",
+      "max": 2,
+      "source_location": "skills/editor/SKILL.md §2.5 lines 136-151",
+      "rubric_heading": "Emotional Connection"
+    },
+    {
+      "id": "reader_engagement",
+      "max": 2,
+      "source_location": "skills/editor/SKILL.md §2.5.5 lines 153-163",
+      "rubric_heading": "Reader Engagement"
+    },
+    {
+      "id": "opening_engagement",
+      "max": 2,
+      "source_location": "skills/editor/SKILL.md §3.3 lines 243-256",
+      "rubric_heading": "Opening Engagement"
+    },
+    {
+      "id": "ending_momentum",
+      "max": 2,
+      "source_location": "skills/editor/SKILL.md §3.4 lines 258-271",
+      "rubric_heading": "Chapter-Ending Momentum"
+    }
+  ],
+  "total_max": 10,
+  "scoring_logic_hash": "b78477f42a59f3d758964162bfc987567e559fa4690333f45b20ebcea9559356",
+  "phase_13_regenerated": true,
+  "phase_13_regenerated_at": "2026-04-15",
+  "phase_13_schema_version": 2,
+  "hash_algorithm": "sha256",
+  "hash_input_description": "Concatenation of the five section bodies (heading line excluded), each trimmed, joined with '\\n', LF-normalised. Body = lines after the heading up to (but not including) the next heading of equal-or-higher level.",
+  "regression_rule": "After CRAFT-09 extraction, concatenating the equivalent sections of references/captivation-rubric.md MUST yield an identical sha256 OR the move is impure and Plan 1 Task 4 must be reworked.",
+  "phase_13_note": "Plan 13-04 rewrites the rubric body for schema v2 (0-16 range, 8 components, novelty_dedup dimension). This breaks the byte-identical lock by design. Hash is marked PHASE_13_PENDING until Plan 13-04 executor regenerates it per the Regeneration Protocol at the top of scripts/test-rubric-regression.js."
+}
