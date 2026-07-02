@@ -115,10 +115,10 @@ CAPS-in-quote:   /^>.*\b[A-Z]{3,}(?:[ ,][A-Z]{2,}){2,}/m
 **Rule:** The prose reads at roughly grade 6–8 level. Complexity lives only inside KJV quotes.
 
 - **Average author-prose sentence length ≤18 words** (computed excluding blockquote lines and headings). Base rhythm: short declarative stacking, subject-verb-object.
-- **No academic hedging.** Banned phrases (deterministic, case-insensitive, author prose only):
+- **No academic hedging.** Banned phrases (deterministic, case-insensitive, word-boundary anchored, author prose only — note the trailing `\b` so authentic phrases like "Many believers" do not false-positive):
 
 ```
-/(some scholars|it could be argued|arguably|studies suggest|research shows|one might|it seems that|in my view|perhaps we might|broadly speaking|to some extent|many believe)/i
+/\b(some scholars|it could be argued|arguably|studies suggest|research shows|one might|it seems that|in my view|perhaps we might|broadly speaking|to some extent|many believe)\b/i
 ```
 
 - **Hard words defined immediately:** any uncommon term gets a one-sentence plain definition in the same paragraph ("To dissimulate is to pretend.").
@@ -138,7 +138,7 @@ CAPS-in-quote:   /^>.*\b[A-Z]{3,}(?:[ ,][A-Z]{2,}){2,}/m
 - **Preacher paragraph-openers are PERMITTED and authentic:** "You see,", "Notice how...", "In other words,", "Listen,", plus evaluative adverb openers ("Indeed,", "Sadly,", "Amazingly,", "Unfortunately,"). This deliberately inverts the bestseller pulpit-seam ban — the seam IS the style.
 - **Chapter close = landing, never cliffhanger.** The final paragraph must end with one of: a direct command, a benediction ("May you..."), a prophetic declaration ("I see your ministry growing..."), a prayer (ending "Amen"), an exclamation of encouragement, a scripture block, or the final point's stated moral. Chapters simply stop after the final point lands — no summary recap, no "in the next chapter" teaser, no unresolved tension.
 
-**Deterministic checks:** you-density count; imperative count (sentence-initial verb heuristic); question count; cliffhanger scan of final paragraph (banned: "in the next chapter", "we will see", "but that is another", trailing ellipsis, question as final sentence of the chapter).
+**Deterministic checks:** you-density count; imperative count (sentence-initial verb heuristic); question count; cliffhanger scan of final paragraph (banned: "in the next chapter", "we will see", "but that is another", "what comes next", "we have not talked about", "there is something we", trailing ellipsis, question as final sentence of the chapter).
 
 **Failure mode:** flag-only.
 

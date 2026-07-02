@@ -1,12 +1,12 @@
 ---
 name: orchestrator
-description: "Master pipeline controller for book writing. Use this skill whenever the user wants to write a book, create a book from sermons or notes, check book project status, resume an interrupted book project, or run the full book pipeline. Triggers on: 'write a book', 'book project', 'book status', 'resume book', 'book pipeline', 'create a book from', 'book crafter', 'start a book', 'new book', 'continue book'. Coordinates all stages: outline, research, write, edit, format."
+description: "Master pipeline controller for writing short, easy-to-read, topical books in the Dag Heward-Mills teaching style. Use this skill whenever the user wants to write a book, create a book from sermons or notes, check book project status, resume an interrupted book project, or run the full book pipeline. Triggers on: 'write a book', 'write me a short book on', 'book project', 'book status', 'resume book', 'book pipeline', 'create a book from', 'book crafter', 'start a book', 'new book', 'continue book'. Coordinates all stages: outline, research, write, edit, format."
 allowed-tools: Read, Write, Bash, Grep, Glob, Agent
 ---
 
 # Dag Book Crafter Orchestrator
 
-Master pipeline controller for the dag-book-crafter plugin. This skill manages the entire book-writing lifecycle: creating new projects, detecting pipeline state, chaining sequential stages, spawning parallel chapter agents, and displaying progress dashboards.
+Master pipeline controller for the dag-book-crafter plugin. This plugin writes short, easy-to-read, topical books in the Dag Heward-Mills teaching style — numbered points, verse-first architecture, plain declarative prose, direct address to the reader. This skill manages the entire book-writing lifecycle: creating new projects, detecting pipeline state, chaining sequential stages, spawning parallel chapter agents, and displaying progress dashboards.
 
 ## 1. Pipeline Overview
 
@@ -63,13 +63,13 @@ When creating a new project:
    - Topic brief or description (required) -- can be a topic, a collection of sermon transcripts, notes, or an existing outline
    - Key themes (optional)
    - Target audience (optional)
-   - Book size tier: `booklet` (<100 pages, 5-8 chapters), `short` (15-25K words, 8-12 chapters), or `standard` (40-60K words, 12-20 chapters). Default: `standard`
+   - Book size tier: `booklet` (8–15 chapters, 10–20K words, ~800–2,000 words/chapter), `short` (15–25 chapters, 20–35K words), or `standard` (15–25 chapters, 35–50K words). Default: `booklet`
    - Voice profile (one of five options):
-     - **Named profile**: A profile name from the plugin's voice library (e.g., "spiritual-default"). Looks up `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/[name].md`
+     - **Named profile**: A profile name from the plugin's voice library (e.g., "dag-default"). Looks up `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/[name].md`
      - **Custom file path**: An absolute or relative path to a `.md` voice profile file (e.g., "~/my-voices/academic.md")
      - **Inline description**: A plain-text description of the desired voice (e.g., "casual, conversational, like talking to a friend over coffee"). Will be expanded into a full profile.
      - **Build from source material**: A directory path containing .md files to analyse. The voice builder skill generates a profile from the source content.
-     - **Not specified**: Defaults to `spiritual-default`
+     - **Not specified**: Defaults to `dag-default`
 
 2. **Create the project directory structure:**
 
@@ -96,7 +96,7 @@ When creating a new project:
 
 Determine which voice input mode the user specified and process accordingly:
 
-**Mode 1: Named profile** (user provides a name like "spiritual-default"):
+**Mode 1: Named profile** (user provides a name like "dag-default"):
 1. Read `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/[name].md`
 2. If file not found, list available profiles from `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/` (exclude `voice-profile-spec.md`) and ask user to choose
 3. Copy file contents to `[project]/voice-profile.md`
@@ -133,9 +133,9 @@ Note: The voice builder handles all analysis, review, and saving internally. The
 **Detecting Mode 5:** The user triggers Mode 5 when they say "build from my writing", "analyse my content", "generate from my files", "build voice profile", "extract voice from", "use my existing writing", or provide a directory path explicitly for voice analysis (as opposed to a single `.md` file path, which is Mode 2).
 
 **Mode 4: Not specified** (user did not mention voice):
-1. Use `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/spiritual-default.md`
+1. Use `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/dag-default.md`
 2. Copy to `[project]/voice-profile.md`
-3. Inform the user: "Using the default spiritual/theological voice profile. You can change this later by providing a different voice profile."
+3. Inform the user: "Using the default Dag Heward-Mills teaching voice profile. You can change this later by providing a different voice profile."
 
 4. **Handle source material:** If the user provides source content (file paths, sermon transcripts, notes), copy or save them to `[project]/sources/`. If the user provides file paths, copy the files. If the user provides inline content, save each piece as a numbered file (source-01.md, source-02.md, etc.). The outliner will auto-detect source files and switch to Source Ingestion Mode.
 
@@ -439,9 +439,9 @@ After all chapters are processed:
 Spawn chapter-writer subagents in parallel using the Agent tool.
 
 **Batching strategy by book size:**
-- **Booklet (5-8 chapters):** Single wave, all chapters at once
-- **Short (8-12 chapters):** Two waves of 4-6 chapters each
-- **Standard (12-20 chapters):** Three to four waves of 4-6 chapters each
+- **Booklet (8–15 chapters):** One to two waves of 8 chapters each
+- **Short (15–25 chapters):** Three waves of 8–9 chapters each
+- **Standard (15–25 chapters):** Three waves of 8–9 chapters each
 
 Wave 1: First 4-6 chapters (spawn agents simultaneously)
 Wave 2: Next batch after Wave 1 completes
@@ -547,9 +547,9 @@ f. **Return to review gate:** After all requested revisions complete, present th
 **On Option 3 (Read full draft):**
 Compile all `edited/ch[NN]-final.md` files into a single markdown document and present it to the user (or tell them the file paths to read). Then return to the review gate.
 
-##### Revision Cap and Divergent-Improvement Detection (CRAFT-17)
+##### Revision Cap and Divergent-Improvement Detection
 
-This subsection wires the hard 2-revision cap and divergent-improvement detection into the chapter revision loop above. It applies to BOTH the Stage 4 Option 2 user-driven revision flow (steps a-f) AND every editor-triggered auto-revise call (CRAFT-01 scene-first failure, CRAFT-02 Greek density failure, CRAFT-05 pulpit-seam failure, and Pass 2 §3.3 scene-first strictness failure). Flag-only failures (CRAFT-03, CRAFT-04, CRAFT-06, CRAFT-07, CRAFT-08) do NOT trigger the revision loop — they only append to the diagnostic report assembled by editor §4.6.
+This subsection wires the hard 2-revision cap and divergent-improvement detection into the chapter revision loop above. It applies to BOTH the Stage 4 Option 2 user-driven revision flow (steps a-f) AND every editor-triggered auto-revise call (DAG-01 story-opener failure, DAG-02 scripture density failure, DAG-05 overflow failure, DAG-06 hedging/transliteration failure, and DAG-08 fabricated testimony failure). Flag-only failures (DAG-03, DAG-04, DAG-07) do NOT trigger the revision loop — they only append to the diagnostic report assembled by editor §4.6.
 
 **Per-chapter revision state.**
 
@@ -561,17 +561,17 @@ The orchestrator tracks per-chapter revision state in `reports/revision-log.md` 
 revision_count: <integer, 0..2>
 revision_history:
   - revision_n: 0
-    captivation_total: <0..14>
-    component_scores: {pacing: N, emotional: N, opening: N, ending: N, language: N, craft_density: N, cross_chapter: N}
-    craft_check_failures: [CRAFT-XX, ...]
+    captivation_total: <0..16>
+    component_scores: {clarity_of_point: N, scripture_saturation: N, structural_parallelism: N, direct_address: N, simplicity: N, emphasis_repetition: N, illustration_discipline: N, novelty_variation: N}
+    craft_check_failures: [DAG-XX, ...]
     source_file: drafts/ch[NN]-draft.md
   - revision_n: 1
-    captivation_total: <0..14>
+    captivation_total: <0..16>
     component_scores: {...}
     craft_check_failures: [...]
     source_file: revisions/ch[NN]-v01-draft.md
   - revision_n: 2
-    captivation_total: <0..14>
+    captivation_total: <0..16>
     component_scores: {...}
     craft_check_failures: [...]
     source_file: revisions/ch[NN]-v02-draft.md
@@ -579,7 +579,7 @@ status: capped | converged | divergent | accepted
 final_revision: <integer index into revision_history>
 ```
 
-`revision_count` starts at 0 (the original draft) and increments by 1 each time the writer is re-invoked for that chapter. `component_scores` is harvested from the editor's Pass 1 captivation rubric output (the 7 components from `references/captivation-rubric.md`). `craft_check_failures` is harvested from the deterministic `scripts/craft-check.js` JSON written into the chapter's `<!-- VOICE AUDIT -->` `craft_check` block.
+`revision_count` starts at 0 (the original draft) and increments by 1 each time the writer is re-invoked for that chapter. `component_scores` is harvested from the editor's Pass 1 captivation rubric output (the 8 components from `references/captivation-rubric.md`). `craft_check_failures` is harvested from the deterministic `scripts/craft-check.js` JSON written into the chapter's `<!-- VOICE AUDIT -->` `craft_check` block.
 
 **Hard cap.**
 
@@ -587,16 +587,16 @@ final_revision: <integer index into revision_history>
 
 If a user explicitly requests a third revision on the same chapter via Stage 4 Option 2 or Mode 5, the orchestrator MUST refuse with this exact message and return to the review gate without spawning a writer subagent:
 
-> "Chapter [NN] has already used the 2-revision cap (CRAFT-17). The highest-scoring revision is currently in place. To revise further, you'll need to manually edit the file or restart the chapter via Mode 6 (Fresh)."
+> "Chapter [NN] has already used the 2-revision cap. The highest-scoring revision is currently in place. To revise further, you'll need to manually edit the file or restart the chapter via Mode 6 (Fresh)."
 
 **Divergent-improvement detection.**
 
 After each revision N where N ≥ 1 (i.e. after revision_count increments to 1 or 2), the orchestrator compares the new revision's `component_scores` against the previous revision's `component_scores` BEFORE accepting the new revision as the working draft.
 
-1. For each of the 7 captivation components, compute `delta = scores[N] - scores[N-1]`.
+1. For each of the 8 captivation components, compute `delta = scores[N] - scores[N-1]`.
 2. If ANY single component has `delta < 0` (revision N scores LOWER than revision N-1 on that sub-component, even if the total went up), declare **divergent improvement**.
 3. On divergent improvement: roll back to revision N-1 — restore `drafts/ch[NN]-draft.md` from the previous `revisions/ch[NN]-v[VV]-draft.md`, re-run editor Pass 1 on the rolled-back draft to restore `edited/ch[NN]-final.md`, set `status: divergent` and `final_revision: N-1` in the revision log, and STOP the revision loop for this chapter.
-4. Append a flag to the `Bestseller Diagnostic` section of `reports/consistency-report.md` (the section editor §4.6 assembles) using exactly this format so §4.6 can render it under "Revision Cap Notes":
+4. Append a flag to the `DAG Craft Diagnostic` section of `reports/consistency-report.md` (the section editor §4.6 assembles) using exactly this format so §4.6 can render it under "Revision Cap Notes":
 
    ```
    Chapter [NN]: divergent improvement detected at revision [N]. Accepted revision [N-1] (component [X] dropped from [A] to [B]).
@@ -611,7 +611,7 @@ If `revision_count == 2` and hard-gate `craft_check_failures` remain non-empty a
 1. Compare `captivation_total` across all entries in `revision_history`.
 2. The winner is the entry with the highest `captivation_total`. Ties are broken by lowest `craft_check_failures` length, then by lowest `revision_n` (earliest wins).
 3. Restore the winner's `source_file` as the working draft, re-run editor Pass 1/2/3 against it so `edited/ch[NN]-final.md` reflects the chosen revision, set `status: capped` and `final_revision: <winner index>` in the revision log.
-4. Append a flag to the `Bestseller Diagnostic` section of `reports/consistency-report.md` using exactly this format so §4.6 can render it under "Revision Cap Notes":
+4. Append a flag to the `DAG Craft Diagnostic` section of `reports/consistency-report.md` using exactly this format so §4.6 can render it under "Revision Cap Notes":
 
    ```
    Chapter [NN] hit the 2-revision cap. Accepted revision [M] (captivation total [T], craft check failures [F]). Human review recommended at Stage 4 review gate.
@@ -621,7 +621,7 @@ If `revision_count == 2` and hard-gate `craft_check_failures` remain non-empty a
 
 **Auto-revise trigger integration.**
 
-Editor Pass 1 §2.0 (CRAFT-01 provenance fail), §2.1-§2.7 (CRAFT-02 density, CRAFT-05 pulpit-seam hard fails), and Pass 2 §3.3 (scene-first strictness) write revision requests to `[project_directory]/revisions/ch[NN]-request.md`. The orchestrator detects this file at the top of each revision iteration and treats it as an auto-revise trigger:
+Editor Pass 1 (DAG-01 story-opener fail, DAG-02 scripture density fail, DAG-05 overflow fail, DAG-06 hedging/transliteration fail) and DAG-08 (fabricated testimony fail) write revision requests to `[project_directory]/revisions/ch[NN]-request.md`. The orchestrator detects this file at the top of each revision iteration and treats it as an auto-revise trigger:
 
 1. Read the request, version-backup the current draft (same v[VV] scheme as Stage 4 Option 2 step a).
 2. Increment `revision_count` and re-spawn the writer with the request's `failed_check`, `scope`, and `evidence` fields appended to the standard arguments.
@@ -629,11 +629,11 @@ Editor Pass 1 §2.0 (CRAFT-01 provenance fail), §2.1-§2.7 (CRAFT-02 density, C
 4. Apply divergent-improvement detection (above). If divergent, roll back and stop. Otherwise:
 5. If hard-gate failures remain AND `revision_count < 2`, loop. If `revision_count == 2` and failures remain, apply revision exhaustion handling (above). If failures cleared, set `status: converged` and `final_revision: <current N>`, stop the loop.
 
-Flag-only checks (CRAFT-03, CRAFT-04, CRAFT-06, CRAFT-07, CRAFT-08) do NOT write revision requests and do NOT enter this loop. They are surfaced exclusively through editor §4.6 diagnostic assembly.
+Flag-only checks (DAG-03, DAG-04, DAG-07) do NOT write revision requests and do NOT enter this loop. They are surfaced exclusively through editor §4.6 diagnostic assembly.
 
 **State persistence.**
 
-`reports/revision-log.md` survives across orchestrator restarts and across Mode 3 (Resume) re-entries. On Resume, the orchestrator reads the revision log and restores per-chapter `revision_count` before deciding whether further revision is permitted. Mode 6 (Fresh) deletes `reports/` (per CRAFT-14) which clears the log — fresh runs start every chapter at `revision_count: 0`.
+`reports/revision-log.md` survives across orchestrator restarts and across Mode 3 (Resume) re-entries. On Resume, the orchestrator reads the revision log and restores per-chapter `revision_count` before deciding whether further revision is permitted. Mode 6 (Fresh) deletes `reports/` which clears the log — fresh runs start every chapter at `revision_count: 0`.
 
 #### Stage 4.5: Content Enrichment
 
@@ -683,7 +683,7 @@ Parse the JSON output.
 
 **If `flag: true` (novelty_dedup: fail):**
 - Display the flag summary: "Stage 4.6 post-enricher novelty gate: FAIL. [N] flags detected."
-- List each flag (repeated_spans, cross_artefact_hits, central_image_reuse, refrain_overuse, tier2 hits).
+- List each flag (repeated_spans, cross_artefact_hits, illustration_reuse, refrain_overuse, tier2 hits).
 - Write the flags to `[project_directory]/reports/rewrite_targets.yaml` in the D-12 format (each target with file, span, reason, flagged_by: craft-check). For foreword-to-chapter overlaps, the reason MUST include the specific span and a directional instruction like "rewrite the foreword sentence at L[N] to avoid verbatim overlap with edited/ch[NN]-final.md:L[M]".
 - Update the `## Captivation Score` YAML block in `reports/consistency-report.md`: set `novelty_dedup: fail` and populate `novelty_dedup_flags` with the flag array. This OVERWRITES any `novelty_dedup: pass` the editor emitted during Stage 4 (the editor could not see the foreword at that point).
 - Display: "Pipeline halted. Use Mode 7 (`--rewrite-targets`) to re-run flagged artefacts, or manually edit the foreword at `front-matter/foreword.md` and re-run the orchestrator."
@@ -878,11 +878,11 @@ If the invocation prompt contains any of these phrases, Mode 7 activates BEFORE 
    rewrite_targets:
      - file: edited/ch02-final.md
        span: "L21-L28"
-       reason: "verbatim overlap with front-matter/foreword.md:L12-L18 — rewrite the vulnerability beat using a different sourced detail"
+       reason: "verbatim overlap with front-matter/foreword.md:L12-L18 — rewrite the testimony illustration using a different sourced detail"
        flagged_by: craft-check
      - file: edited/ch03-final.md
        span: "L40-L47"
-       reason: "same central-image vehicle dominates ch01 and ch03 — substitute with a distinct vehicle from the motif family"
+       reason: "same illustration vehicle (electrical socket analogy) dominates ch01 and ch03 — substitute with a distinct vehicle from the motif family"
        flagged_by: editor-pass3
    ```
 
@@ -988,7 +988,7 @@ Plugin root:         ${CLAUDE_PLUGIN_ROOT}
 Pipeline stages ref: ${CLAUDE_PLUGIN_ROOT}/references/pipeline-stages.md
 Book DNA template:   ${CLAUDE_PLUGIN_ROOT}/references/book-dna-template.md
 Voice profiles dir:  ${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/
-Default voice:       ${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/spiritual-default.md
+Default voice:       ${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/dag-default.md
 Subagent defs:       ${CLAUDE_PLUGIN_ROOT}/agents/chapter-writer.md
                      ${CLAUDE_PLUGIN_ROOT}/agents/chapter-editor.md
 Voice builder:       ${CLAUDE_PLUGIN_ROOT}/skills/voice-builder/SKILL.md

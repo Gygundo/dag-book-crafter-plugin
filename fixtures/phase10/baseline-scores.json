@@ -1,45 +1,54 @@
 {
-  "version": "pre-extraction",
-  "captured_at": "2026-04-15",
+  "version": "dag-1.0.0",
+  "captured_at": "2026-07-02",
   "rubric_components": [
     {
-      "id": "pacing_variety",
+      "id": "clarity_of_point",
       "max": 2,
-      "source_location": "skills/editor/SKILL.md §2.4 lines 120-134",
-      "rubric_heading": "Pacing Variety"
+      "source_location": "references/captivation-rubric.md §Clarity of Point",
+      "rubric_heading": "Clarity of Point"
     },
     {
-      "id": "emotional_connection",
+      "id": "scripture_saturation",
       "max": 2,
-      "source_location": "skills/editor/SKILL.md §2.5 lines 136-151",
-      "rubric_heading": "Emotional Connection"
+      "source_location": "references/captivation-rubric.md §Scripture Saturation",
+      "rubric_heading": "Scripture Saturation"
     },
     {
-      "id": "reader_engagement",
+      "id": "structural_parallelism",
       "max": 2,
-      "source_location": "skills/editor/SKILL.md §2.5.5 lines 153-163",
-      "rubric_heading": "Reader Engagement"
+      "source_location": "references/captivation-rubric.md §Structural Parallelism",
+      "rubric_heading": "Structural Parallelism"
     },
     {
-      "id": "opening_engagement",
+      "id": "direct_address",
       "max": 2,
-      "source_location": "skills/editor/SKILL.md §3.3 lines 243-256",
-      "rubric_heading": "Opening Engagement"
+      "source_location": "references/captivation-rubric.md §Direct Address",
+      "rubric_heading": "Direct Address"
     },
     {
-      "id": "ending_momentum",
+      "id": "simplicity",
       "max": 2,
-      "source_location": "skills/editor/SKILL.md §3.4 lines 258-271",
-      "rubric_heading": "Chapter-Ending Momentum"
+      "source_location": "references/captivation-rubric.md §Simplicity",
+      "rubric_heading": "Simplicity"
+    },
+    {
+      "id": "emphasis_repetition",
+      "max": 2,
+      "source_location": "references/captivation-rubric.md §Emphasis & Repetition",
+      "rubric_heading": "Emphasis & Repetition"
+    },
+    {
+      "id": "illustration_discipline",
+      "max": 2,
+      "source_location": "references/captivation-rubric.md §Illustration Discipline",
+      "rubric_heading": "Illustration Discipline"
+    },
+    {
+      "id": "novelty_variation",
+      "max": 2,
+      "source_location": "references/captivation-rubric.md §Novelty / Variation",
+      "rubric_heading": "Novelty / Variation"
     }
-  ],
-  "total_max": 10,
-  "scoring_logic_hash": "b78477f42a59f3d758964162bfc987567e559fa4690333f45b20ebcea9559356",
-  "phase_13_regenerated": true,
-  "phase_13_regenerated_at": "2026-04-15",
-  "phase_13_schema_version": 2,
-  "hash_algorithm": "sha256",
-  "hash_input_description": "Concatenation of the five section bodies (heading line excluded), each trimmed, joined with '\\n', LF-normalised. Body = lines after the heading up to (but not including) the next heading of equal-or-higher level.",
-  "regression_rule": "After CRAFT-09 extraction, concatenating the equivalent sections of references/captivation-rubric.md MUST yield an identical sha256 OR the move is impure and Plan 1 Task 4 must be reworked.",
-  "phase_13_note": "Plan 13-04 rewrites the rubric body for schema v2 (0-16 range, 8 components, novelty_dedup dimension). This breaks the byte-identical lock by design. Hash is marked PHASE_13_PENDING until Plan 13-04 executor regenerates it per the Regeneration Protocol at the top of scripts/test-rubric-regression.js."
+  ]
 }

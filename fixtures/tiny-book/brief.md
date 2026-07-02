@@ -1,11 +1,11 @@
-# The 2am Prayer
-**Subtitle:** Finding God When You Can't Sleep
+# You Can Be Strong
+**Subtitle:** Three Keys to Spiritual Strength
 
 ## Topic
-A short devotional booklet for Christians who wake at 2am with anxiety, grief, or spiritual restlessness. Helps the reader turn sleepless nights into prayer encounters with a God who keeps watch when the body cannot.
+A short topical booklet for believers who feel weak under pressure. This booklet teaches that strength is not a feeling you wait for — it is a decision that opens the door to God's enabling power. The three chapters move from definition, through motivation, to practical action.
 
 ## Target Audience
-Christians aged 25-60 who wake between 2am and 4am unable to fall back asleep. Familiar with their Bible but not theologically trained. Carrying weight — financial stress, family grief, health scares, unspoken fear.
+Believers who feel overwhelmed under pressure: church workers carrying assignments beyond their natural capacity, young Christians navigating hostility at school or work, and any believer whose circumstances have exposed the limits of their own strength. Familiar with the Bible but needing plain, direct teaching on how spiritual strength is built and maintained.
 
 ## Size Tier
 booklet
@@ -14,37 +14,36 @@ booklet
 3
 
 ## Total Target Length
-2500 words (booklet)
+~3000 words (booklet)
 
 ## Voice Profile
-spiritual-default
+dag-default
 
 ## Key Themes
-- God's wakefulness vs. our wakefulness (Psalm 121:4 — "he who keeps you will not slumber")
-- Fear at 2am is not faithlessness — it is honesty
-- The sleepless hour as invitation, not punishment
+- Strength in the Lord is a decision before it is a feeling
+- God commands strength — and His commands carry enabling power
+- There are practical, definable paths to growing in spiritual strength
 
 ## Proposed Chapters
-1. **The Clock Says 2:17** — The honest moment of waking. Scene beat: bedroom dark + phone glow over the ceiling + racing heart. What the body knows that the mind resists. Sets up: fear is not the enemy of faith; pretending is.
-2. **The Kitchen Lamp** — Getting up. The walk to the kitchen. Switching on ONE lamp so a yellow pool spreads over the counter tile. The physical act of choosing light as parable for surrender. Scripture: Psalm 139:11-12.
-3. **The God Who Keeps Watch** — Return to bed or stay at the window. First grey seam of dawn at the window edge overtaking the artificial light. Shift from anxiety to company. Psalm 121. Ending: a written 2am prayer the reader can use next time.
+
+1. **What It Means to Be Strong** — opener_type: definition; list_structure: flowing (2–3 short title-case section headings); key_statement: "Strength is a decision before it is a feeling."
+2. **Three Reasons Why You Must Be Strong** — opener_type: anchor_scripture (Ephesians 6:10); list_structure: stem "You must be strong because...", count 3; key_statement: to be determined by outliner, distinct from Ch 1.
+3. **Four Ways to Become Strong** — opener_type: plain_declaration; list_structure: stem "Become strong by...", count 4; key_statement: to be determined by outliner, distinct from Ch 1 and Ch 2; closes with a benediction spoken directly over the reader.
 
 ## Source Material
 None. This is a topic brief, not a sermon-to-book conversion. The outliner runs in "generate from topic" mode.
 
 ## Craft Anchors
-- Time markers: 2:17am (ch1), 3:04am (ch2), 4:42am (ch3) — each chapter opens at a slightly different hour to show the long night.
-- **Motif family: "light in the night"** — expressed with a DIFFERENT descriptive vehicle per chapter. Same family, distinct vehicle. See D-19/D-20 of Phase 13 CONTEXT.
-- **Ch 1 vehicle: phone glow / unlit bedside lamp.** Sensory anchor: blue rectangle against a dark ceiling, the bedside lamp beside it untouched.
-- **Ch 2 vehicle: yellow pool over the kitchen counter.** Sensory anchor: a single switched-on lamp pouring a warm circle onto the counter tile.
-- **Ch 3 vehicle: grey seam of dawn overtaking artificial light.** Sensory anchor: the first cold strip of dawn at the window edge, slowly eating the kitchen lamp's yellow.
-- Directional arc: night → dawn (ordering matters — a future swap test catches out-of-sequence pipeline bugs).
-- **Refrain:** the exact phrase "one small lamp refusing the whole dark" may appear AT MOST ONCE in the entire booklet (whole_book scope, max_uses: 1). Declared in the Book DNA refrains block. Any second occurrence is a Phase 13 hard fail per D-21.
-- Vulnerability beats: author's own named 2am moments. **Each moment is single-location** — once a sourced detail has been spent in the foreword or a chapter, it MUST NOT appear in another chapter (D-30 Anti-Loop Clause rule 2).
-- Reader moments (≥ 2 per chapter, from spiritual-default Reader Moments): "the 2am phone-check", "the kitchen at 3am", "the bedside lamp click", "reading the same verse you read last night". Reuse across chapters is permitted only for the SAME chapter's own reuse; cross-chapter reuse is flagged by Editor Pass 3 §4.4.5.
+- **KJV default** throughout. Any alternate translation must be labelled immediately after the reference (NASB preferred, then NLT, NKJV, NIV, AMP, TLB, CEV).
+- **Each chapter carries ≥3 scripture blocks**, with at least one block per chapter carrying an ALL-CAPS operative phrase.
+- **Question volleys** (3–6 consecutive rhetorical questions) appear at least once per chapter.
+- **No testimony seeds exist** for this topic brief. All illustrations must be biblical retellings or everyday analogies — NO first-person testimony of any kind. Where a time-marker formula is used ("Years ago, ..."), the illustration must be third-party or observational, never autobiographical.
+- **Refrain declared:** the exact phrase "Strength is a decision before it is a feeling." may appear AT MOST TWICE in the entire booklet (whole_book scope, max_uses: 2). Declared in the Book DNA refrains block. Any third occurrence is a hard fail.
+- **List stems auto-declared as refrains per chapter:**
+  - Chapter 2 stem: "You must be strong because..." — max_uses: 3, scope: chapter_body
+  - Chapter 3 stem: "Become strong by..." — max_uses: 4, scope: chapter_body
 
 ## What This Brief Is NOT
-- Not a sleep-science book (no health claims)
-- Not a Greek/Hebrew study (transliterated terms strictly capped across the whole booklet)
-- Not a sermon (no pulpit-seam phrasing)
-- **Not a loop.** The central image threads through every chapter as a motif family, but each chapter renders it with a distinct vehicle. Verbatim reuse of "one small lamp refusing the whole dark" beyond one occurrence total is a hard fail per Phase 13 / D-21.
+- **Not a literary devotional.** No scene-setting openers, no sensory slow-builds, no warm-up narratives before the teaching begins. Every chapter opens with a definition, an anchor scripture, or a plain declaration. First paragraph must be teaching, not atmosphere.
+- **Not a word-study book.** No more than one transliterated Greek or Hebrew term per chapter, glossed in a single plain sentence only. No extended lexical commentary.
+- **Not a cliffhanger collection.** Every chapter closes with a landing — a direct command, a benediction, a prayer, or the stated moral of the final point. No "in the next chapter..." teasers, no trailing ellipses, no unresolved tension at chapter end.

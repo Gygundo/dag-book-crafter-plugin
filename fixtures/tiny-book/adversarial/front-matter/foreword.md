@@ -1,11 +1,15 @@
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.0.0 -->
 
 # Foreword
 
-There was a Tuesday I will not forget. The house was quiet in that particular way houses go quiet when there is nothing left to say and no one left to say it to. I stood at the kitchen counter with both hands flat on the wood and nothing spiritual to say. The kettle ticked. The fridge hummed. Somewhere above me a light fitting buzzed in the wall, a faint electrical prayer neither of us could hear.
+Dear friend, this book was written for the weak moment. Not the moment after failure — but the moment just before it, when the pressure has built and your spirit is shaking and you are no longer sure you can hold on.
 
-I had come to the end of a long argument with God, and I had lost it by refusing to have it. That is the shape of most of my losses. I go silent, and silence is the only voice I think He will not answer.
+Every believer faces that moment. The enemy does not schedule his attacks for your convenient season. He comes precisely when you are stretched and tired and without visible support. A weak spirit cannot stand against the pressure of life. This is a plain fact. And the enemy is counting on you remaining weak.
 
-This book was written out of that Tuesday. It was written because one small lamp refusing the whole dark is enough, sometimes, to start with. It was written because I needed somewhere to put the weight, and pages will carry what the body cannot.
+But there is another fact, and this one is more powerful than the first: God has never called you to be weak. He has called you to be strong. "Be strong in the Lord, and in the power of his might" is not a motivational suggestion. It is a command from the living God. And God does not give commands that cannot be obeyed.
 
-If you are here, I suspect you know the kitchen counter too. Pull up a chair. The kettle is already on.
+This booklet will show you what strength means, why you cannot survive without it, and how to build it in practical ways. The chapters are short and direct. Every word has been written with one purpose — to get you from where you are to where God has called you to be.
+
+Read it slowly. Read it prayerfully. And when you reach the end, make a decision. Decide today that you will be strong.
+
+May these pages find you on the threshold of your breakthrough.

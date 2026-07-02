@@ -1,17 +1,17 @@
 ---
 name: sermon-adapter
-description: "Transforms sermon transcripts and spoken-word source material into written-rhythm prose suitable for book chapters. Converts spoken fragments to complete sentences, audience-specific references to universal ones, verbal cues to written transitions, and repetition-for-emphasis to revelation-for-emphasis. Called by the orchestrator as Stage 0.5 when sermon-format sources are detected."
+description: "Transforms sermon transcripts and spoken-word source material into the written Dag teaching register. Numbered points, ALL-CAPS scripture emphasis, anaphora, and block-quoted scripture with commentary are the TARGET format and are PRESERVED or normalised -- not converted to flowing narrative. What is removed: congregational address, venue/date references, verbal interaction cues, filler, and rambling digressions. Called by the orchestrator as Stage 0.5 when sermon-format sources are detected."
 user-invocable: false
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
 # Sermon Adapter
 
-Transforms spoken-rhythm source material into written-rhythm prose before the outliner runs. This is Stage 0.5 of the book pipeline -- a conditional pre-processing step that ensures sermon transcripts, spoken-word notes, and other oral-delivery content reads as written prose before entering the standard pipeline.
+Transforms spoken-rhythm source material into the written Dag teaching register before the outliner runs. This is Stage 0.5 of the book pipeline -- a conditional pre-processing step. Numbered points, anaphora, and block-quoted scripture are TARGET format and are preserved; what is removed is delivery ceremony: congregational address, venue/date references, verbal interaction cues, and filler.
 
 ## 1. Overview
 
-**Purpose:** Transform spoken-rhythm source material into written-rhythm prose so that the outliner, researcher, writer, and editor all work with already-adapted content. This avoids threading sermon-awareness through every downstream skill.
+**Purpose:** Transform spoken-rhythm source material into the Dag written register so that the outliner, researcher, writer, and editor all work with already-adapted content. This avoids threading sermon-awareness through every downstream skill.
 
 **Input:** Project directory path (received from orchestrator via `$ARGUMENTS`). Reads all `.md` files from `[project_directory]/sources/`.
 
@@ -63,9 +63,9 @@ Apply these seven transformations to each source file, in order. Each transforma
 
 **Example:**
 - Before: `Grace. It's not what you think. Not a license. Not a safety net. It's the FOUNDATION.`
-- After: `Grace is not what most people think it is. It is neither a licence to sin nor a safety net for when things go wrong. It is the foundation -- the bedrock upon which everything else is built.`
+- After: `Grace is not what most people think it is. It is not a licence to sin. It is not a safety net. Grace is the foundation. Everything else is built on it.`
 
-**Key principle:** Fragments work in speech because the speaker's voice, pace, and body language carry the emphasis. In writing, the sentence structure itself must do that work.
+**Key principle:** Fragments work in speech because the speaker's voice, pace, and body language carry the emphasis. In Dag written register, complete short declarative sentences stacked in sequence do that work -- subject-verb-object, rarely exceeding 18 words.
 
 ### Rule 2: Audience De-personalisation
 
@@ -75,51 +75,60 @@ Apply these seven transformations to each source file, in order. Each transforma
 
 **Examples:**
 - Before: `I want you to turn to your neighbour and say "I'm not who I used to be." As we've been walking through this series together...`
-- After: `There comes a moment when a truth settles so deeply that it changes how you see yourself. You are not who you used to be.`
+- After: `You are not who you used to be. That is not a wish. That is a declaration.`
 
 - Before: `Last Sunday we talked about the power of identity. This morning I want to take it further.`
-- After: `The previous chapter established the power of identity. Now it is time to go deeper.`
+- After: `The previous chapter established the power of identity. Now we go deeper.`
 
 - Before: `Here in our church, we believe in the supernatural. As your pastor, I want to tell you...`
 - After: `The supernatural is not a relic of the early church. It is a present reality.`
 
 **Key principle:** A book reader has no "last Sunday", no "this morning", no neighbour to turn to. Every reference must work for someone reading alone, in any time and place.
 
-### Rule 3: Verbal Cue Replacement
+### Rule 3: Verbal Cue Normalisation
 
-**Input pattern:** Spoken transitions and attention-grabbers: "Watch this", "Here's what I love about this", "Now look at this", "Let me tell you something", "Are you tracking with me?", "Say this with me", "Can I be honest with you?"
+**Input pattern:** Spoken cues divide into two types:
+- **Congregational interaction cues** (drop entirely): "Are you tracking with me?", "Say this with me", "Turn to your neighbour", "Can I get an amen?", "Somebody say..."
+- **Attention framers** (normalise to Dag written equivalents): "Watch this", "Now look at this", "Here's what I love about this", "Let me tell you something", "Can I be honest with you for a moment?"
 
-**Transform:** Replace with written transitions that serve the same function (building anticipation, flagging importance, shifting focus) but in prose form.
+**Transform:** Drop congregational interaction cues without replacement. Normalise attention framers to Dag written framers: "Notice this", "Notice the Scripture:", "You see,", "In other words,", "Read it for yourself".
 
 **Examples:**
 - Before: `Now watch this. Here's where it gets good. Look at verse 15. Paul says...`
-- After: `This is where Paul's argument takes a decisive turn. In verse 15, he writes...`
+- After: `Notice what Paul says in verse 15.` *(Attention framer → Dag written equivalent; the ceremony is stripped.)*
 
 - Before: `Are you tracking with me? Let me say it another way.`
-- After: `To put it more precisely...`
+- After: `In other words,` *(Congregational check-in dropped; plain Dag pivot retained.)*
 
 - Before: `Can I be honest with you for a moment? This next part might challenge you.`
-- After: `What follows may challenge some deeply held assumptions.`
+- After: *(The throat-clear is dropped; begin the challenging statement directly.)*
 
-**Key principle:** Verbal cues exist because a speaker cannot bold, italicise, or restructure a sentence for emphasis. A writer can. Replace the verbal cue with the writing technique it was substituting for.
+**Key principle:** Some preacher framers ARE written Dag voice ("Notice how...", "You see,", "In other words,", "Read it for yourself"). These survive adaptation. What is dropped is the congregational ceremony -- the cues that only work when a live audience is physically present.
 
-### Rule 4: Repetition Consolidation
+### Rule 4: Anaphora Preservation
 
-**Input pattern:** Same idea stated 2-3 times in slightly different words within a paragraph or section. In spoken delivery, this gives the audience time to absorb. In writing, it reads as padding.
+**Input pattern:** Anaphoric sequences -- 3–7 consecutive sentences or point bodies opening with the same phrase or stem, building a list of parallel truths through spoken rhythm. Also genuine rambling digressions: repetition of the same idea without advancing it, tangential asides, or circular restatements.
 
-**Transform:** Keep the strongest version, enhance with depth (add word study, cross-reference, or implication), discard the echoes. The book version goes DEEPER once instead of WIDER three times.
+**Transform:** PRESERVE intentional anaphora. This is the signature emphasis engine of the Dag teaching register, not a preaching artefact to be cleaned away. Convert only the delivery form (spoken fragments → complete written sentences) without flattening the parallel structure. Cut only genuine digressions that dilute rather than build.
 
 **Example:**
-- Before: `You are seated with Christ. Seated! Not standing in line. Not waiting outside. SEATED. You are IN Christ. Positioned. Established. Settled.`
-- After: `The word Paul uses is "seated" -- past tense, completed action. Not standing in line hoping for an audience. Not waiting outside the throne room. Seated. The Greek word kathizo carries the sense of permanent establishment -- positioned, established, settled in a place of authority. This is not a future promise. It is a present reality.`
+- Before: `You must decide. Decide today. Decide to follow God. Decide to honour your pastor. I said decide to honour your pastor. Decide to give. Decide to pray. Are you going to decide?`
+- After:
+  ```
+  **1. Decide to follow God.**
+  **2. Decide to honour your pastor.**
+  **3. Decide to give.**
+  **4. Decide to pray.**
+  ```
+  *(The repeated "Decide" opener is preserved as a parallel stem. "I said decide to honour your pastor" -- a non-advancing echo -- is removed. The congregational check "Are you going to decide?" is removed.)*
 
-**Key principle:** Sermons use repetition-for-emphasis because the audience hears once and moves on. Books use revelation-for-emphasis because the reader can re-read. Go deeper, not wider.
+**Key principle:** Anaphora is not padding -- it is the primary means of emphasis in this register. Every repeated opener launches a new truth, not a restatement of the old one. If the opening phrase recurs without adding a new completion, cut it. If it recurs with a new completion, preserve it.
 
-### Rule 5: Structural De-numbering
+### Rule 5: Point Normalisation
 
-**Input pattern:** Numbered points with ALL CAPS headings, sermon-style structure markers (`POINT 1:`, `POINT 2:`, `CONCLUSION`).
+**Input pattern:** Sermon-style numbered or labelled headings in various formats: `POINT 1:`, `1. THE POWER OF...`, `CONCLUSION`, `APPLICATION:`, ALL CAPS section titles.
 
-**Transform:** Convert to flowing prose with natural transitions between ideas. The numbered-point structure is a speaking aid that helps the audience track the argument. In writing, the argument's logic provides that structure naturally. Preserve the logical progression but let it flow as narrative, not bullet points.
+**Transform:** PRESERVE the numbered point structure. Normalise each heading to the Dag format: a bold, complete, declarative or imperative sentence with a parallel stem running through all points in the chapter. Convert ALL CAPS section labels to sentence-case complete sentences. Do NOT convert numbered points to flowing prose.
 
 **Example:**
 - Before:
@@ -135,20 +144,36 @@ Apply these seven transformations to each source file, in order. Each transforma
   ```
 - After:
   ```
-  Everything starts with grace. It is the foundation upon which every other truth is built.
+  **1. Grace is the foundation of everything God has given you.**
+  Everything starts with grace...
 
-  Once grace is understood -- truly grasped, not merely acknowledged -- identity begins to shift. The believer who knows grace sees themselves differently...
+  **2. Identity flows from a proper understanding of grace.**
+  Once you understand grace...
 
-  And from that settled identity, something remarkable emerges: authority. Not authority earned through effort, but authority that flows naturally from knowing who you are...
+  **3. Authority flows from settled identity.**
+  When your identity is settled...
   ```
 
-**Key principle:** Numbered points are scaffolding. In a finished building, you remove the scaffolding. The structure stands on its own.
+**Normalisation checklist:**
+- Remove `POINT N:` prefix -- use plain number and bold
+- Convert ALL CAPS heading label to sentence case
+- Make heading a complete declarative or imperative sentence (not a noun label or fragment)
+- Check that all headings share a grammatical stem; if not, normalise to the dominant pattern
+- `CONCLUSION`, `APPLICATION`, `CLOSING` headings → strip; convert their content to a natural chapter close
 
-### Rule 6: Scripture Re-integration
+**Key principle:** The numbered point is load-bearing structure in this register. It stays. The scaffolding labels (`POINT N:`, ALL CAPS) were speaking aids -- normalise these to written Dag format without touching the underlying content or point count.
 
-**Input pattern:** Block-quoted scripture presented as a reading assignment, followed by commentary that begins with "Now look at what this says..." or "Notice what Paul is saying here..."
+### Rule 6: Scripture Block Normalisation
 
-**Transform:** Weave scripture into narrative flow. The verse should emerge as part of the argument, not precede it as a reading assignment. The commentary should feel like discovery, not instruction.
+**Input pattern:** Scripture quoted in various forms -- introduced with "Let's read...", "Turn to...", "Look at verse...", run into prose as inline quotes, or already block-formatted but without Dag markdown or ALL CAPS key phrase.
+
+**Transform:** PRESERVE block-quote format. Normalise every scripture reference to Dag markdown. Set off from prose on its own lines. Identify the operative phrase the point hangs on and capitalise it in ALL CAPS inside the quote. Verify KJV is the default translation; label any non-KJV.
+
+**Target format:**
+```markdown
+> *And raised us up together, and MADE US SIT TOGETHER in the heavenly places in Christ Jesus.*
+> -- Ephesians 2:6
+```
 
 **Example:**
 - Before:
@@ -161,25 +186,39 @@ Apply these seven transformations to each source file, in order. Each transforma
   ```
 - After:
   ```
-  Paul puts it this way in Ephesians 2:6 -- "raised us up together, and made us sit together in the heavenly places in Christ Jesus." Notice the tense. Not "will raise." Not "might raise one day." He raised. Past tense. A completed action. And the result is equally definitive: He made us sit. Seated. Established. This is not a promise for the future. It is a declaration about the present.
+  > *And raised us up together, and MADE US SIT TOGETHER in the heavenly places in Christ Jesus.*
+  > -- Ephesians 2:6
+
+  He raised us up. Past tense. Done. He made us sit.
   ```
+  *(The "Let's read..." introduction is stripped. The ALL CAPS key phrase is placed inside the quote. The follow-up commentary is preserved and tightened.)*
 
-**Key principle:** In a sermon, "Let's read..." creates a shared moment of engagement. In a book, it creates a speed bump. Scripture should flow INTO the argument as evidence, not stand apart as a reading exercise.
+**Normalisation checklist:**
+- Every scripture → block quote with reference on second line (`> -- Book Chapter:Verse`)
+- Identify the operative phrase; capitalise it in ALL CAPS inside the quote
+- KJV default, unlabelled; label any non-KJV (`> -- Reference (NASB)`)
+- Add `<!-- VERIFY -->` if the exact wording is uncertain
+- Strip "Let's read...", "Turn to...", "Look at verse..." introductions; replace with a Dag framer if a lead-in is needed ("Notice the Scripture:", "Paul says,") or nothing
+- Preserve the follow-up commentary; ensure it restates in plain words then applies to "you"
 
-### Rule 7: Exclamation and Emphasis Normalisation
+**Key principle:** Block-quoted scripture followed by plain-words commentary is the atomic teaching unit of this register. The block format is the target, not a reading assignment to be absorbed into narrative. What is stripped is only the congregational invitation to open Bibles together.
 
-**Input pattern:** Multiple exclamation marks, ALL CAPS used for emphasis (not headings), bold/italic overuse, emphatic formatting that substitutes for vocal emphasis.
+### Rule 7: Emphasis Normalisation
 
-**Transform:** Replace with prose-based emphasis. In writing, sentence structure and word choice create emphasis -- not formatting. A well-constructed sentence carries more weight than a capitalised word.
+**Input pattern:** Multiple exclamation marks (`!!!`, `!!`), ALL CAPS used for emphasis in prose body (not inside scripture quotes), excessive bold or italic in body text substituting for vocal emphasis.
+
+**Transform:** In prose body, replace ALL CAPS words with sentence structure. Normalise multiple exclamation marks to a single `!` at paragraph closers where emotion warrants it, or remove them where the sentence itself carries the weight. Do NOT touch ALL CAPS inside scripture block quotes -- these are required by the Dag format and must be preserved or added (see Rule 6).
 
 **Examples:**
 - Before: `This is HUGE! You need to understand this!! Grace changes EVERYTHING!!!`
-- After: `This truth is not peripheral. It is central. Grace does not merely adjust the edges of life. It changes everything.`
+- After: `This truth is not peripheral. It is central. Grace changes everything!` *(Prose ALL CAPS removed; multiple `!!!` normalised to single `!` at the close.)*
 
 - Before: `God is **NOT** angry with you. He is **FOR** you!!`
-- After: `God is not angry with you. He is for you. Irrevocably, unshakeably, completely for you.`
+- After: `God is not angry with you. He is for you.` *(Bold emphasis stripped; sentence structure carries it.)*
 
-**Key principle:** Exclamation marks are the written equivalent of shouting. A skilled author rarely shouts. Emphasis comes from the weight of the words themselves.
+- Do NOT change: `> *be ye stedfast, UNMOVEABLE, always abounding in the work of the Lord*` ← ALL CAPS inside a scripture quote is required Dag format; leave it intact.
+
+**Key principle:** In prose body, sentence structure and word choice create emphasis, not formatting. Single exclamation marks at paragraph closers are authentic Dag style (roughly one per 150–300 words). Multiple marks and ALL CAPS in prose are spoken delivery artefacts; remove them. ALL CAPS inside scripture quotes are a distinct technique -- they are part of the normalisation target, not a problem to fix.
 
 ## 4. Processing Workflow
 
@@ -220,7 +259,7 @@ d. **Append a metadata comment** at the end of each adapted file:
 <!-- SERMON ADAPTED
 source: [original filename]
 date: [today's date in YYYY-MM-DD format]
-transforms_applied: fragment-completion, audience-depersonalisation, verbal-cue-replacement, repetition-consolidation, structural-denumbering, scripture-reintegration, emphasis-normalisation
+transforms_applied: fragment-completion, audience-depersonalisation, verbal-cue-normalisation, anaphora-preservation, point-normalisation, scripture-block-normalisation, emphasis-normalisation
 -->
 ```
 
@@ -237,30 +276,37 @@ Include a brief summary per file:
 
 ## 5. Anti-Patterns
 
-**Do NOT treat this as find-and-replace.** Each transformation requires understanding context. "Let me tell you" cannot simply become "Consider this" -- the entire sentence rhythm must change. The surrounding sentences must also adapt to the new prose flow.
+**Do NOT treat this as find-and-replace.** Each transformation requires understanding context. "Let me tell you" cannot simply become "Notice this" -- the entire sentence rhythm must change. The surrounding sentences must also adapt to the new prose flow.
 
-**Do NOT preserve sermon repetition.** If the same idea appears 2-3 times restated within a section, consolidate into one deeper treatment. The book version goes deep once, not wide three times. Warning sign: adapted word count is barely less than the original.
+**Do NOT eliminate intentional anaphora.** Anaphora -- repeating the same sentence opener 3–7 times to build a list of parallel truths -- is the primary emphasis device of this register. Preserve it. What to cut is genuine digressions: non-advancing echoes, circular restatements, and tangential asides. Warning sign: if the anaphoric structure collapses into a single sentence, you have over-edited.
 
-**Do NOT create a summary or outline.** The adapter preserves the full content length (possibly reducing it slightly by consolidation) in written form. It is NOT an abridgement. The adapted version should contain all the same ideas, arguments, illustrations, and scriptures -- just expressed in written rhythm instead of spoken rhythm.
+**Do NOT convert numbered points to flowing prose.** The numbered point structure is target format. Normalise the labels; preserve the skeleton.
+
+**Do NOT weave scripture into narrative prose.** Block-quoted scripture followed by plain-words commentary is the atomic teaching unit of this register. Preserve the block format; normalise it to Dag markdown.
+
+**Do NOT create a summary or outline.** The adapter preserves full content in adapted form. It is NOT an abridgement. Every idea, argument, illustration, and scripture in the source must appear in the output.
 
 **Do NOT change theological content or interpretations.** Transform the FORM, not the SUBSTANCE. If the sermon says grace is the foundation, the adapted version says grace is the foundation. The argument stays identical; only the delivery style changes.
 
 **Do NOT add content that was not in the source.** The adapter transforms what exists; the researcher skill adds depth later. The one exception is brief contextual phrases needed to complete a fragment (e.g., turning "Grace." into "Grace is the foundation" when the surrounding context makes this clear).
 
-**Do NOT remove scripture references.** All scripture references in the source must appear in the adapted output. They may be re-integrated into the narrative flow (Rule 6), but never dropped.
+**Do NOT remove scripture references.** All scripture references in the source must appear in the adapted output. They are normalised to block format (Rule 6), never dropped.
 
-**Do NOT flatten the argument structure.** The logical progression of ideas must survive adaptation. If the sermon builds from point A to point B to point C, the adapted version must maintain that progression, even though the numbered-point scaffolding is removed.
+**Do NOT flatten the argument structure.** The logical progression of ideas must survive adaptation. If the sermon builds from point A to point B to point C, the adapted version maintains that progression through its numbered structure.
 
 ## 6. Output Format
 
-Each adapted file is a clean markdown document with:
+Each adapted file is a clean markdown document in the Dag teaching register:
 
-- **No sermon-style formatting** (no ALL CAPS headings, no numbered points as structure, no excessive exclamation marks)
-- **Preserved scripture references** in their original form (the researcher will handle proper formatting later)
-- **Maintained logical flow** and argument structure of the original sermon, even though the presentation style changes completely
+- **Numbered bold parallel-sentence point headings** (normalised from sermon-style labels)
+- **Block-quoted KJV scripture** with ALL CAPS operative phrase and reference line
+- **Plain-words commentary** following each scripture block
+- **Single exclamation marks** at paragraph closers only (multiple exclamation marks removed)
+- **No ALL CAPS in prose body** (prose body uses sentence structure for emphasis)
+- **No congregational address**, temporal references, spatial references, or verbal interaction cues
 - **The `<!-- SERMON ADAPTED` metadata comment** at the end of each file
 
-**Target quality:** Adapted content should read as if it were originally written as a book chapter draft, not transcribed from speech. A reader encountering only the adapted version should have no indication that the content began as a sermon.
+**Target quality:** Adapted content reads as Dag teaching register on the page. The numbered point structure, scripture blocks, and direct reader address are all present. What is absent is the delivery ceremony -- the congregational check-ins, the venue references, the spoken filler.
 
 ## 7. Edge Cases
 

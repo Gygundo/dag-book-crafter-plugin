@@ -9,14 +9,15 @@ Reference document describing the five stages of the book-writing pipeline. The 
 **Conditional:** Only runs when sermon-format source material is detected (ALL CAPS headings, audience pronouns, verbal cues, temporal/spatial references) AND user confirms
 **Parallel:** No -- processes files sequentially
 
-The sermon adapter transforms spoken-rhythm content into written-rhythm prose:
-- Spoken fragments -> complete sentences
-- Audience-specific references -> universal references
-- Verbal cues ("Watch this") -> written transitions
-- Repetition-for-emphasis -> revelation-for-emphasis (deeper single treatment instead of repeated restatement)
-- ALL CAPS numbered points -> flowing narrative prose
-- Block-quoted scripture with commentary -> woven narrative integration
-- Exclamation/formatting emphasis -> prose-based emphasis
+The sermon adapter converts spoken transcript to WRITTEN Dag register. It converts:
+- Spoken fragments -> complete short sentences
+- Audience-specific references ("our church", "this morning", "here in this room") -> universal "you" address
+- Verbal filler ("Watch this", "Here's where it gets good") -> clean prose transitions
+
+It keeps (these are target features, not problems to fix):
+- Numbered points (retained with bold full-sentence headings per DAG-03)
+- Repetition-for-emphasis (retained as anaphora — identical openers ×3+ per the voice profile)
+- Block-quoted scripture with commentary (retained in blockquote format with reference lines per DAG-02)
 
 After adaptation, the outliner's Source Ingestion Mode reads from `sources-adapted/` instead of `sources/`.
 
@@ -27,10 +28,10 @@ After adaptation, the outliner's Source Ingestion Mode reads from `sources-adapt
 **Approval gate:** User must review and approve the outline before Stage 2 begins.
 
 The outliner generates a chapter-by-chapter structure including:
-- Chapter titles and opening hook strategies
+- Chapter titles and opener types (anchor_scripture, plain_declaration, or definition per DAG-01)
 - Key arguments and supporting scriptures per chapter
-- Narrative arc with momentum positioning (chapters escalate toward a climax)
-- Book size tier: booklet (<100 pages, 5-8 chapters), short (15-25K words, 8-12 chapters), standard (40-60K words, 12-20 chapters)
+- Topical arc with momentum positioning (chapters ordered from foundation to commissioning close; self-contained, no cross-chapter suspense)
+- Book size tier: booklet (8–15 chapters, 10–20K words, ~800–2,000 words/chapter — default), short (15–25 chapters, 20–35K words), standard (15–25 chapters, 35–50K words)
 
 ## Stage 2: Research (researcher skill)
 
@@ -39,10 +40,10 @@ The outliner generates a chapter-by-chapter structure including:
 **Parallel:** Yes -- one researcher subagent per chapter, batched in waves of 8-10
 
 Per-chapter research includes:
-- Scripture references (actual Bible text, NKJV default)
-- Cross-references across Old and New Testaments
-- Greek/Hebrew word studies
-- Illustrations and supporting material
+- Scripture references (actual Bible text, KJV default — alternates labelled with translation name, e.g. NASB)
+- Per-point proof texts and brief cross-references across Old and New Testaments
+- Greek/Hebrew word studies limited to at most one simple gloss per chapter (DAG-06: "'Aman' means 'to nurture'" style — no academic apparatus)
+- Illustration candidates and supporting material
 
 ## Stage 3: Write (writer skill + chapter-writer subagent)
 
@@ -59,9 +60,9 @@ Each chapter agent reads the full Book DNA for voice consistency and its chapter
 **Parallel:** Partially -- Pass 1 voice audit can use parallel subagents for 16+ chapter books; Passes 2-3 are sequential
 
 Editing passes (sequential):
-1. **Pass 1: Voice consistency + theological guardrails** -- audits vocabulary, sentence rhythm, anti-patterns, and theological framework compliance against the voice profile. Normalises drift.
-2. **Pass 2: Flow/transitions** -- reads chapter pairs sequentially, ensures endings connect to next openings. Only modifies final/first paragraphs.
-3. **Pass 3: Cross-chapter validation** -- builds term index, validates forward/backward references, checks scripture translation consistency, tracks theme development.
+1. **Pass 1: Voice + DAG craft checks** -- runs `scripts/craft-check.js` deterministic checks (DAG-01..08) and scores all 8 rubric components (clarity_of_point, scripture_saturation, structural_parallelism, direct_address, simplicity, emphasis_repetition, illustration_discipline, novelty_variation). Audits vocabulary, sentence rhythm, and anti-patterns against the voice profile. Normalises drift.
+2. **Pass 2: Opener/landing audits, key statement audit, testimony seed audit, illustration discipline** -- verifies each chapter opens with the outline's declared opener_type; confirms the key_statement lands in the chapter text; checks each first-person illustration traces to a testimony_seed; audits illustration count and length (DAG-08).
+3. **Pass 3: Cross-chapter validation** -- builds term index, validates scripture translation consistency (KJV unlabelled, alternates labelled), tracks theme development; applies widened dedup exemptions (scripture blocks, declared refrains, and benedictions are exempt — verse repetition across chapters is a feature, not a defect).
 
 Intermediate artefacts: `edited/ch[NN]-pass1.md`, `edited/ch[NN]-pass2.md` (kept for debugging, not used by pipeline state detection)
 
@@ -120,7 +121,9 @@ The generated .docx contains multiple sections with different page numbering:
 
 - Font: Georgia throughout
 - Body: 12pt, 1.5 line spacing
-- Chapter headings: 24pt bold, page break before
+- Chapter number + title: centred; chapter number on its own line above the title; 24pt bold; page break before
+- Scripture blocks: indented, italic, reference line beneath (`> -- Reference` style); not inline with running prose
+- Numbered point headings: bold, complete sentence, numbered (1., 2., ...)
 - Page size: US Letter (12240 x 15840 DXA)
 - Margins: 1.5" top/bottom, 1" sides
 

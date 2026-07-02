@@ -7,7 +7,7 @@ allowed-tools: Read, Write, Bash, Grep, Glob
 
 # Book Editor
 
-Three-pass sequential editing pipeline that transforms individually-written chapter drafts into a cohesive manuscript. Each pass builds on the previous pass's output: voice normalisation first, then flow/transitions, then cross-chapter validation. The result is a manuscript that reads as one voice with seamless transitions and validated cross-references.
+Three-pass sequential editing pipeline that transforms individually-written chapter drafts into a cohesive manuscript. Each pass builds on the previous pass's output: voice normalisation first, then opener/landing conformance and illustration audit, then cross-chapter validation. The result is a manuscript that reads as one voice, with each chapter a self-contained sermon unit conforming to the DAG teaching style.
 
 ## 1. On Invocation
 
@@ -21,28 +21,30 @@ Receive via `$ARGUMENTS`:
 Read `[project_directory]/book-dna.md` for:
 - Voice profile summary (tone, sentence rhythm, vocabulary, emphasis techniques)
 - Theological/domain framework (the interpretive lens for content decisions)
-- Chapter map (chapter positions, connections, momentum positions)
+- Chapter map (chapter positions, opener_type, list_structure, key_statement, testimony_seed, momentum positions)
+- Refrains block (declared phrases with max_uses budgets — these are exempt from dedup)
 - Running themes (themes to track across chapters)
 - Key terms (terminology that must be consistent)
-- Cross-chapter continuity notes (callbacks, foreshadowing, running metaphors)
+- Cross-chapter continuity notes
 
 **Step 2: Read Voice Profile**
 
-Read `[project_directory]/voice-profile.md` for detailed voice rules. Pay particular attention to:
+Read `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/dag-default.md` (or the project-specific override) for detailed voice rules. Pay particular attention to:
 - **Tone** -- the overall tonal quality to enforce
-- **Sentence Patterns** -- average sentence length target, fragment frequency, rhetorical question usage
+- **Sentence Patterns** -- average sentence length target, anaphora, rhetorical question volleys
 - **Vocabulary > Use** -- words and phrases characteristic of this voice
 - **Vocabulary > Avoid** -- words and phrases that break this voice (hard constraint)
-- **Emphasis Techniques** -- how the voice creates impact
+- **Emphasis Techniques** -- ALL-CAPS-in-quote, bold numbered points, key statements, benedictions
 - **Anti-Patterns** -- behaviours that break the voice (hard constraint)
-- **Theological Framework** -- (if present) the interpretive lens for theological content
+- **Theological Framework** -- the interpretive lens for theological content
+- **Reader Situations** -- concrete situations to anchor application in (≥2 per chapter)
 
 **Step 3: Read Chapter Outline**
 
 Read `[project_directory]/chapter-outline.md` for:
 - Total chapter count
+- Per-chapter fields: opener_type, list_structure (stem + count), key_statement, testimony_seed
 - Momentum positions per chapter (Foundation, Building, Accelerating, Climax, Landing)
-- Cross-chapter connections specified in the outline
 
 **Step 4: Count Chapters**
 
@@ -65,15 +67,15 @@ mkdir -p [project_directory]/edited [project_directory]/reports
 
 ## 2. Pass 1 -- Voice Consistency + Theological Guardrails
 
-**Purpose:** Normalise each chapter's voice against the profile. This pass runs FIRST because subsequent passes need voice-normalised text.
+**Purpose:** Normalise each chapter's voice against the profile and run all deterministic DAG rule checks. This pass runs FIRST because subsequent passes need voice-normalised text.
 
-**Requirements addressed:** EDIT-01 (voice consistency), EDIT-03 (theological guardrails), CRAFT-01, CRAFT-02, CRAFT-05, CRAFT-07, CRAFT-15
+**Requirements addressed:** EDIT-01 (voice consistency), EDIT-03 (theological guardrails), DAG-01..08
 
 For each chapter (parallel via subagents if 16+ chapters, sequential otherwise):
 
 ### 2.0 Craft Check Invocation (deterministic)
 
-**Run this BEFORE any LLM work on the chapter.** This is the deterministic craft-rule gate for CRAFT-01, CRAFT-02, CRAFT-05, CRAFT-07, and CRAFT-15. LLM judgment sub-sections (§2.9-§2.12) run later in this pass on top of these results.
+**Run this BEFORE any LLM work on the chapter.** This is the deterministic craft-rule gate for DAG-01, DAG-02, DAG-04, DAG-05, DAG-06, DAG-07, and the version-stamp check. LLM judgment sub-sections (§2.4–§2.12) run later in this pass on top of these results.
 
 **Invoke:**
 
@@ -87,112 +89,153 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/craft-check.js [project_directory]/drafts/ch[
 {
   "chapter_id": "ch01",
   "checks": {
-    "CRAFT-01": { "pass": true, "evidence": "provenance: sources/sermon-2024-03.md:42", "citations": ["L1"] },
-    "CRAFT-02": { "pass": true, "evidence": "2 distinct terms: charis, dunamis", "citations": ["L87", "L112"] },
-    "CRAFT-05": { "pass": false, "evidence": "paragraph starts with 'So,'", "citations": ["L134"] },
-    "CRAFT-07": { "pass": false, "evidence": "1 reader-thought line", "citations": ["L201"] },
-    "CRAFT-15": { "pass": true, "evidence": "version stamp present", "citations": ["L1"] }
+    "DAG-01": { "pass": true, "evidence": "anchor_scripture opener; story-marker absent", "citations": ["L3"] },
+    "DAG-02": { "pass": true, "evidence": "5 blocks; density 1/312 words; all interpreted", "citations": ["L15", "L42", "L67", "L89", "L118"] },
+    "DAG-04": { "pass": false, "evidence": "no standalone key statement found", "citations": [] },
+    "DAG-05": { "pass": true, "evidence": "1,840 words (within target)", "citations": [] },
+    "DAG-06": { "pass": false, "evidence": "hedging phrase: 'perhaps we might'", "citations": ["L134"] },
+    "DAG-07": { "pass": false, "evidence": "you-density 6.2/1000w; 2 imperatives; 3 questions", "citations": [] },
+    "version_stamp": { "pass": true, "evidence": "<!-- generated-by: dag-book-crafter v1.0.0 -->", "citations": ["L2"] }
   }
 }
 ```
 
-**Merge every check result into the chapter's `<!-- VOICE AUDIT -->` metadata block under a new top-level field `craft_check`** (see §2.8 for the full block shape). Preserve the raw evidence and citations so Pass 2 and the CRAFT-16 diagnostic step can reuse them without re-invoking the script.
+**Merge every check result into the chapter's `<!-- VOICE AUDIT -->` metadata block under a new top-level field `craft_check`** (see §2.8 for the full block shape). Preserve the raw evidence and citations so Pass 2 and the Dag Style Diagnostic step can reuse them without re-invoking the script.
 
-**Enforcement policy (per D-06 / D-07 in 10-CONTEXT.md):**
+**Enforcement policy:**
 
 | Check | On fail | Action |
 |---|---|---|
-| CRAFT-01 | missing/malformed provenance OR unresolvable path | **Auto-revise** — request writer rewrite of the chapter opener only (keep the rest of the draft) |
-| CRAFT-02 | distinct transliterated terms > 3 | **Auto-revise** — request writer rewrite to cut terms to ≤3, each with ≥3 unpacking sentences |
-| CRAFT-05 | pulpit-seam phrase at chapter or paragraph start | **Auto-revise** — request writer rewrite of the specific paragraph(s) only (run §2.10 LLM override first) |
-| CRAFT-07 | <2 italicised/blockquote reader-thought lines | **Flag only** — add to diagnostic report. Do not auto-revise. |
-| CRAFT-15 | missing `<!-- generated-by: dag-book-crafter vX.Y.Z -->` stamp | **Auto-fix** — prepend the stamp to the chapter (do not round-trip to writer) |
+| DAG-01 | story-marker opener detected | **Auto-revise** — request writer rewrite of chapter opener only |
+| DAG-01 | opener_type mismatch (non-story) | **Flag** — carry into Pass 2 opener conformance check (§3.2) |
+| DAG-02 | density underflow (< 1/350 words or < 3 blocks) | **Auto-revise** — request writer add scripture blocks |
+| DAG-04 | missing key statement OR missing CAPS-in-quote | **Flag only** |
+| DAG-05 | body > target+50% or > tier cap | **Auto-revise** — tighten or split |
+| DAG-06 | hedging phrase detected | **Auto-revise** — rewrite the specific sentence(s) only |
+| DAG-06 | > 1 transliterated term | **Auto-revise** — see §2.9 |
+| DAG-07 | you-density < 8/1000w, < 3 imperatives, or < 4 questions | **Flag only** |
+| version_stamp | missing `<!-- generated-by: dag-book-crafter v1.0.0 -->` | **Auto-fix** — prepend stamp (do not round-trip to writer) |
 
-**Revision request contract:** when auto-revising, write the writer instruction to `[project_directory]/revisions/ch[NN]-request.md` with fields `reason`, `failed_check`, `scope` (opener / paragraph-range / full-chapter), `evidence`, `citations`. The orchestrator (Plan 10-09, CRAFT-17) routes the request to the writer.
+**Revision request contract:** when auto-revising, write the writer instruction to `[project_directory]/revisions/ch[NN]-request.md` with fields `reason`, `failed_check`, `scope` (opener / sentence-range / full-chapter), `evidence`, `citations`. The orchestrator routes the request to the writer.
 
-**Revision cap:** All revision requests respect the 2-revision-per-chapter cap wired in Plan 10-09 (CRAFT-17). On exhaustion, keep the highest-scoring revision by captivation rubric total, append a flag to the diagnostic report with line citations, and continue — do not halt the pipeline.
+**Revision cap:** 2 per chapter. On exhaustion, keep the highest-scoring revision by captivation total, append a flag to the diagnostic report, and continue.
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` — CRAFT-01, CRAFT-02, CRAFT-05, CRAFT-07, CRAFT-15.
+**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/dag-craft-rules.md` — DAG-01..08, Cross-Rule Integration.
 
 ### 2.1 Vocabulary Audit
 
-Scan the full chapter text for words and phrases from the voice profile's Avoid list. Use case-insensitive matching.
+Scan the full chapter text for words and phrases from the voice profile's Avoid list (`references/voice-profiles/dag-default.md` § Vocabulary > Avoid). Use case-insensitive matching.
 
 Flag every occurrence with:
 - Approximate line location
 - The specific phrase found
 - Which Avoid rule it violates
 
-**Common Avoid-list patterns for spiritual-default voice:**
-- Academic hedging: "some scholars believe", "it could possibly mean", "there is a view that"
-- Religious cliches: "God won't give you more than you can handle", "everything happens for a reason"
-- Filler phrases: "In conclusion", "Furthermore", "It is important to note that"
-- Passive voice: any sentence where active voice is possible
-- Em dashes: replace with regular hyphens with spaces or restructure the sentence
+**Key Avoid-list patterns for the DAG teaching voice:**
+- Academic hedging: "some scholars", "it could be argued", "arguably", "studies suggest", "one might", "it seems that", "in my view", "perhaps we might", "broadly speaking", "to some extent", "many believe"
+- Scholarly apparatus: footnotes, commentary citations, bibliographies, statistics as authority
+- Meta-scaffolding: "in this chapter we will", "in conclusion", "as previously mentioned", "in the next chapter"
+- Irony, understatement, or self-deprecating wit
+- Sensory scene-setting for its own sake (weather, atmosphere, slow builds)
+- Softening disclaimers ("of course there are exceptions")
+
+Flag each occurrence; corrections happen in §2.6.
 
 ### 2.2 Sentence Length Distribution
 
-Count words per sentence (split on `.`, `!`, `?` boundaries). Calculate:
-- **Average sentence length** across the chapter
-- **Fragment percentage** -- sentences with 8 or fewer words as a percentage of all sentences
+Count words per sentence in author prose (split on `.`, `!`, `?` boundaries). **Exclude blockquote lines (beginning with `>`) and heading lines (beginning with `#` or `**N.`)**. Calculate:
+- **Average author-prose sentence length** across the chapter
+- **Paragraph length** — flag any prose paragraph exceeding ~120 words
 
-Compare against voice profile targets:
-- Target average: 12-18 words (for spiritual-default)
-- Frequent shorter fragments: 3-8 words
+Compare against DAG-06 targets (per `references/dag-craft-rules.md` § DAG-06):
+- Target average: **12–16 words** (hard ceiling: ≤18 average)
+- Paragraph ceiling: **~120 words** or ~5 sentences
 
-Flag chapters whose average sentence length deviates by more than 4 words from the profile target range (i.e., average below 8 or above 22 for spiritual-default).
+Flag chapters whose average exceeds 18 words. Flag individual paragraphs over 120 words.
 
 ### 2.3 Anti-Pattern Detection
 
-Check for each anti-pattern listed in the voice profile's Anti-Patterns section AND the Theological Framework section (for theological books).
+Check for each anti-pattern listed in the voice profile's Anti-Patterns section (`references/voice-profiles/dag-default.md` § Anti-Patterns).
 
-**Specific checks for spiritual-default:**
+| Anti-Pattern | Detection |
+|-------------|-----------|
+| Story-marker chapter opener | First body paragraph begins with DAG-01 forbidden regex — handled by §2.0; confirm flag is present |
+| Academic hedging in any form | Banned phrases listed in DAG-06 and §2.1 |
+| Uninterpreted scripture block | Block quote not followed within 2 paragraphs by a restatement or application |
+| Ambiguous illustration moral | Story or analogy ends without an explicit lesson statement |
+| Fabricated first-person testimony | First-person testimony without a resolvable `testimony_seed` — hard fail per DAG-08 |
+| Long unbroken essay prose | > ~200 words without a heading, number, scripture block, or one-line punch |
+| Detached third-person authorial voice | Extended passages without "I" or "you" — the voice speaks TO the reader |
+| AI voice indicators | Overly balanced, hedged, or neutral tone; "various perspectives", "many Christians believe" |
 
-| Anti-Pattern | Detection | Example |
-|-------------|-----------|---------|
-| Academic hedging | Phrases that qualify or soften claims unnecessarily | "some scholars believe", "it could possibly mean", "there is a view that", "it is important to note" |
-| Religious cliches | Overused phrases that lack depth | "God won't give you more than you can handle", "everything happens for a reason", "let go and let God" |
-| Passive voice | Sentences where the subject receives the action | "was established by God" instead of "God established" |
-| Performance-based guilt | Language that places the burden on human effort | "you need to pray more", "you should be doing", "if you just had enough faith" |
-| Cessationist framing | Implying spiritual gifts have ceased | "in Bible times", "gifts were for the early church", "those things don't happen anymore" |
-| AI voice indicators | Overly balanced, hedged, or neutral tone | "various perspectives", "many Christians believe", "some would argue", "it's important to consider" |
-| Surface-level observations | Stating what a verse says without uncovering deeper meaning | Simply restating the verse text without word studies, cross-references, or revelation |
+> **Pulpit-Seam Openers — PERMITTED:** Paragraph-opener phrases such as "You see,", "Notice how...", "Listen,", "In other words," and evaluative adverb openers ("Indeed,", "Sadly,", "Amazingly,") are **authentic to the DAG teaching voice** and MUST NOT be flagged. This is a deliberate inversion of the old CRAFT-05 ban — in this style, the preacher's platform voice is the voice on the page. See §2.10 for the full inversion note.
 
-For non-theological voice profiles, skip the theological-specific patterns (performance-based guilt, cessationist framing) and check only the patterns listed in that profile's Anti-Patterns section.
+### 2.4 Clarity of Point (rubric component)
 
-### 2.4 Pacing Variety Score
+Score the `clarity_of_point` component (0–2) per `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` § Clarity of Point. Anchor scores against the exemplars in `${CLAUDE_PLUGIN_ROOT}/references/dag-calibration.md`.
 
-Apply the Pacing Variety check as defined in `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` (Components → Pacing Variety).
+**Detection procedure:**
+1. Read the chapter opener (first 150 words, excluding blockquote and heading lines).
+2. Confirm the opener matches the outline's `opener_type` (anchor_scripture / plain_declaration / definition — see DAG-01).
+3. Confirm the chapter's thesis is unmistakable within the first two prose sentences.
+4. Scan each numbered point/section heading: each should be a complete declarative or imperative sentence stating one proposition.
 
-### 2.5 Emotional Connection Audit
+**Score:**
+- 2: Opener matches opener_type; thesis unmistakable within two sentences; every point heading is a complete one-proposition sentence
+- 1: Theme clear but delayed past the first paragraph, OR some point headings are vague labels
+- 0: Story-marker opener, or the reader cannot say what the chapter claims after 150 words
 
-Apply the Emotional Connection check as defined in `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` (Components → Emotional Connection).
+Record the score in the VOICE AUDIT block.
 
-### 2.5.5 Reader Engagement Scoring
+### 2.5 Scripture Saturation (rubric component)
 
-Apply the Reader Engagement check as defined in `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` (Components → Reader Engagement).
+Score the `scripture_saturation` component (0–2) per `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` § Scripture Saturation.
+
+**Detection procedure:**
+1. Count scripture blocks (lines beginning with `> `). Compute density: blocks ÷ (chapter body words / 350). Confirm ≥ 3 blocks absolute minimum (DAG-02 floor).
+2. Check each block carries a reference line (`> -- Reference`). Non-KJV quotes must carry a translation label.
+3. Confirm each block is followed within 2 paragraphs by a plain-words restatement or direct application.
+4. Confirm ≥ 1 block carries an ALL-CAPS emphasis phrase.
+
+**Score:**
+- 2: Density met; every block interpreted; ≥ 1 block carries ALL-CAPS emphasis
+- 1: Density met but ≥ 1 block left uninterpreted, OR density slightly under (≥ 1 per 500 words)
+- 0: Fewer than 3 blocks, or blocks dropped without interpretation, or non-KJV base text unlabelled
+
+### 2.5.5 Structural Parallelism (rubric component)
+
+Score the `structural_parallelism` component (0–2) per `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` § Structural Parallelism.
+
+**Detection procedure:**
+1. Read the outline's `list_structure` field for this chapter.
+2. **List chapters** (stem declared): verify point count matches any counted title, points are numbered with bold complete-sentence headings, and ≥ 60% of points reuse the declared stem frame.
+3. **Flowing chapters** (`list_structure: flowing`): verify short title-case section headings are present (2–4 per chapter).
+4. For list chapters: verify the atomic unit (heading → scripture → restatement → application) is followed for each point.
+
+**Score:**
+- 2: Count matches title; stems parallel throughout (≥ 60%); points follow the atomic unit
+- 1: List present but stem drifts across points, or count mismatch of one, or atomic unit frequently incomplete
+- 0: Designated list chapter rendered as undifferentiated essay prose
 
 ### 2.6 Tone Normalisation
 
-For each flagged passage:
-1. Rewrite to match the voice profile while preserving the argument and scripture references
-2. Replace Avoid-list vocabulary with Use-list alternatives
-3. Convert passive voice to active voice
-4. Sharpen hedged language into direct declarations
-5. Maintain the original meaning -- change the voice, not the content
+For each flagged passage (from §2.1 vocab audit, §2.2 sentence length, §2.3 anti-pattern):
+1. **Re-read the voice profile** before rewriting any passage. Rewrites MUST match the voice.
+2. Rewrite to match the voice profile while preserving the argument and scripture references
+3. Replace Avoid-list vocabulary with Use-list alternatives (from `dag-default.md` § Vocabulary > Use)
+4. Sharpen hedged language into direct declarations ("It is!" not "It could be")
+5. Break overly long sentences into short declarative stacks
+6. Maintain the original meaning — change the voice, not the content
 
 ### 2.7 Theological Guardrail Check
 
-If the voice profile contains a Theological Framework section, validate each chapter against it:
+Validate each chapter against the Theological/Domain Framework in `book-dna.md` (and the voice profile's Theological Framework section):
 
-- **Grace over Law:** Flag content that frames the Christian life as performance-based
-- **Identity in Christ:** Flag content that defines the believer by behaviour rather than position
-- **New Covenant lens:** Flag content that treats the Cross as the beginning of a process rather than a finished work
-- **Authority of the believer:** Flag content that positions believers as begging rather than seated with Christ
-- **Kingdom as present reality:** Flag content that relegates Kingdom power to the future only
-- **Sonship over servanthood:** Flag content that positions believers as anxious servants rather than confident sons
-- **Supernatural is active today:** Flag cessationist framing
-- **Scripture is inerrant:** Flag content that suggests biblical contradictions rather than puzzles to solve
+- **Scripture plus experience as authority:** Flag content that grounds claims in scholarship, statistics, or commentary instead of scripture and testimony
+- **Supernatural-affirming:** Flag cessationist framing ("those gifts were for the early church")
+- **Practical application over doctrine:** Flag speculative theology without an application "you" must take
+- **Typological reading accepted:** Old Testament figures mapped onto modern church roles are authentic — do NOT flag
+- **Binary moral world:** No both-sides framing; hardship stories end in vindication
 
 For non-theological books, skip this sub-check entirely.
 
@@ -200,7 +243,7 @@ For non-theological books, skip this sub-check entirely.
 
 Save each edited chapter to `[project_directory]/edited/ch[NN]-pass1.md` with the voice audit metadata block appended at the end.
 
-**Version stamp:** Every pass1 chapter file inherits its first two lines from the writer's draft — line 1 is `<!-- provenance: {source_path}:{line} -->` and line 2 is `<!-- generated-by: dag-book-crafter v1.1.0 -->`. Preserve both lines exactly. If either is missing when the editor reads the draft, prepend it before writing the pass1 file (the `<!-- generated-by: dag-book-crafter v1.1.0 -->` stamp must occupy line 2, immediately beneath the provenance comment). CRAFT-15 auto-fix is performed here, not rounded-tripped to the writer.
+**Version stamp:** Every pass1 chapter file inherits its first two lines from the writer's draft — line 1 is `<!-- provenance: {source_path}:{line} -->` and line 2 is `<!-- generated-by: dag-book-crafter v1.0.0 -->`. Preserve both lines exactly. If either is missing, prepend it before writing the pass1 file. Version-stamp auto-fix is performed here, not round-tripped to the writer.
 
 Chapter file structure emitted by Pass 1:
 
@@ -210,153 +253,175 @@ chapter: [N]
 vocabulary_violations: [count]
   - Line ~[N]: "[phrase]" ([Avoid rule])
 avg_sentence_length: [number]
-fragment_percentage: [number]%
+paragraph_ceiling_flags: [count or "none"]
 anti_patterns_found:
   - Line ~[N]: [description] ([pattern name])
 theological_flags: [list or "none"]
-pacing_variety: [score 0-2, with dominant category and percentage]
-emotional_connection: [present|absent, with markers found or "none"]
-captivation_score: [1-10]
+clarity_of_point: [0|1|2]
+scripture_saturation: [0|1|2]
+structural_parallelism: [0|1|2]
+captivation_score: [running total 0-12 from Pass 1 components]
 craft_check:
-  CRAFT-01: pass
-  CRAFT-02: pass (2 distinct terms: charis, dunamis; unpacking OK)
-  CRAFT-05: pass
-  CRAFT-07: fail (1 reader-thought line; flagged)
-  CRAFT-15: pass
-  CRAFT-08: fail (window p12-p15 ratio 0.6; flagged)
+  DAG-01: pass (anchor_scripture; story-marker absent)
+  DAG-02: pass (5 blocks; density 1/312 words; all interpreted)
+  DAG-04: flag (no standalone key statement)
+  DAG-05: pass (1,840 words)
+  DAG-06: pass (avg 14.2 words; no hedging; 0 transliterated terms)
+  DAG-07: flag (you-density 6.2/1000w; 2 imperatives; 3 questions)
+  version_stamp: pass
 changes_made: [count]
 severity: clean | minor | significant
 -->
 ```
 
-The `craft_check` field aggregates the deterministic results from §2.0 (craft-check.js) PLUS the LLM judgment results from §2.9-§2.12. Each entry is `pass` or `fail` followed by inline evidence. Pass 2 and the CRAFT-16 diagnostic step read this block directly — do not duplicate the information elsewhere in the chapter.
+The `craft_check` field aggregates the deterministic results from §2.0 (craft-check.js) PLUS the LLM judgment results from §2.9–§2.12. Each entry is `pass` or `fail` / `flag` followed by inline evidence. Pass 2 and the Dag Style Diagnostic step read this block directly.
 
 **Severity scale:**
-- **clean** -- 0 violations, sentence length within range, no anti-patterns, captivation score 5+
-- **minor** -- 1-3 total issues (vocabulary + anti-patterns), sentence length within range, captivation score 5+
-- **significant** -- 4+ total issues, OR sentence length outside range, OR theological flags present, OR captivation score below 4, OR any auto-revise-class craft_check failure (CRAFT-01/02/05) not overridden by §2.10
+- **clean** -- 0 violations, sentence length within range, no anti-patterns, captivation_score 10+
+- **minor** -- 1–3 total issues (vocabulary + anti-patterns), sentence length within range, captivation_score 7+
+- **significant** -- 4+ total issues, OR sentence length outside range, OR theological flags present, OR captivation_score below 7, OR any auto-revise-class craft_check failure (DAG-01 story opener, DAG-02, DAG-05, DAG-06) not yet resolved
 
-### 2.9 Craft Density Check (CRAFT-02 unpacking adequacy)
+### 2.9 DAG-06 Transliteration Check
 
-**LLM judgment layered on top of §2.0's deterministic CRAFT-02 result.** craft-check.js has already confirmed distinct transliterated-term count is ≤3 (or auto-revise was triggered). This sub-section performs the judgment the script cannot: for each transliterated term used, confirm the next 3 sentences after its introduction actually *unpack* it with explanatory context — meaning, etymology, or concrete illustration — not just mention the term in passing.
-
-**Procedure:**
-
-1. Re-read the citation lines from `craft_check.CRAFT-02.citations` in the VOICE AUDIT block (these mark the term-introduction lines).
-2. For each term, read the 3 sentences that follow and judge whether the term is genuinely unpacked. Indicators of real unpacking: a literal meaning ("charis literally means the joy of a received gift"), an etymology pointer ("from the same root as…"), or a concrete illustration that lands the idea in a scene or image.
-3. Indicators of failure: the term is dropped without explanation, the 3 sentences rephrase the surrounding argument without defining the term, or the "unpacking" is another abstract synonym ("charis, which is God's grace").
-
-**Failure mode:** Flag only. Add to the chapter's diagnostic report entry with the term, the line range, and a one-sentence note on what is missing. Update `craft_check.CRAFT-02` in the VOICE AUDIT block from `pass` to `pass (unpacking flagged: <term>)` so Pass 2 and CRAFT-16 see the nuance. Do NOT auto-revise — LLM judgment on unpacking quality is advisory per D-07 (forcing rewrites on judgment calls risks divergent-improvement regression).
-
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-02.
-
-### 2.10 Pulpit Seam Detection (CRAFT-05 override pass)
-
-**LLM counterpart to craft-check.js's deterministic regex.** §2.0's craft-check.js has already flagged any paragraph whose first word(s) match the CRAFT-05 banned-start regex. This sub-section reviews each flagged paragraph against the **permitted-usage counter-example list** in `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-05 and either confirms the fail or overrides it to a pass.
-
-**Permitted-usage whitelist (do not flag):**
-
-1. **Dialogue/quotation** -- the paragraph begins with a quoted speaker using the phrase (e.g. `"So," she said, "what do we do?"`).
-2. **Explicit block quote** -- markdown blockquote paragraph where the phrase appears after `>`.
-3. **Song/scripture citation lines** -- the paragraph is a direct citation, not exposition.
-4. **Deliberate fragment used as a titled section** -- the paragraph is itself a heading or heading-like title (the checker skips headings, but a subtitle-as-first-word can still slip through).
-5. **Second-person narration inside a remembered scene** -- e.g. "You see the light change" as a lived moment, not a sermon address.
+**LLM judgment layered on top of §2.0's deterministic DAG-06 result.** craft-check.js has already confirmed the count of distinct transliterated terms (≤ 1 passes; > 1 triggers auto-revise). This sub-section performs the quality judgment: confirm the one permitted term (if present) is glossed in a single plain sentence immediately on introduction.
 
 **Procedure:**
 
-1. Read each line in `craft_check.CRAFT-05.citations`.
-2. For each flagged paragraph, evaluate whether it matches any of the permitted-usage cases above.
-3. **If permitted usage applies:** override the craft-check fail to a pass. Note the override in the VOICE AUDIT block as `craft_check.CRAFT-05: pass (overridden at L<line>: <whitelist case>)` so the override is visible to Pass 2 and CRAFT-16. Cancel any auto-revise request queued by §2.0 for that paragraph.
-4. **If permitted usage does NOT apply:** confirm the fail. Leave the §2.0 auto-revise request in place -- writer will rewrite that paragraph only, per D-06 (scope: paragraph; if structural, full chapter).
+1. Read the citation lines from `craft_check.DAG-06.citations` in the VOICE AUDIT block (marks term-introduction lines).
+2. For the term, read the sentence introducing it and the sentence immediately following.
+3. Confirm the gloss is a single plain sentence giving the term's meaning in ordinary English ("'Aman' means 'to nurture', 'to foster as a parent'"). No multi-sentence word study, no etymology chain, no cross-references.
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-05.
+**Failure mode:** More than one transliterated term = auto-revise (remove or replace the extra terms with plain-English equivalents). Gloss missing or too elaborate = flag. Update `craft_check.DAG-06` in the VOICE AUDIT block accordingly.
 
-### 2.11 Tension-Release Enforcement (CRAFT-07)
+Also compute the **Simplicity rubric component** (0–2) here, aggregating results from §2.2 (sentence length), §2.1 (hedging vocab flags), and this transliteration check:
+- 2: Sentence average 12–16 words, zero hedging, all hard words defined, ≤ 1 transliterated term glossed in one sentence, paragraphs ≤ 120 words
+- 1: Sentence average 17–22, or one undefined hard term, or one overly long paragraph
+- 0: Any hedging phrase (DAG-06 auto-revise), or sentence average > 22
 
-**Flag-only LLM pass layered on §2.0's deterministic regex count.** craft-check.js counts italicised or blockquote-wrapped reader-thought lines using the CRAFT-07 regex. If the count is <2, raise a flag; do not auto-revise (per D-07).
+Record `simplicity: [0|1|2]` in the VOICE AUDIT block.
+
+**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/dag-craft-rules.md` § DAG-06.
+
+### 2.10 Pulpit-Seam Openers: Inversion Note
+
+> **Historical note — this section documents an explicit inversion.** An earlier craft rule set (CRAFT-05) banned paragraph-opener phrases such as "You see,", "Notice,", "Listen,", "Notice how...", "In other words," as "pulpit seams" that broke a literary-fiction voice. For the DAG teaching style, this ban is **fully inverted**. Those openers are the authentic rhythm of preaching-on-the-page and are **required to be permitted**. The deterministic craft-check.js does NOT flag them as errors. The editor LLM must NOT flag them in §2.3 Anti-Pattern Detection or anywhere else.
+>
+> Permitted and authentic paragraph-opener patterns (never flag these):
+> - Teaching framers: "You see,", "Notice how...", "Notice:", "In other words,", "Listen,"
+> - Evaluative adverb openers: "Indeed,", "Sadly,", "Amazingly,", "Unfortunately,", "Surprisingly,"
+> - Pre-emptive pivot: "Please do not misunderstand me. I am not saying that..."
+>
+> The cliffhanger PROHIBITION (DAG-07) is separately maintained: chapters must close with a landing (command, benediction, prayer, exclamation, scripture, or stated moral) — they must never close with unresolved tension, a teaser, or a trailing question.
+
+### 2.11 DAG-04 Key Statement / CAPS Check
+
+**Flag-only LLM pass confirming the emphasis devices that make this style quotable.**
 
 **Procedure:**
 
-1. Read `craft_check.CRAFT-07.evidence` for the count and `citations` for any found lines.
-2. If the count is ≥2: no action.
-3. If the count is <2: append to the chapter's diagnostic report entry: "Chapter N has only X reader-thought lines; expected ≥2." Include the existing line citations (if any) for context.
-4. Optionally, note 2-3 candidate insertion points in the VOICE AUDIT block under `craft_check.CRAFT-07.candidate_points` -- paragraphs where a psychological-tension line would land naturally (moments of unresolved question, emotional pivot, or reader-doubt). These suggestions are consumed by Pass 2 rewrite windows only if a Pass 2 transition rewrite touches that region anyway -- do NOT insert reader-thought lines in Pass 1.
+1. Locate the chapter's `key_statement` from the Book DNA chapter map.
+2. Confirm the key_statement appears verbatim (or very close paraphrase) as a **standalone single-sentence paragraph** in the chapter body. Use the deterministic regex from DAG-04 (`/^[A-Z][^\n]{20,160}[.!]$/m`) as a guide, but apply judgment on paraphrase equivalence.
+3. Confirm ≥ 1 scripture block carries an ALL-CAPS emphasis phrase on its operative words (per DAG-02 and DAG-04).
+4. Optionally confirm ≥ 1 anaphora run (identical sentence opener repeated 3+ times consecutively) or definition-refrain restatement.
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-07.
+**Scoring (Emphasis & Repetition rubric component, 0–2):**
+- 2: Key statement lands + CAPS-in-quote + at least one anaphora run or refrain
+- 1: Two of the three device families present
+- 0: One or none — the chapter reads as flat exposition
 
-### 2.12 Show-Don't-Tell Audit (CRAFT-08)
+Record `emphasis_repetition: [0|1|2]` in the VOICE AUDIT block. Update `craft_check.DAG-04` to `pass` or `flag` with inline evidence.
 
-**Pure LLM judgment -- craft-check.js does NOT evaluate CRAFT-08.** Over a sliding window of 4 paragraphs, the concrete-to-abstract noun ratio must be ≥1:1. The goal is to catch stretches where the chapter drifts into sermon abstraction without a sensory anchor.
+**Failure mode:** Flag only. Add to diagnostic report with the missing device(s) and candidate locations.
+
+**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/dag-craft-rules.md` § DAG-04.
+
+### 2.12 DAG-07 Direct Address Check
+
+**Flag-only LLM pass confirming the preacher-to-reader register.**
 
 **Procedure:**
 
-1. Slide a 4-paragraph window through the chapter (paragraphs 1-4, 2-5, 3-6, …).
-2. In each window, count:
-   - **Concrete nouns** -- physical objects, named people, named places, sensory words. Hint lexicon from bestseller-craft-rules.md § CRAFT-08: *chair, coffee, phone, car, door, hospital, kitchen, window, table, street, bed, room, cup, hand, face, eye, voice, book, letter, rain, sunlight*.
-   - **Abstract nouns** -- theological or conceptual nouns with no physical referent. Hint lexicon: *grace, identity, righteousness, sonship, authority, kingdom, glory, anointing, faith, hope, love, peace, joy, salvation, redemption, sanctification, justification, mercy*.
-3. Compute the concrete:abstract ratio for each window.
-4. Any window where the ratio is <1:1 (abstract outnumbers concrete) is flagged with its paragraph range and the computed ratio.
+1. Count "you/your/yourself" in author prose only (exclude scripture blockquote lines). Target: ≥ 8 per 1,000 author-prose words. Use §2.0's deterministic you-density count from `craft_check.DAG-07`.
+2. Count imperative commands (sentence-initial verb in base form targeting the reader). Target: ≥ 3 per chapter.
+3. Count rhetorical questions (sentences ending `?` in author prose). Target: ≥ 4; ideally 7–15 as in the corpus median. Look for question volleys (3–6 consecutive questions).
+4. Check the final paragraph ends with a landing close: a direct command, benediction ("May you..."), prophetic declaration ("I see your ministry..."), prayer (ending "Amen"), exclamation of encouragement, a scripture block, or the final point's stated moral. This is a first-pass check — Pass 2 §3.4 does the formal landing audit.
 
-**Failure mode:** **Flag only.** Do not auto-revise. Add to the chapter's diagnostic report entry: "Chapter N, paragraphs P-P+3: concrete:abstract ratio <ratio> -- too abstract." Update `craft_check.CRAFT-08` in the VOICE AUDIT block to `fail (<N> windows flagged)` with the worst-offending window cited inline.
+**Scoring (Direct Address rubric component, 0–2):**
+- 2: All four thresholds met; chapter closes with exhortation or benediction energy
+- 1: You-density met but commands or questions sparse; or non-cliffhanger flat ending
+- 0: Detached register, or ending on a cliffhanger or teaser
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-08.
+Record `direct_address: [0|1|2]` in the VOICE AUDIT block. Update `craft_check.DAG-07` to `pass` or `flag` with inline evidence.
 
-## 3. Pass 2 -- Flow and Transitions
+**Failure mode:** Flag only. Add to diagnostic report with specific counts versus thresholds.
 
-**Purpose:** Ensure every chapter ending connects naturally to the next chapter opening. This pass is ALWAYS sequential because each transition depends on both chapters.
+**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/dag-craft-rules.md` § DAG-07.
 
-**Requirement addressed:** EDIT-02 (flow/transitions)
+## 3. Pass 2 -- Self-Contained Chapter Audit: Opener, Landing, and Illustrations
 
-**Critical rule:** This pass ONLY modifies the final 2-3 paragraphs of the current chapter and the first 2-3 paragraphs of the next chapter. Never change the body.
+**Purpose:** Verify each chapter's opener conforms to its `opener_type` (DAG-01), its close conforms to DAG-07 (landing, never cliffhanger), and its illustrations satisfy DAG-08. In the DAG teaching style, chapters are SELF-CONTAINED sermon units — no cross-chapter narrative arcs and no forced ending→opening linkage. This pass replaces the narrative-bridging transition pass with an intra-chapter conformance audit.
 
-For each consecutive chapter pair (Ch1->Ch2, Ch2->Ch3, ...):
+**Requirement addressed:** EDIT-02 (flow/transitions reinterpreted as intra-chapter integrity)
 
-### 3.1 Read Transition Zone
+**Critical rule:** This pass may modify ONLY the chapter opener (to fix opener_type mismatch) and the final paragraph (to replace a cliffhanger with a landing). Never change the body.
 
-1. Read the final 2-3 paragraphs of Chapter N from `edited/ch[NN]-pass1.md`
-2. Read the first 2-3 paragraphs of Chapter N+1 from `edited/ch[N+1]-pass1.md`
-3. Read both chapters' momentum positions from the outline
+**Adjacent chapter check (narrow scope):** Read the previous chapter's opener class — if this chapter and the previous chapter open with the exact same device in identical phrasing (e.g., both quote the exact same scripture as their anchor), flag as an accidental duplicate opener. This is the only cross-chapter comparison in Pass 2.
 
-### 3.2 Evaluate Transition Quality
+For each chapter:
 
-Check:
-- Does the ending of Chapter N plant a seed that the opening of Chapter N+1 picks up?
-- Does the momentum position shift feel right?
-  - Foundation -> Building = escalation (deepening, not topic change)
-  - Building -> Accelerating = intensification (arguments gaining force)
-  - Accelerating -> Climax = convergence (everything coming together)
-  - Climax -> Landing = resolution (practical application, send-off)
-- Is there a natural bridge or does the reader feel a jarring disconnect?
+### 3.1 Read Chapter Zone
 
-### 3.3 Opening Engagement Check
+1. Read the chapter from `edited/ch[NN]-pass1.md`
+2. Read the chapter's `opener_type`, `list_structure`, `key_statement`, and `testimony_seed` from the outline/Book DNA
+3. Read the previous chapter's first 100 words only (from `edited/ch[N-1]-pass1.md`, or skip if first chapter) — solely to detect accidental identical openers in adjacent chapters
 
-Apply the Opening Engagement check as defined in `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` (Components → Opening Engagement).
+### 3.2 Opener Conformance Check (DAG-01)
 
-**Scene-First Strictness (CRAFT-01 quality)**
+Confirm the chapter opener matches the outline's `opener_type`:
+- **anchor_scripture**: blockquote scripture immediately after the chapter heading, with ≥ 1 ALL-CAPS emphasis phrase, followed by a plain declarative sentence orienting the reader
+- **plain_declaration**: flat thesis statement in the first two prose sentences (not a question, not a story, not a list head)
+- **definition**: key term defined flatly in the first sentence ("Intimidation is the art of...")
 
-`scripts/craft-check.js` has already verified the provenance comment exists and resolves (Pass 1 §2.0). In Pass 2, the editor performs LLM judgment on scene quality in the first 150 words of the chapter. Count words (whitespace-split) up to 150, then confirm ALL of:
+Also confirm the forbidden opener class is absent (story-marker regex — DAG-01; should already be caught in Pass 1 §2.0, but confirm the auto-revise request is in place if fired).
 
-1. A proper-noun human OR first-person narrator ("I", "me", "my") is present by word 150.
-2. A time-marker phrase is present (examples: "at 2am", "last Tuesday", "the summer I was fourteen", "when I was eight", "three years ago").
-3. A sensory or physical detail is present — light ("sunlight", "streetlight", "dim", "bright"), sound ("hum", "click", "silence", "rustle"), texture ("cold", "damp", "rough"), smell ("coffee", "rain", "smoke"), or a specifically named concrete object ("chair", "phone", "coffee cup", "window", "door", "car").
+**Adjacent opener dedup:** if this chapter and the previous chapter both open with the same anchor scripture (exact or nearly exact same verse), flag as an accidental duplicate opener — one of them should use a different opener device or a different anchor verse.
 
-If any of (1)(2)(3) is missing, trigger auto-revise of the chapter opener only (per D-06): request the writer rewrite the first paragraph(s) up to 150 words to include the missing element, while preserving the provenance comment and the rest of the chapter. Write the revision request to `[project_directory]/revisions/ch[NN]-request.md` with `scope: opener`, `failed_check: CRAFT-01-scene-quality`, and the specific missing element(s) in `evidence`.
+### 3.3 Opening Engagement Check (Clarity of Point — opener)
 
-The 2-revision-per-chapter cap (CRAFT-17, wired in Plan 10-09) still applies. On exhaustion, keep the highest-scoring revision by captivation rubric total, flag the missing scene element in the diagnostic report, and continue.
+Refine the `clarity_of_point` score based on opener conformance:
+- 2 points: opener matches outline's opener_type exactly; theme unmistakable within first two prose sentences
+- 1 point: opener class correct but theme is delayed or vague
+- 0 points: opener fails DAG-01 (story-marker detected or wrong opener_type)
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-01.
+**Action on mismatch:**
+- Story-marker opener: already queued for auto-revise in §2.0
+- Non-story opener_type mismatch: **flag** in `craft_pass2.opener_conformance`; carry to §3.5 for revision if the flag warrants a rewrite
 
-### 3.4 Chapter-Ending Momentum Check
+### 3.4 Landing Check (DAG-07)
 
-Apply the Chapter-Ending Momentum check as defined in `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` (Components → Chapter-Ending Momentum).
+Read the final paragraph of the chapter. It must end with one of:
+1. A direct command ("Decide to become an anointed person.")
+2. A benediction ("May you walk in power from this day forward!")
+3. A prophetic declaration ("I see your ministry growing as you obey these truths.")
+4. A prayer (ending "Amen")
+5. An exclamation of encouragement ("What a blessing awaits you!")
+6. A scripture block
+7. The final point's stated moral (aphorism or command)
 
-### 3.5 Rewrite Transitions (If Needed)
+**Cliffhanger scan** (from §2.0 DAG-07 result and direct text check): banned endings include "in the next chapter", "we will see", "but that is another", a trailing ellipsis (`...`), or a question as the final sentence of the chapter.
 
-If the transition is jarring:
-1. **Re-read the voice profile** before rewriting any text. Transition rewrites MUST match the voice.
-2. Rewrite the chapter ending and/or opening to create a bridge
-3. Preserve the core argument of both chapters
-4. Only modify transitional language -- do not alter the substance of arguments
+**If cliffhanger detected:** Auto-revise the final paragraph. Request the writer replace the last 2–3 sentences with an appropriate landing. Write revision request to `[project_directory]/revisions/ch[NN]-request.md` with `scope: ending`, `failed_check: DAG-07-landing`, and the specific banned pattern in `evidence`.
+
+Also update the `direct_address` rubric component: the landing close is a key factor in scoring 2 vs 1 on this component.
+
+### 3.5 Revise Opener or Landing (If Needed)
+
+If the opener or landing requires revision:
+1. **Re-read the voice profile** before rewriting anything. All revisions MUST match the DAG teaching voice.
+2. For opener: rewrite to match the outline's `opener_type`, preserving the chapter's core argument and scripture references
+3. For landing: rewrite the final paragraph to close with a command, benediction, or stated moral matching the chapter's theme
+4. Preserve the core argument — edit structure, not content
+5. Do NOT create narrative bridges to the next chapter — the chapter simply stops after the final point lands
 
 ### 3.6 Pass 2 Output
 
@@ -364,78 +429,86 @@ Save each chapter to `[project_directory]/edited/ch[NN]-pass2.md`.
 
 If no changes were needed for a chapter, copy the pass1 file as-is to pass2.
 
-**Version stamp:** Pass 2 preserves the two header comments inherited from Pass 1 — line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.1.0 -->`. If either is missing when Pass 2 reads the pass1 file (e.g. because of an out-of-band edit), auto-fix by prepending the version stamp as line 2 (or line 1 if no provenance comment is present) before writing the pass2 file.
+**Version stamp:** Pass 2 preserves the two header comments inherited from Pass 1 — line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.0.0 -->`. If either is missing, auto-fix by prepending before writing the pass2 file.
 
-Write `[project_directory]/reports/flow-report.md`. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `flow-report.md`** (line 1, above the `# Flow Report` heading). The flow report has no provenance comment, so the version stamp occupies line 1.
+Write `[project_directory]/reports/flow-report.md`. **Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of `flow-report.md`.**
 
 ```markdown
 # Flow Report: [Book Title]
 
-| Transition | Status | Action Taken |
-|-----------|--------|--------------|
-| Ch 1 -> Ch 2 | smooth | none |
-| Ch 2 -> Ch 3 | jarring | rewrote Ch 2 ending to bridge to Ch 3's argument |
+| Chapter | Opener Conformance | Landing | Action Taken |
+|---------|-------------------|---------|--------------|
+| Ch 1    | pass (anchor_scripture) | pass (benediction) | none |
+| Ch 2    | flag (plain_declaration vs expected definition) | pass | opener revised |
+| Ch 3    | pass | flag — auto-revise queued | landing rewritten |
 ```
 
-**Pass 2 VOICE AUDIT extension.** For every chapter processed in Pass 2, append a `craft_pass2` block to its `<!-- VOICE AUDIT -->` metadata aggregating the §3.3 scene-first strictness result and the §3.7/§3.8/§3.9 audit results:
+**Pass 2 VOICE AUDIT extension.** For every chapter processed in Pass 2, append a `craft_pass2` block to its `<!-- VOICE AUDIT -->` metadata:
 
 ```
 craft_pass2:
-  central_image: pass | flag (zones missing: [opening | middle | closing])
-  vulnerability_beat: pass | flag (missing | fabricated | seed_unresolved) | skipped_no_seed
-  reader_moments: pass | flag (count: N; missing: [...]) | skipped_no_section
-  scene_first_strictness: pass | revised
+  opener_conformance: pass | flag (expected: anchor_scripture; found: plain_declaration) | revised
+  landing_check: pass | flag (cliffhanger: trailing ellipsis at final paragraph) | revised
+  adjacent_opener_dedup: pass | flag (same anchor scripture as ch[N])
+  key_statement_audit: pass | flag (missing from chapter text | duplicate: ch[N])
+  testimony_seed_audit: pass | flag (missing | fabricated | seed_unresolved) | skipped_no_seed
+  reader_situations: pass | flag (count: N; missing: [...]) | skipped_no_section
+  illustration_discipline: [0|1|2]
 ```
 
-The CRAFT-16 diagnostic step (Plan 10-09) reads both `craft_check` (Pass 1, §2.8) and `craft_pass2` (Pass 2, this block) from each chapter's VOICE AUDIT to build the final per-chapter Bestseller Diagnostic matrix. Do not duplicate the information elsewhere.
+The Dag Style Diagnostic step (§4.6) reads both `craft_check` (Pass 1, §2.8) and `craft_pass2` (Pass 2, this block) from each chapter's VOICE AUDIT to build the final per-chapter Dag Style Diagnostic matrix. Do not duplicate the information elsewhere.
 
-### 3.7 Central Image Audit (CRAFT-03)
+### 3.7 Key Statement Audit (DAG-04)
 
-Read the chapter's `central_image` field from the outline (`chapter-outline.md`) and/or Book DNA (`book-dna.md`). Locate three zones in the chapter:
+Read the chapter's `key_statement` field from the Book DNA chapter map. Confirm:
 
-- **Opening:** first 200 words
-- **Middle third:** from word `floor(total_words / 3)` through word `floor(2 * total_words / 3)` (word-count-based, not paragraph-count-based)
-- **Closing:** final 200 words
+1. The key_statement (or a very close paraphrase) appears as a standalone single-sentence paragraph in the chapter body. A standalone key statement is a single-sentence paragraph stating the chapter's core truth as a quotable aphorism.
+2. The key_statement is **distinct across all chapters** — scan all other chapters' `key_statement` fields in the Book DNA. If this key_statement is declared in the Book DNA `refrains:` block (as a whole-book refrain with a max_uses budget), its recurrence is permitted within that budget.
 
-Confirm the central image — or a semantically equivalent reference to it — appears in ALL THREE zones. Different registers are fine and expected: literal in the opening (the physical object), metaphor in the middle (the idea carried by the object), echo in the closing (a callback phrase or sensory repeat).
+**Failure mode:** Flag only. Add to `craft_pass2.key_statement_audit` with evidence (missing, or which chapter duplicates it) and the specific line range checked. Do NOT auto-revise.
 
-**Failure mode:** **Flag only** (per D-07). Add to the chapter's diagnostic report entry with the zones the image was missing from and the line ranges checked. Update `craft_pass2.central_image` in the VOICE AUDIT block from `pass` to `flag (zones missing: [...])`. Do NOT auto-revise — forcing rewrites here causes divergent-improvement failures (see 10-RESEARCH § Pitfall 4).
+**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/dag-craft-rules.md` § DAG-04.
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-03.
+### 3.8 Testimony Seed Audit (DAG-08)
 
-### 3.8 Vulnerability Beat Audit (CRAFT-04)
+Read the chapter's `testimony_seed` field from the Book DNA chapter map.
 
-Read the chapter's `vulnerability_beat_seed` field from the outline and/or Book DNA.
+1. **Seed empty or absent:** Note `testimony_seed_audit: skipped_no_seed`. The chapter should use biblical retelling, everyday analogy, or anonymised third-party anecdote only. Scan for first-person testimony openers ("Years ago, I...", "One day, I was..."); if found with no seed, treat as fabricated — hard fail.
 
-1. **Seed empty:** If the seed field is absent or empty, skip this audit and note `vulnerability_beat: skipped_no_seed` in `craft_pass2` of the VOICE AUDIT block. No diagnostic report entry needed beyond the skip marker.
-2. **Seed present:** Resolve the seed pointer. `vulnerability_beat_seed` uses the same path:line syntax as provenance comments (D-19). Parse `source_path:line`, read the file, confirm the line exists.
-   - If the path or line does not resolve, flag `vulnerability_beat: seed_unresolved` with the failing pointer in the diagnostic report entry.
-3. **Locate the beat:** Search the chapter's middle third (per §3.7 word-count-based zone definition) for a first-person vulnerability beat — a named confession, doubt, or struggle in the narrator's voice ("I", "me", "my").
-   - If no first-person beat is present in the middle third, flag `vulnerability_beat: missing`.
-4. **Authenticity judgment:** If a beat is present, confirm it references or paraphrases the seed material. LLM judgment: does the beat traceably draw on the seed (shared specific detail, same named person/place/moment, paraphrased language), or does it appear fabricated (unrelated to the seed, generic confession, no shared detail)?
-   - If the beat does not trace to the seed, flag `vulnerability_beat: fabricated`.
+2. **Seed present:** Resolve `source_path:line`. Open the source file and read that line. Confirm the line exists and is legible.
+   - If path or line does not resolve: flag `testimony_seed_audit: seed_unresolved` with the failing pointer.
 
-**Failure mode:** **Flag only.** Fabricated beats are the most serious flag but still flag-only, not auto-revise, because auto-revise on judgment checks risks divergent improvement (D-07 rationale and Pitfall 5: forcing a rewrite loops back to fabrication). Update `craft_pass2.vulnerability_beat` in the VOICE AUDIT block accordingly and add the specific flag to the chapter's diagnostic report entry with line citations and, for `fabricated`, a one-sentence note on why the beat does not trace to the seed.
+3. **Locate testimony:** Search the chapter for first-person testimony (time-marker formula: "Years ago,", "One day,", "When I was...").
+   - No first-person testimony found and seed present: note `testimony_seed_audit: skipped_no_seed` — the chapter uses permitted non-testimony illustration types.
+   - First-person testimony found but no seed: **Hard fail, auto-revise** — request writer convert to a biblical retelling, everyday analogy, or anonymised third-party anecdote. Write revision request with `scope: illustration`, `failed_check: DAG-08-fabricated`.
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-04.
+4. **Provenance check (if seed present and testimony found):** Confirm the testimony draws on the seed material (shared specific detail, same named context, paraphrased language). If the testimony does not trace to the seed: flag `testimony_seed_audit: fabricated` and queue the same hard-fail auto-revise.
 
-### 3.9 Reader Moment Audit (CRAFT-06)
+5. **Illustration discipline:** For ALL illustrations in the chapter (types 1–4 per DAG-08):
+   - Each ≤ 300 words
+   - Each ends with the lesson stated explicitly (command, maxim, or exclamation)
+   - No literary scene-setting opener (sensory description for its own sake)
 
-Read the voice profile's `Reader Moments` section (from `[project_directory]/voice-profile.md`).
+**Scoring (Illustration Discipline rubric component, 0–2):**
+- 2: 1–3 illustrations; all within length limit; all with stated morals; all testimony seeded or appropriately non-personal
+- 1: Illustration overlong or a moral left implicit; no fabrication
+- 0: Zero illustrations in a chapter that needs one, a literary scene-setting opener, or ANY fabricated first-person testimony (also triggers DAG-08 auto-revise)
 
-1. **No section:** If the voice profile has no `Reader Moments` section, skip this audit and note `reader_moments: skipped_no_section` in `craft_pass2` of the VOICE AUDIT block (per D-16 — user-supplied custom profiles may omit the section). No diagnostic report entry needed beyond the skip marker.
-2. **Section present:** Read the chapter's METADATA `reader_moments_used` field (written by the writer at draft time). Confirm ALL of:
-   - **(a)** At least 2 moments are claimed in `reader_moments_used`.
-   - **(b)** Each claimed moment actually appears in the chapter text (grep the chapter body for the moment phrase or a close paraphrase — LLM judgment on paraphrase equivalence).
-   - **(c)** Each claimed moment is one of the moments listed in the voice profile's `Reader Moments` section (not an invented moment the writer made up mid-draft).
-3. If any of (a)(b)(c) fails, record the specific failure:
-   - Too few claimed: `flag (count: N < 2)`
-   - Claimed but missing from text: `flag (missing: [moment names])`
-   - Not in voice profile list: `flag (unlisted: [moment names])`
+Record `illustration_discipline: [0|1|2]` in `craft_pass2`.
 
-**Failure mode:** **Flag only.** Add to the chapter's diagnostic report entry with the count and list of missing/extra moments. Update `craft_pass2.reader_moments` in the VOICE AUDIT block accordingly. Do NOT auto-revise.
+**Failure mode:** Fabricated testimony = hard fail auto-revise. Missing lesson statement = flag only.
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-06.
+**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/dag-craft-rules.md` § DAG-08.
+
+### 3.9 Reader Situations Audit
+
+Read the voice profile's `Reader Situations` section (`references/voice-profiles/dag-default.md` § Reader Situations, or the project-specific voice profile's equivalent section).
+
+1. **No section:** Skip and note `reader_situations: skipped_no_section`. No diagnostic report entry needed.
+2. **Section present:** Confirm the chapter's application passages land in ≥ 2 of the listed reader situations. LLM judgment: does the "you" address reach a concrete situation from the ministry-and-calling, Christian-living, or warning-situations lists? A paraphrase match is sufficient.
+3. If fewer than 2 situations are addressed: flag with count and the missing situation categories.
+
+**Failure mode:** Flag only. Add to `craft_pass2.reader_situations`. Do NOT auto-revise.
 
 ## 4. Pass 3 -- Cross-Chapter Validation
 
@@ -449,18 +522,16 @@ Extract key terms and jargon from all chapters (`edited/ch*-pass2.md`). Cross-re
 
 Flag:
 - Terms used with inconsistent definitions
-- Spelling variations (e.g., "sonship" vs "Sonship")
-- Capitalisation drift (e.g., "Kingdom authority" vs "kingdom authority")
+- Spelling variations (e.g., "anointing" vs "Anointing")
+- Capitalisation drift (e.g., "the Spirit" vs "the spirit")
 - Terms defined in Book DNA but not introduced before first use
 
 ### 4.2 Reference Validation
 
 Find all forward and backward references using pattern matching:
-- "we'll explore this in chapter [N]"
 - "as we saw in chapter [N]"
 - "later in the book"
 - "as we discussed earlier"
-- "in the next chapter"
 - "in the previous chapter"
 - "chapter [N]" (general mentions)
 
@@ -469,12 +540,17 @@ For each reference:
 - Flag vague references ("as we saw earlier") and recommend specifying the chapter number
 - Flag broken references (pointing to non-existent content)
 
+Note: "in the next chapter" is a banned meta-scaffolding phrase (cliffhanger / teaser) and should have been caught and removed in Pass 2 §3.4. If it appears in the pass2 files, flag it here as a DAG-07 residual fail.
+
 ### 4.3 Scripture Consistency
 
-For theological books:
-- Verify the same scripture passage is not quoted with different wording in different chapters
-- All quotes should use the same translation (default NKJV per the voice profile's Scripture Handling section)
-- Flag translation mismatches
+Verse repetition across chapters is **a feature**, not an error. The same proof text functioning as a refrain across chapters is authentic to this teaching style. Do NOT flag repeated scriptures.
+
+**Check instead:**
+- **Translation labelling consistency:** KJV is the unlabelled default. Every non-KJV quote must carry its translation label in the reference line (e.g., `> -- Psalm 89:19 (NASB)`). Flag any non-KJV quote that appears without a label.
+- **Label consistency:** if the same verse is quoted as NASB in chapter 2 and as NIV in chapter 7, confirm both are labelled; flag if one instance is unlabelled.
+- **Permitted back-to-back translations:** quoting the same verse in two translations on the same page is authentic and permitted; both must be labelled if neither is KJV.
+- **Wording drift (KJV only):** if the same KJV verse is quoted with slightly different wording in two chapters, flag as a likely transcription error; KJV text should be consistent.
 
 ### 4.4 Theme Tracking
 
@@ -486,9 +562,15 @@ Cross-reference against Book DNA Running Themes section:
 
 ### 4.4.5 Novelty and Dedup Audit
 
-> Hybrid deterministic + LLM judgment pass. Follows the CRAFT-02/05/07 layering pattern (§2.0 → §2.9-§2.12 verbatim shape): deterministic script anchors the verdict, LLM judgment layer catches paraphrase and semantic reuse the regex can't see. Combined verdict: script-fail OR LLM-fail → `novelty_dedup: fail`. This section is the editor's structural fix for the repetition blindspot that triggered Phase 13.
+> Hybrid deterministic + LLM judgment pass. Deterministic script anchors the verdict; LLM judgment layer catches semantic reuse the regex cannot see. Combined verdict: script-fail OR LLM-fail → `novelty_dedup: fail`. Run exactly once per editor invocation — manuscript-level, not per-chapter.
 
-**Scope:** `front-matter/*.md` + `edited/ch*-final.md` (Tier 1) AND `enrichments/*.md` / `enriched/*.md` (Tier 2). Both tiers feed the same `novelty_dedup` verdict. Run this audit exactly once per editor invocation — it is manuscript-level, not per-chapter.
+**Exemption list (wider than book-crafter default):** The following are EXEMPT from the 6-word cross-artefact dedup and from the novelty_variation component penalty:
+- Scripture blockquotes (any verse, any translation)
+- Declared refrains from the Book DNA `refrains:` block within their `max_uses` budget (list stems, key statements, definitions)
+- Benediction formulas ("May you...", "I see your ministry...")
+- Chapter titles and bold point headings (structural scaffolding, not prose)
+
+Everything outside these exempt classes must not repeat verbatim (6+ words) across artefacts.
 
 **Step A — Deterministic invocation:**
 
@@ -500,76 +582,68 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/craft-check.js" \
   "[project_directory]"
 ```
 
-Parse the JSON output. The shape is:
+Parse the JSON output. Shape:
 ```
-{ mode: "novelty", tier, project_dir, repeated_spans, cross_artefact_hits, central_image_reuse, refrain_overuse, tier2_hits, flag, novelty_dedup }
+{ mode: "novelty", tier, project_dir, repeated_spans, cross_artefact_hits, refrain_overuse, tier2_hits, flag, novelty_dedup }
 ```
 
-If `result.flag` is true, Step C must emit a `rewrite_targets` block per D-12. Even if `result.flag` is false, continue to Step B — the LLM judgment layer can still fail the chapter for semantic reuse the script could not catch.
+If `result.flag` is true, Step C must emit a `rewrite_targets` block. Even if `result.flag` is false, continue to Step B.
 
-**Step B — LLM judgment layer (editor reads manuscript directly):**
+**Step B — LLM judgment layer:**
 
-Read `front-matter/*.md` and every `edited/ch*-final.md` in the project directory. For each pair (foreword ↔ chapter, and every chapter pair), judge:
+Read `front-matter/*.md` and every `edited/ch*-final.md`. For each pair (foreword ↔ chapter, and every chapter pair), judge:
 
-1. **Vulnerability-beat scene reuse (paraphrase-level):** Does the same *named moment* (same person, same remembered setting, same emotional beat) appear in two artefacts, even if the exact words differ? Example: foreword describes "standing at the kitchen counter at 3am with hands flat on the wood and nothing to say" and chapter 2 describes "I was at the counter, palms down, silent." These are the SAME SCENE in different phrasing — the deterministic 6-word shingler cannot see this, but a reader does.
+1. **Testimony scene reuse (paraphrase-level):** Does the same *sourced moment* (same person, same remembered setting, same narrative beat) appear in two artefacts, even if exact words differ? (A verse may repeat; a testimony scene may not.)
 
-2. **Central-image vehicle semantic collision:** For every chapter pair, read the opening 200 words, middle third, and closing 200 words (already extracted in Pass 2 §3.7). Judge whether the DOMINANT vehicle is the same even if the `central_image` field values differ. Example: ch1 declares `unlit bedside lamp` and ch3 declares `reading lamp on the nightstand`. Both render as "a lamp on a table in the dark" — same vehicle family, flag.
+2. **Illustration vehicle reuse:** For every chapter pair, check illustrations across the manuscript. If the same analogy vehicle is the dominant teaching illustration in two chapters (e.g., an electrical socket analogy used in both ch1 and ch4), flag as illustration/anecdote reuse — a hard fail per DAG-08.
 
-3. **Reader-moment reuse in adjacent chapters:** Did chapter N and chapter N+1 both use the same sourced reader moment (e.g. "the 2am phone-check")? Same-chapter reuse is legitimate; adjacent-chapter reuse is a flag.
+3. **Reader situation reuse in adjacent chapters:** Did chapter N and chapter N+1 both use the same specific reader situation from the voice profile list as their primary application landing? Same-chapter use is fine; adjacent-chapter duplication is a flag.
 
-Emit LLM-judgment flags as a parallel array:
+Emit LLM-judgment flags:
 ```
 llm_flags: [
-  { type: "vulnerability_beat_scene_reuse", source: "front-matter/foreword.md", duplicate: "edited/ch02-final.md", note: "same 3am kitchen counter scene, paraphrased" },
-  { type: "central_image_semantic_collision", files: ["edited/ch01-final.md", "edited/ch03-final.md"], note: "both render as a lamp on a table" },
-  { type: "reader_moment_reuse_adjacent", files: ["edited/ch02-final.md", "edited/ch03-final.md"], moment: "the 2am phone-check" }
+  { type: "testimony_reuse", source: "front-matter/foreword.md", duplicate: "edited/ch02-final.md", note: "same sourced anecdote paraphrased" },
+  { type: "illustration_vehicle_reuse", files: ["edited/ch01-final.md", "edited/ch04-final.md"], note: "electrical socket analogy dominant in both" },
+  { type: "reader_situation_reuse_adjacent", files: ["edited/ch02-final.md", "edited/ch03-final.md"], situation: "small-church pastor mocked" }
 ]
 ```
 
-**Step C — Combined verdict and emit:**
+**Step C — Combined verdict:**
 
-Let `script_flag = result.flag`, `llm_flag = llm_flags.length > 0`. The verdict is:
 ```
 novelty_dedup = (script_flag || llm_flag) ? "fail" : "pass"
 ```
 
-**If `novelty_dedup == "pass"`:**
-- Set `novelty_dedup_flags: []` in the `## Captivation Score` YAML block (see §504 template).
-- Do not emit `rewrite_targets`.
-- Continue to §4.5.
+If `novelty_dedup == "fail"`:
+- Populate `novelty_dedup_flags:` with a merged list. Entry types: `repeated_span`, `testimony_reuse`, `illustration_vehicle_reuse`, `reader_situation_reuse_adjacent`, `refrain_overuse`, `tier2_hits`.
+- Emit a `rewrite_targets` block into the consistency report AND write to `[project_directory]/reports/rewrite_targets.yaml`.
+- Do NOT rewrite any chapter yourself — the orchestrator's Mode 7 `--rewrite-targets` is the only path that re-runs flagged chapters.
 
-**If `novelty_dedup == "fail"`:**
-- Populate `novelty_dedup_flags:` in the `## Captivation Score` YAML block with a merged list of script flags (from `repeated_spans`, `cross_artefact_hits`, `central_image_reuse`, `refrain_overuse`, `tier2_hits`) and LLM flags (from Step B). Each entry shape: `{file, type, note}`.
-- Emit a `rewrite_targets` block into the consistency report, AND write the same block to `[project_directory]/reports/rewrite_targets.yaml` as a separate file (Research Open Q 2 — both inline for human review at the Stage 4 review gate AND separate file for Mode 7 machine consumption).
-- Do NOT rewrite any chapter yourself. The editor is a judge, not an author (D-10). The orchestrator's Mode 7 `--rewrite-targets` (§skills/orchestrator/SKILL.md Mode 7) is the only path that re-runs flagged chapters.
-
-**Rewrite targets block format (emit into consistency-report.md under the `## Rewrite Targets` heading, AND mirror into reports/rewrite_targets.yaml):**
+**Rewrite targets block format:**
 
 ```yaml
 rewrite_targets:
   - file: edited/ch02-final.md
     span: "L21-L28"
-    reason: "verbatim overlap with front-matter/foreword.md:L12-L18 — rewrite the vulnerability beat using a different sourced detail from the author notes at voice-profile.md:45"
-    flagged_by: craft-check
-  - file: edited/ch03-final.md
+    reason: "testimony scene reuses the same sourced moment as front-matter/foreword.md:L12-L18 — rewrite using a different testimony_seed detail from voice-profile"
+    flagged_by: editor-pass3
+  - file: edited/ch04-final.md
     span: "L40-L47"
-    reason: "same central-image vehicle ('reading lamp') dominates ch01 and ch03 — substitute with a distinct vehicle from the motif family (grey seam of dawn per brief.md:37)"
+    reason: "electrical socket analogy is the dominant illustration vehicle in both ch01 and ch04 — substitute with a different everyday analogy"
     flagged_by: editor-pass3
 ```
 
-**Mandatory `reason:` field contract (D-12):** every target MUST include a specific cross-reference to the duplicated location AND a directional instruction. Generic reasons like "too similar" or "rewrite this" are REJECTED — the orchestrator's Mode 7 will refuse to run if a target's reason does not contain both a source location (file or span reference) and the words "rewrite" / "substitute" / "replace" / "different".
+Every `reason:` must contain both a source location (file or span reference) and one of "rewrite" / "substitute" / "replace" / "different". Generic reasons are rejected.
 
-`flagged_by:` must be one of `craft-check` (deterministic flag from Step A) or `editor-pass3` (LLM judgment flag from Step B).
-
-**Hard-fail semantics (D-10):** `novelty_dedup: fail` is not a warning. It is a hard gate. The consistency report emits it, the sample skill's gate reads it and emits `SAMPLE FAIL — novelty_dedup fail: K flags`, and release.sh (when wired in Phase 12 or later) will refuse to build a release zip. There is no `--strict` override, no soft-warn mode, no "ship anyway" escape hatch. The phase 13 premise is that soft gates become invisible.
+`novelty_dedup: fail` is a hard gate. The sample gate reads it and emits `SAMPLE FAIL — novelty_dedup fail: K flags`. There is no soft-warn mode.
 
 ### 4.5 Pass 3 Output
 
-Save final edited chapters to `[project_directory]/edited/ch[NN]-final.md`. If no changes were needed for a chapter in this pass, copy from pass2.
+Save final edited chapters to `[project_directory]/edited/ch[NN]-final.md`. If no changes were needed in this pass, copy from pass2.
 
-**Version stamp:** Each `edited/ch[NN]-final.md` preserves the two header comments inherited from Pass 2 — line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.1.0 -->`. If either is missing, auto-fix in place by prepending the missing comment(s) before writing the final file. The version stamp must end up as line 2 (or line 1 if the chapter truly has no provenance comment, which is itself a CRAFT-01 fail flagged in the VOICE AUDIT).
+**Version stamp:** Each `edited/ch[NN]-final.md` preserves line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.0.0 -->`. If either is missing, auto-fix before writing.
 
-Write `[project_directory]/reports/consistency-report.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `consistency-report.md`** (line 1, above the `# Consistency Report` heading). The consistency report has no provenance comment, so the version stamp occupies line 1.
+Write `[project_directory]/reports/consistency-report.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line.**
 
 ```markdown
 # Consistency Report: [Book Title]
@@ -580,53 +654,58 @@ Write `[project_directory]/reports/consistency-report.md` with this exact struct
 
 ## Captivation Score
 
-> Single canonical scoring surface per `references/captivation-rubric.md` schema_version: 2. Fields below are machine-readable; the sample gate and release.sh read them via column-0 line-anchored bash grep. Do not indent this block. Do not wrap it in a collapsible or conditional. Emit it unconditionally on every editor run.
+> Single canonical scoring surface per `references/captivation-rubric.md` schema_version: 2. Fields below are machine-readable; the sample gate reads them via column-0 line-anchored bash grep. Do not indent this block. Emit it unconditionally on every editor run.
 
 ```yaml
 schema_version: 2
 captivation_total: <INT 0-16>
 novelty_dedup: <pass|fail>
 components:
-  pacing_variety: <INT 0-2>
-  emotional_connection: <INT 0-2>
-  reader_engagement: <INT 0-2>
-  opening_engagement: <INT 0-2>
-  chapter_ending_momentum: <INT 0-2>
-  craft_density: <INT 0-2>
-  cross_chapter_craft: <INT 0-2>
+  clarity_of_point: <INT 0-2>
+  scripture_saturation: <INT 0-2>
+  structural_parallelism: <INT 0-2>
+  direct_address: <INT 0-2>
+  simplicity: <INT 0-2>
+  emphasis_repetition: <INT 0-2>
+  illustration_discipline: <INT 0-2>
   novelty_variation: <INT 0-2>
 novelty_dedup_flags: []
 ```
 
 **Field contract:**
-- `schema_version: 2` — hard break from Phase 7/10/11 v1 shape. Never emit `schema_version: 1`.
-- `captivation_total` — sum of all 8 component scores, clamped to [0, 16].
-- `novelty_dedup` — binary verdict from §4.4.5 Novelty and Dedup Audit. `pass` if the hybrid deterministic + LLM judgment pass finds zero flags, else `fail`.
-- `components` — flat object with exactly 8 keys matching the rubric frontmatter `components.*.key` values. Every key MUST be present on every emit, even if 0.
-- `novelty_dedup_flags` — array of flag objects when `novelty_dedup: fail`, else empty array `[]`. Each entry shape: `{file, type, note}`. Type is one of: `repeated_span`, `vulnerability_beat_reuse`, `central_image_reuse`, `refrain_overuse`, `tier2_discussion_stem`, `tier2_prayer_point`, `tier2_vulnerability_bleed`, `tier2_vehicle_backmatter`.
+- `schema_version: 2` — hard break from v1 shape. Never emit `schema_version: 1`.
+- `captivation_total` — sum of all 8 component scores (0–16).
+- `novelty_dedup` — binary verdict from §4.4.5. `pass` if zero flags, else `fail`.
+- `components` — flat object with exactly 8 keys matching `captivation-rubric.md` `components.*.key` values. Every key MUST be present on every emit, even if 0.
+- `novelty_dedup_flags` — array of flag objects when `fail`, else `[]`. Type values: `repeated_span`, `testimony_reuse`, `illustration_vehicle_reuse`, `reader_situation_reuse_adjacent`, `refrain_overuse`, `tier2_hits`.
 
-**Contract for bash grep readers:** All four anchor lines (`schema_version:`, `captivation_total:`, `novelty_dedup:`, `novelty_dedup_flags:`) MUST appear at column 0 of their own line. The fenced ```yaml block does not interfere with `grep -E '^captivation_total:'` because the fence characters are on their own lines.
+**Contract for bash grep readers:** All four anchor lines (`schema_version:`, `captivation_total:`, `novelty_dedup:`, `novelty_dedup_flags:`) MUST appear at column 0 of their own line.
 
 ## Voice Consistency (Pass 1)
 
-| Chapter | Violations | Avg Sentence Length | Fragment % | Captivation | Severity |
-|---------|-----------|--------------------|-----------:|:-----------:|----------|
-| Ch 1    | 0         | 15.2               | 22%        | 14/16       | clean    |
+| Chapter | Violations | Avg Sentence Length | Paragraph Flags | Captivation | Severity |
+|---------|-----------|--------------------|-----------------:|:-----------:|----------|
+| Ch 1    | 0         | 14.2               | 0               | 14/16       | clean    |
 
 ### Captivation Score Breakdown
 
-Scoring aggregation and thresholds per `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` § Scoring Aggregation.
+Scoring aggregation and thresholds per `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` § Scoring Aggregation (schema_version: 2, total_range [0, 16], 8 components, novelty_dedup binary dimension).
 
-**Schema v2 canonicalisation (Phase 13):** The YAML block at `## Captivation Score` above is the single machine-readable surface for `skills/sample/SKILL.md §4` and any future release.sh gate. Prose references to `N/10` or `N/14` in this report are legacy and will be removed in a future phase. The rubric file at `${CLAUDE_PLUGIN_ROOT}/references/captivation-rubric.md` is the canonical schema (schema_version: 2, total_range [0, 16], 8 components, novelty_dedup binary dimension).
+| Total | Band | Meaning |
+|-------|------|---------|
+| 0–6   | Below craft floor | Chapter requires revision |
+| 7–9   | Weak | Ships only if no hard gates fired |
+| 10–12 | Competent | Ships as-is |
+| 13–16 | Strong | Authentic Dag-teaching-style quality |
 
 ### Flagged Issues
 1. **Ch [N], ~line [N]:** "[description]"
 
 ## Flow and Transitions (Pass 2)
 
-| Transition | Status | Action Taken |
-|-----------|--------|--------------|
-| Ch 1 -> Ch 2 | smooth | none |
+| Chapter | Opener Conformance | Landing | Action Taken |
+|---------|-------------------|---------|--------------|
+| Ch 1    | pass (anchor_scripture) | pass (benediction) | none |
 
 ## Cross-Chapter Consistency (Pass 3)
 
@@ -642,18 +721,18 @@ Scoring aggregation and thresholds per `${CLAUDE_PLUGIN_ROOT}/references/captiva
 [Any contradictions between chapters]
 
 ### Scripture Consistency
-[Any translation mismatches]
+[Translation labelling issues; repeated proof texts are expected and not flagged]
 
-## Bestseller Diagnostic
-[Per-chapter CRAFT-01..08 + CRAFT-15 pass/fail matrix appended by §4.6]
+## Dag Style Diagnostic
+[Per-chapter DAG-01..08 + version stamp pass/fail matrix appended by §4.6]
 
 ## Unresolved Issues (Requires User Decision)
 [Issues the editor could not auto-resolve]
 ```
 
-### 4.6 Bestseller Diagnostic Assembly (CRAFT-16)
+### 4.6 Dag Style Diagnostic Assembly
 
-After Pass 3 cross-chapter validation completes, assemble the per-chapter bestseller diagnostic and append it to `reports/consistency-report.md`. This is the CRAFT-16 deliverable: every CRAFT-01..08 + CRAFT-15 result for every chapter, surfaced at the Stage 4 review gate alongside voice consistency flags.
+After Pass 3 cross-chapter validation completes, assemble the per-chapter Dag Style Diagnostic and append it to `reports/consistency-report.md`. This is the audit deliverable: every DAG-01..08 + version stamp result for every chapter, surfaced at the Stage 4 review gate.
 
 **Step 1 — Re-invoke craft-check.js per chapter.** For each chapter, run the deterministic checker against the edited final file:
 
@@ -661,50 +740,47 @@ After Pass 3 cross-chapter validation completes, assemble the per-chapter bestse
 node ${CLAUDE_PLUGIN_ROOT}/scripts/craft-check.js [project_directory]/edited/ch[NN]-final.md
 ```
 
-Parse the JSON output. The JSON shape is `{chapter_id, checks: {CRAFT-XX: {pass, evidence, citations}}}` per Plan 10-01. The deterministic checks covered are CRAFT-01 (provenance presence), CRAFT-02 (Greek/Hebrew density), CRAFT-05 (pulpit-seam), CRAFT-07 (reader-thought lines), and CRAFT-15 (version stamp).
+Parse the JSON output. The deterministic checks covered: DAG-01 (story-marker + version stamp), DAG-02 (scripture density), DAG-04 (key statement regex + CAPS-in-quote), DAG-05 (word count), DAG-06 (sentence length + hedging), DAG-07 (you-density + imperatives + cliffhanger scan).
 
-**Step 2 — Gather Pass 2 judgment results.** Read each chapter's `<!-- VOICE AUDIT -->` metadata block from `edited/ch[NN]-final.md`. Extract the `craft_pass2:` block (written by Pass 2 §3.3, §3.7, §3.8, §3.9 and the §2.12 carry-through). It supplies the LLM judgment results for CRAFT-03 (central image), CRAFT-04 (vulnerability beat), CRAFT-06 (reader moments), and CRAFT-08 (concrete:abstract ratio carries from Pass 1 §2.12 via the merged `craft_check` block).
+**Step 2 — Gather Pass 2 judgment results.** Read each chapter's `<!-- VOICE AUDIT -->` metadata block from `edited/ch[NN]-final.md`. Extract the `craft_pass2:` block (written by Pass 2 §3.6). It supplies judgment results for DAG-03 (structural parallelism from `craft_check.structural_parallelism`), DAG-08 (illustration discipline and testimony seed from `craft_pass2.testimony_seed_audit` and `craft_pass2.illustration_discipline`), opener conformance, and landing check.
 
-**Step 3 — Merge into a per-check matrix.** For each chapter, build a row per check by combining the deterministic and judgment results. Use the unified status set:
-
+**Step 3 — Merge into a per-check matrix.** Status codes:
 - `PASS` — all assertions for this check passed.
-- `FAIL` — a hard-gate check failed (CRAFT-01 provenance, CRAFT-02 density, CRAFT-05 pulpit-seam, CRAFT-15 version stamp).
-- `FLAG` — a flag-only judgment check did not pass (CRAFT-03, CRAFT-04, CRAFT-06, CRAFT-07, CRAFT-08, plus CRAFT-01 scene-quality strictness from Pass 2 §3.3).
-- `SKIP` — check skipped because the prerequisite is absent (e.g. CRAFT-06 with no Reader Moments section in the voice profile, CRAFT-04 with empty `vulnerability_beat_seed`).
+- `FAIL` — hard-gate failure (DAG-01 story opener, DAG-02 density, DAG-05 overflow, DAG-06 hedging or transliteration overflow, DAG-08 fabricated testimony).
+- `FLAG` — flag-only judgment check (DAG-03, DAG-04, DAG-07, DAG-08 missing lesson, opener_type mismatch).
+- `SKIP` — prerequisite absent (DAG-03 for flowing chapters, DAG-08 for zero-illustration chapters).
 
-**Step 4 — Append `## Bestseller Diagnostic` to consistency-report.md.** Insert the section AFTER `## Cross-Chapter Consistency` (the Pass 3 Cross-Chapter block) and BEFORE `## Unresolved Issues` (if present). For each chapter, emit a sub-section in this exact shape:
+**Step 4 — Append `## Dag Style Diagnostic` to consistency-report.md.** Insert AFTER `## Cross-Chapter Consistency` and BEFORE `## Unresolved Issues`. Per-chapter shape:
 
 ```markdown
 ### Ch N: {title}
 
 | Check | Pass/Fail | Evidence | Line |
 |---|---|---|---|
-| CRAFT-01 Scene-first opener | PASS/FAIL/FLAG | <evidence> | ch{NN}:<line> |
-| CRAFT-02 Greek density | PASS/FAIL | <evidence> | ch{NN}:<line> |
-| CRAFT-03 Central image | PASS/FLAG | <evidence> | ch{NN}:<range> |
-| CRAFT-04 Vulnerability beat | PASS/FLAG/SKIP | <evidence> | ch{NN}:<line> |
-| CRAFT-05 Pulpit seam | PASS/FAIL | <evidence> | ch{NN}:<line> or — |
-| CRAFT-06 Reader moments | PASS/FLAG/SKIP | <evidence> | ch{NN}:<line> |
-| CRAFT-07 Reader-thought lines | PASS/FLAG | <evidence> | ch{NN}:<line> |
-| CRAFT-08 Concrete:abstract ratio | PASS/FLAG | <evidence> | ch{NN}:p<start>-p<end> |
-| CRAFT-15 Version stamp | PASS/FAIL | <evidence> | ch{NN}:<line> |
+| DAG-01 Verse-or-declaration opener | PASS/FAIL/FLAG | <evidence> | ch{NN}:<line> |
+| DAG-02 Scripture density | PASS/FAIL | <evidence> | ch{NN}:<line> |
+| DAG-03 Numbered points / parallelism | PASS/FLAG/SKIP | <evidence> | ch{NN}:<range> |
+| DAG-04 Key statement / CAPS | PASS/FLAG | <evidence> | ch{NN}:<line> |
+| DAG-05 Chapter length | PASS/FAIL | <evidence> | ch{NN}:<line> |
+| DAG-06 Plain language | PASS/FAIL | <evidence> | ch{NN}:<line> |
+| DAG-07 Direct address / landing | PASS/FLAG | <evidence> | ch{NN}:<line> |
+| DAG-08 Functional illustrations | PASS/FAIL/FLAG/SKIP | <evidence> | ch{NN}:<range> |
+| Version stamp | PASS/FAIL | <evidence> | ch{NN}:<line> |
 
 **Severity:** <count> flags (judgment-only). Chapter meets/misses hard gates.
 ```
 
-The "Evidence" column should quote the offending phrase or cite the JSON `evidence` field from craft-check.js for deterministic checks, and a one-clause judgment summary for flag-only checks. The "Line" column uses the `chNN:<line>` chapter-relative line citation pattern shared with the rest of the consistency report.
-
-**Step 5 — Append revision-cap notes.** After the per-chapter sub-sections, append a `### Revision Cap Notes` block listing any chapters that hit the orchestrator's 2-revision cap (CRAFT-17, wired in this plan — see `skills/orchestrator/SKILL.md` "Revision Cap and Divergent-Improvement Detection"). Each note uses this shape:
+**Step 5 — Append revision-cap notes** after per-chapter sub-sections:
 
 ```
 - Chapter N hit the 2-revision cap on [check]. Accepted revision {M} (highest-scoring). Human review recommended at Stage 4.
 ```
 
-If a chapter triggered divergent-improvement detection instead of cap exhaustion, use the alternate phrasing emitted by the orchestrator: `Chapter N: divergent improvement detected at revision {N}. Accepted revision {N-1} (component X dropped from A to B).`
+If divergent improvement was detected: `Chapter N: divergent improvement detected at revision {N}. Accepted revision {N-1} (component X dropped from A to B).`
 
-**Step 6 — No auto-revise.** §4.6 is purely an assembly step. It re-invokes `scripts/craft-check.js` for the final pass/fail matrix but does NOT trigger any new revision passes — the 2-revision cap (CRAFT-17) has already been enforced upstream by the orchestrator's per-chapter revision loop. If §4.6 detects a hard-gate FAIL on a chapter that did not exhaust the revision cap, log the failure in the diagnostic report and let the Stage 4 review gate surface it to the user.
+**Step 6 — No auto-revise.** §4.6 is purely an assembly step. Re-invoking `scripts/craft-check.js` here does NOT trigger new revision passes.
 
-**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/bestseller-craft-rules.md` § CRAFT-16.
+**Rule reference:** `${CLAUDE_PLUGIN_ROOT}/references/dag-craft-rules.md`
 
 ## 5. Rolling Window Pattern (16+ Chapters)
 
@@ -727,7 +803,7 @@ Use the `chapter-editor` subagent from `${CLAUDE_PLUGIN_ROOT}/agents/chapter-edi
 - Project directory path
 - Chapter number to edit
 - Edit pass: "voice" (Pass 1 only for subagents)
-- Voice profile path: `[project_directory]/voice-profile.md`
+- Voice profile path: `${CLAUDE_PLUGIN_ROOT}/references/voice-profiles/dag-default.md` (or project override)
 - Book DNA path: `[project_directory]/book-dna.md`
 - Current chapter path: `[project_directory]/drafts/ch[NN]-draft.md`
 - Previous chapter overlap (final 500 words of ch[N-1], or "none")
@@ -736,7 +812,7 @@ Use the `chapter-editor` subagent from `${CLAUDE_PLUGIN_ROOT}/agents/chapter-edi
 ### 5.3 Parallelisation Rules
 
 - **Pass 1 subagents** can run in parallel -- each chapter is independent for voice checking
-- **Pass 2** is ALWAYS handled by the main editor skill sequentially (transitions need chapter pairs)
+- **Pass 2** is ALWAYS handled by the main editor skill sequentially (opener/landing checks need per-chapter outline fields)
 - **Pass 3** is ALWAYS handled by the main editor skill (needs cross-chapter indexes built from all chapters)
 
 ### 5.4 Collecting Subagent Output
@@ -756,14 +832,12 @@ For each chapter to revise:
 
 ### 6.2 Targeted Pass 2
 
-Run Pass 2 (flow/transitions) on the revised chapter AND its immediate neighbours:
-- If revising Chapter N, check transitions for:
-  - Ch[N-1] -> Ch[N] (if N > 1)
-  - Ch[N] -> Ch[N+1] (if N < last chapter)
-- Read the neighbour chapters from `edited/ch[NN]-pass2.md` (their previously edited versions)
-- Save updated chapters to `edited/ch[NN]-pass2.md`
+Run Pass 2 (opener/landing/illustration audit) on the revised chapter only. Also check the adjacent chapter opener check (§3.2) against the immediately preceding chapter:
+- If revising Chapter N, run the adjacent opener dedup check against ch[N-1]
+- Read the neighbour chapter from `edited/ch[N-1]-pass2.md`
+- Save updated chapter to `edited/ch[NN]-pass2.md`
 
-**One-hop limit:** Do NOT recursively check beyond immediate neighbours. If the Ch[N-1] ending was changed to accommodate the revised Ch[N], do NOT then check Ch[N-2] -> Ch[N-1]. Flag for the user if significant changes were made to adjacent chapters.
+**One-hop limit:** Do NOT recursively check beyond immediate neighbours. Flag for the user if significant changes were made to adjacent chapters.
 
 ### 6.3 Targeted Pass 3
 
@@ -771,13 +845,14 @@ Run Pass 3 (cross-chapter validation) on affected references only:
 - Scan the revised chapter for forward and backward references
 - Validate those specific references against the referenced chapters
 - Check term consistency for any new terms introduced in the revision
-- Do NOT rebuild the full cross-chapter index -- only validate the changed chapter's references
+- Check the revised chapter's key_statement is still distinct across all other chapters
+- Do NOT rebuild the full cross-chapter index
 
 ### 6.4 Update Reports
 
 Update `reports/consistency-report.md` with the revision results:
 - Replace the row for the revised chapter in the Voice Consistency table
-- Update transition rows involving the revised chapter in the Flow table
+- Update the revised chapter's row in the Flow table
 - Update affected entries in Cross-Chapter Consistency tables
 
 ## 7. Output Summary
@@ -788,20 +863,23 @@ After all passes complete (or after revision mode completes), return a summary t
 Editing complete for [Book Title].
 Chapters edited: [N]
 Voice consistency: [Clean/Minor/Significant] ([X] issues found, [Y] auto-resolved)
-Captivation: avg [X.X]/16 ([N] chapters below threshold)
-Transitions: [X]/[N-1] smooth
+Captivation: avg [X.X]/16 ([N] chapters below threshold 10)
+Opener/landing: [X]/[N] conformant
 Cross-references: [X] validated, [Y] flagged
 Report: [project_directory]/reports/consistency-report.md
 ```
 
 ## 8. Anti-Patterns
 
-- Do NOT edit body text during the flow pass (Pass 2) -- only touch final/first paragraphs of chapters
+- Do NOT edit body text during Pass 2 -- only touch the chapter opener and final paragraph
+- Do NOT create narrative bridges between chapters -- chapters are self-contained; do not force ending→opening connections
 - Do NOT run passes in parallel -- passes MUST be sequential (Pass 2 needs Pass 1 output, Pass 3 needs Pass 2 output)
 - Do NOT overwrite original drafts -- always write to the `edited/` directory
-- Do NOT produce subjective voice flags -- every flag must cite a specific rule from the voice profile (vocabulary violation, anti-pattern match, sentence length deviation)
+- Do NOT produce subjective voice flags -- every flag must cite a specific rule from the voice profile or dag-craft-rules.md
+- Do NOT flag pulpit-seam openers ("You see,", "Notice,", "Listen,") -- they are authentic and permitted (see §2.10)
+- Do NOT flag repeated scripture proof texts as dedup failures -- verse repetition is a feature (see §4.3 and §4.4.5)
 - Do NOT modify Book DNA, voice-profile.md, chapter-outline.md, or any shared file
 - Do NOT spawn subagents from within subagents -- if running as a chapter-editor subagent, work directly
 - Do NOT recursively check beyond one hop during revision adjacency checks
-- Do NOT run the entire manuscript through all three passes when in revision mode -- only process the affected chapters and their immediate neighbours
-- Do NOT treat Pass 3 findings as auto-fixable -- term inconsistencies and broken references should be flagged in the report for the user to decide, unless the fix is unambiguous (e.g., capitalisation drift)
+- Do NOT run the entire manuscript through all three passes when in revision mode -- only process affected chapters and immediate neighbours
+- Do NOT treat Pass 3 findings as auto-fixable -- term inconsistencies and broken references should be flagged for the user, unless the fix is unambiguous (e.g., capitalisation drift)

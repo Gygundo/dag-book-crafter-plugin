@@ -65,16 +65,13 @@ cp CHANGELOG.md "$STAGING/"
 find "$STAGING" -name '.DS_Store' -type f -delete
 echo "Gate 3 OK: whitelist copied to $STAGING"
 
-# --- Gate 4: dev→release name rewrite (staging only) ---
-sed -i.bak 's/"name": "dag-book-crafter-dev"/"name": "dag-book-crafter"/' "$STAGING/.claude-plugin/plugin.json"
-rm -f "$STAGING/.claude-plugin/plugin.json.bak"
+# --- Gate 4: plugin name check ---
+# This plugin distributes via GitHub marketplace (gygundo/dag-book-crafter-plugin),
+# so the repo plugin.json carries the release name directly — no dev-name rewrite.
 grep -q '"name": "dag-book-crafter"' "$STAGING/.claude-plugin/plugin.json" || {
-  echo "FAIL (Gate 4): staging plugin.json name rewrite failed" >&2; exit 1;
+  echo "FAIL (Gate 4): staging plugin.json name is not dag-book-crafter" >&2; exit 1;
 }
-grep -q '"name": "dag-book-crafter-dev"' .claude-plugin/plugin.json || {
-  echo "FAIL (Gate 4): repo plugin.json was accidentally mutated" >&2; exit 1;
-}
-echo "Gate 4 OK: staging=dag-book-crafter, repo=dag-book-crafter-dev"
+echo "Gate 4 OK: plugin name = dag-book-crafter"
 
 # --- Gate 5: claude plugin validate (guarded) ---
 if command -v claude >/dev/null 2>&1; then

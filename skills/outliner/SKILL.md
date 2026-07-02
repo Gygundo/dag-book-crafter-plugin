@@ -7,7 +7,7 @@ allowed-tools: Read, Write, Bash, Grep, Glob
 
 # Book Outliner
 
-Generates a chapter-by-chapter book outline with structured metadata per chapter, designs a narrative arc, and populates the Book DNA master context document after user approval.
+Generates a chapter-by-chapter book outline with structured metadata per chapter, maps a topical progression, and populates the Book DNA master context document after user approval.
 
 ## 1. On Invocation
 
@@ -24,7 +24,7 @@ Extract from `book-dna.md`:
 
 Extract from `voice-profile.md`:
 - Whether the profile includes a Theological/Domain Framework section (determines if scriptures are required per chapter)
-- The overall tone and voice characteristics (influences chapter title style and hook strategies)
+- The overall tone and voice characteristics (influences chapter title style and opener choices)
 
 ## 2. Determine Mode
 
@@ -45,25 +45,25 @@ Generate a book outline from scratch using the topic brief, key themes, target a
 
 ### Step 1: Determine chapter count from size tier
 
-| Size Tier | Chapters | Total Words | Per-Chapter Words |
-|-----------|----------|-------------|-------------------|
-| Booklet   | 5-8      | 15-20K      | ~2,500-3,500      |
-| Short     | 8-12     | 15-25K      | ~1,800-2,500      |
-| Standard  | 12-20    | 40-60K      | ~3,000-4,000      |
+| Size Tier | Chapters | Total Words | Per-Chapter Words | Note |
+|-----------|----------|-------------|-------------------|------|
+| Booklet *(DEFAULT)* | 8-15 | 10-20K | ~800-2,000 | Chapter length is driven by point count, not a template |
+| Short     | 15-25    | 20-35K      | ~1,000-2,000 | |
+| Standard  | 15-25    | 35-50K      | ~1,500-3,000 | |
 
-Choose a specific chapter count within the tier range based on the complexity and breadth of the topic. A narrow topic with deep treatment favours fewer, longer chapters. A broad topic with survey treatment favours more, shorter chapters.
+Choose a specific chapter count within the tier range based on the complexity and breadth of the topic. A narrow topic with deep treatment favours fewer, longer chapters. A broad topic with survey treatment favours more, shorter chapters. Chapter length imbalance across the book is authentic — a 700-word chapter may sit beside a 3,000-word one.
 
-### Step 2: Design the narrative arc
+### Step 2: Design the topical progression
 
-Before writing individual chapters, design the book's overall narrative arc:
+Before writing individual chapters, map the book's overall topical progression. Chapters are self-contained; the arc orders topics, it does not create suspense or withhold resolution.
 
-- **Opening:** What tension or question draws the reader in? What is the status quo the book disrupts?
-- **Progressive revelation:** How does understanding deepen chapter by chapter? What is the logical escalation?
-- **Climax:** What is the peak revelation or turning point? The "aha moment" the entire book builds toward.
-- **Resolution:** How does the book land? What does the reader walk away with? How are they changed?
+- **What to understand first:** Which foundational truths, definitions, or warnings must be established before the other teaching makes sense?
+- **What builds on it:** What sequence of topics deepens understanding naturally — each chapter assuming what was taught before?
+- **Strongest chapters:** Which topics deserve the fullest treatment and sit at the book's peak? These are where the main burden of proof lies.
+- **Commissioning close:** How does the book land the reader? A final exhortation, call to action, or blessing that sends them out to act on what they have learned.
 
 Write the arc as a single line:
-`[Opening tension] -> [Progressive revelation] -> [Climactic truth] -> [Resolution]`
+`[What to understand first] -> [What builds on it] -> [Strongest chapters] -> [Commissioning close]`
 
 ### Step 3: Assign momentum positions
 
@@ -71,65 +71,65 @@ Each chapter receives a momentum position that determines its energy, pacing, an
 
 | Position | Typical Chapters | Purpose |
 |----------|-----------------|---------|
-| Foundation | Chapters 1-2 | Establish the premise, hook the reader, lay groundwork. Set up the central question or tension. |
-| Building | Early-middle chapters | Develop arguments, introduce complexity, deepen understanding. Each chapter adds a new layer. |
-| Accelerating | Mid-late chapters | Increase intensity, connect threads, raise stakes. The reader feels momentum building. |
-| Climax | 1-2 chapters near end | Peak revelation, the "aha moment", most powerful content. Everything converges here. |
-| Landing | Final 1-2 chapters | Resolution, application, send-off with lasting impact. The reader knows what to do next. |
+| Foundation | Chapters 1-2 | Establish the premise, define key terms, orient the reader to the book's central claim. |
+| Building | Early-middle chapters | Develop arguments, deepen understanding, introduce further distinctions. Each chapter adds a new layer. |
+| Accelerating | Mid-late chapters | Intensify urgency, connect threads, apply more directly to the reader's situation. |
+| Climax | 1-2 chapters near end | Fullest and strongest teaching content. The main burden of the book lands here. |
+| Landing | Final 1-2 chapters | Commissioning close: exhortation, call to action, blessing, or prayer that sends the reader out. |
 
-Every outline must use all five momentum positions. The distribution should feel natural -- not every chapter needs a different position, but the overall trajectory must escalate from Foundation through Landing.
+Every outline must use all five momentum positions. The distribution should feel natural -- chapters may share a position, but the overall trajectory must move from Foundation through Landing.
 
 ### Step 4: Generate per-chapter metadata
 
 For each chapter, generate:
 
-- **Title:** Compelling and specific, not generic. "The Anatomy of Breakthrough" not "Chapter 3: More About Faith". The title should intrigue, not merely describe.
-- **Hook strategy:** Choose ONE of the following and write the specific hook in 1-2 sentences:
-  - **Bold declaration** -- a confident, provocative statement that demands engagement
-  - **Rhetorical question** -- a question that makes the reader stop and think before reading on
-  - **Counter-intuitive claim** -- a statement that contradicts common wisdom and creates curiosity
-  - **Tension-creating observation** -- an observation that exposes a gap between reality and expectation
-  **Story-first hooks (preferred):** Wherever possible, the hook should be wrapped in a story, anecdote, or vivid scene. The bold declaration, question, or tension emerges FROM the opening narrative rather than standing alone. Example: Instead of just "Your weakest moment wasn't a failure", open with a 2-3 sentence scene of someone experiencing that moment, then deliver the declaration as the insight that emerges from the story.
-- **Core argument:** The single central claim this chapter makes, in one sentence. Every paragraph in the chapter should serve this argument.
-- **Key arguments:** 3-5 supporting arguments that build the core argument. These become the chapter's structural backbone.
-- **Supporting scriptures:** 2-5 scripture references relevant to the chapter's argument. For theological books (voice profile has a Theological/Domain Framework section), this is mandatory. For non-theological voice profiles, write "[N/A -- non-theological voice profile]".
+- **Title:** Use Dag title patterns: counted lists ("Seven Ways to Deal with Familiarity", "Twelve Signs of Disloyalty"), "How to..." / "How You Can..." formulas, "Those Who..." constructions, or plain thematic titles. When a counted title is used, the number MUST match the chapter's point count exactly. Avoid vague or literary titles ("Chapter 3: More About Faith").
+- **Core point:** The single proposition this chapter teaches, in one sentence. Every passage in the chapter serves this proposition.
+- **opener_type:** Choose ONE of the three valid openers per DAG-01:
+  - `anchor_scripture` -- a block-quoted scripture immediately after the chapter title, key phrase in ALL CAPS, followed by a plain declarative sentence orienting the reader to the theme.
+  - `plain_declaration` -- a flat thesis statement of the chapter's point within the first two sentences ("You must be anointed because no one can fulfil his ministry by natural might.").
+  - `definition` -- the chapter's key term defined in the first sentence ("Intimidation is the art of deterring or controlling someone through fear.").
+  **Story openers are forbidden** (DAG-01). Stories belong inside numbered points, never at the chapter opening.
+- **Anchor scripture:** The reference to quote at the chapter head. Mandatory when `opener_type` is `anchor_scripture`. Omit when opener is `plain_declaration` or `definition`.
+- **Key scriptures:** 2-6 scripture references the chapter will draw on. KJV default; non-KJV must be labelled. For non-theological voice profiles, write "[N/A -- non-theological voice profile]".
+- **list_structure:** Either `{stem: "[the repeated grammatical frame every point reuses]", count: N}` for list chapters (e.g. `stem: "Develop steadfastness by...", count: 7`) OR `flowing` for narrative-teaching chapters. Most chapters should be list chapters. When a stem and count are declared, the chapter title MUST use that count. See DAG-03.
+- **key_statement:** The chapter's one-line quotable aphorism -- the signature maxim the reader should carry away ("The anointing is not something you learn, it is something you catch."). Must be distinct from key statements in other chapters unless declared as a refrain. See DAG-04.
+- **testimony_seed:** A pointer to real source material for the chapter's first-person testimony illustration. Format: `source_path:line` (examples: `sources/sermon-2024-03-15.md:42`, `book-dna.md:89`, `voice-profile.md:12`). Permitted source paths: `sources/{file}.md`, `sources-adapted/{file}.md`, `book-dna.md`, `voice-profile.md`. If no real fragment can be found after walking all available sources, leave empty with the note `no testimony available -- use biblical retelling, everyday analogy, or third-party anecdote`. Never invent a seed. See DAG-08.
 - **Momentum position:** Foundation | Building | Accelerating | Climax | Landing
-- **Connects to:** Which other chapters this chapter foreshadows, builds on, or callbacks to. Use the format: "Ch [X] (foreshadows [concept])", "Ch [Y] (builds on [concept])". Every chapter must connect to at least one other chapter.
-- **Target word count:** Calculated from the size tier's per-chapter range. Can vary by +/- 20% based on the chapter's role (climax chapters tend to be longer, foundation chapters moderate).
-- **Ending style:** Choose ONE:
-  - **cliffhanger_seed** -- end with a question, tension point, or preview that makes the reader NEED the next chapter. Best for Foundation and Building chapters where you want forward momentum.
-  - **reflective_hook** -- end with a reflective landing that lets the insight settle, followed by a 1-2 sentence forward hook. Best for Accelerating, Climax, and Landing chapters where the content needs to breathe before moving on.
-  The outliner designs which ending fits each chapter based on momentum position and content. Not every chapter should use the same ending style.
-- **central_image:** One dominant sensory anchor for the chapter, expressed as a concrete image (examples: "a drowning man reaching for a rope", "the cold coffee on the hospital waiting-room table", "a lighthouse visible through fog"). The writer MUST thread this image through the chapter's opening 200 words, middle third, and closing 200 words. This is a constraint, not a suggestion. See `references/bestseller-craft-rules.md` § CRAFT-03.
-- **vulnerability_beat_seed:** A pointer to real source material that the writer will draw on when composing the chapter's first-person vulnerability beat, formatted as `source_path:line` (examples: `sources/sermon-2024-03-15.md:42`, `book-dna.md:89`, `voice-profile.md:12`). Permitted source paths: `sources/{file}.md`, `sources-adapted/{file}.md`, `book-dna.md`, `voice-profile.md`. If no real fragment can be found after walking the available sources, leave this field empty and add the note `no vulnerability seed available -- skip beat` so the writer skips the beat for that chapter. Fabricated vulnerability beats are a CRAFT-04 hard fail. See `references/bestseller-craft-rules.md` § CRAFT-04.
+- **Connects to:** Which other chapters this chapter builds on or applies. Format: "Ch [X] (builds on [concept])", "Ch [Y] (applies [concept])". Every chapter must connect to at least one other chapter.
+- **Target word count:** Calculated from the size tier's per-chapter range. Imbalance across chapters is authentic and acceptable -- never pad a chapter to meet a target when the argument is complete.
 
 ### Step 5: Cross-chapter coherence check
 
 After generating all chapters, review the complete outline for coherence:
 
-1. **Progression check:** Does each chapter build on the previous one? Is there a logical flow?
-2. **Gap analysis:** Are there gaps in the argument progression? Missing links between ideas?
-3. **Momentum check:** Do the momentum positions actually escalate? Is there a clear build toward climax?
-4. **Connection density:** Are there enough cross-chapter connections (foreshadowing, callbacks)? Aim for at least 2 connections per chapter on average.
-5. **Climax delivery:** Does the climax chapter deliver on the tension set up in chapter 1?
-6. **Landing satisfaction:** Does the landing chapter resolve what was opened, without introducing new unresolved threads?
+1. **Coverage check:** Does the topical progression cover the book's subject completely? Are there gaps in the teaching?
+2. **Sequence check:** Is the teaching order logical -- do later chapters build on what earlier ones established?
+3. **Momentum check:** Do the momentum positions actually escalate? Is there a clear build from Foundation through Landing?
+4. **Connection density:** Are there enough cross-chapter references? Aim for at least 2 connections per chapter on average.
+5. **Peak delivery:** Do the Climax-position chapters carry the fullest, most substantive teaching? The strongest content must sit at the peak.
+6. **Landing energy:** Does the Landing chapter close with exhortation, command, or blessing -- not an open question or a teaser?
 
 If any check fails, revise the affected chapters before writing the output file.
 
-### Central Image Distinctness Check
+### Key Statement Distinctness Check
 
-After assigning `central_image` to every chapter, re-read the full list and verify no two chapters share a near-identical image. Use semantic judgment, not string match: "flickering candle" vs "dim candle" is too similar and must be revised; "drowning man" vs "lighthouse in fog" is distinct enough. If any pair is too similar, revise one of them so the two images occupy different sensory registers (visual vs tactile, interior vs exterior, quiet vs loud, etc.). Rationale: near-duplicate central_image values across chapters cause the book to blur — see `.planning/research/PITFALLS.md` Pitfall 9 (central_image collisions).
+After assigning `key_statement` to every chapter, re-read the full list and verify no two chapters share a near-identical aphorism. Use semantic judgement, not string match: "The anointing must be pursued" vs "The anointing must be sought" is too similar and must be revised; "The anointing flows to the humble" vs "Loyalty protects your ministry" is distinct enough. If any pair is too similar, rewrite one so the two statements are clearly distinct propositions. Near-duplicate key statements cause the book to blur -- the reader cannot distinguish the chapter's core truth.
 
-### Vulnerability Beat Seed Sourcing
+### Illustration Distinctness Expectation
 
-For each chapter, the outliner MUST walk the available source material to find a real fragment that can seed the chapter's vulnerability beat. Search order:
+No two chapters should reuse the same illustration, analogy vehicle, or anecdote. Different episodes from the same biblical narrative are acceptable if the events are distinct. This expectation will be checked by the editor's Novelty / Variation component.
 
-1. `sources-adapted/` (if present) — adapted source prose
-2. `sources/` (if present) — raw source material
-3. `voice-profile.md` — any first-person anecdotes or confessions in the voice profile
-4. `book-dna.md` — any first-person material already lifted into the Book DNA
+### Testimony Seed Sourcing
 
-For each chapter, pick the line that best matches the chapter's core argument and record the `vulnerability_beat_seed` as `source_path:line`. If no fragment exists in any of these locations for a given chapter, leave `vulnerability_beat_seed` empty AND add the note `no vulnerability seed available -- skip beat` so the writer skips the beat for that chapter. Never invent a seed or point at a line that does not exist. The writer enforces this by refusing to fabricate beats — see CRAFT-04.
+For each chapter, the outliner MUST walk the available source material to find a real fragment for the `testimony_seed`. Search order:
+
+1. `sources-adapted/` (if present) -- adapted source prose
+2. `sources/` (if present) -- raw source material
+3. `voice-profile.md` -- any first-person anecdotes in the voice profile
+4. `book-dna.md` -- any first-person material already lifted into the Book DNA
+
+For each chapter, pick the line that best matches the chapter's core point and record `testimony_seed` as `source_path:line`. If no fragment exists in any of these locations for a given chapter, leave `testimony_seed` empty AND add the note `no testimony available -- use biblical retelling, everyday analogy, or third-party anecdote` so the writer uses a permitted alternative. Never invent a seed or point at a line that does not exist. The writer enforces this by refusing to fabricate testimony -- see DAG-08.
 
 ## 4. Source Ingestion Mode
 
@@ -160,8 +160,8 @@ Across all source material, identify:
 
 Instead:
 - Group related themes across multiple source files
-- Identify the natural progressive argument that emerges from the combined material
-- Design a NEW book structure that serves the reader's journey, not the speaker's delivery schedule
+- Identify the natural topical progression that emerges from the combined material
+- Design a NEW book structure that serves the reader's learning, not the speaker's delivery schedule
 - Some source material may be split across multiple chapters; other material may be condensed into a single chapter
 
 ### Step 4: Apply the standard outline generation process
@@ -179,58 +179,52 @@ This gives the writer agent concrete material to weave in, maintaining continuit
 
 ## 5. Output: chapter-outline.md
 
-Write the outline to `[project]/chapter-outline.md` in this exact format. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `chapter-outline.md`** before the `# Book Outline: [Title]` heading. The comment is stripped by the formatter before .docx emission and exists only as a regression-chain anchor for Phase 12 tooling.
+Write the outline to `[project]/chapter-outline.md` in this exact format. **Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of `chapter-outline.md`** before the `# Book Outline: [Title]` heading. The comment is stripped by the formatter before .docx emission and exists only as a regression-chain anchor for Phase 12 tooling.
 
 ```markdown
 # Book Outline: [Title]
 
 ## Book Arc
-[Opening tension] -> [Progressive revelation] -> [Climactic truth] -> [Resolution]
+[What to understand first] -> [What builds on it] -> [Strongest chapters] -> [Commissioning close]
 
 ## Size Tier
 [booklet | short | standard]
 Target: [total word count] words, [chapter count] chapters, ~[per-chapter words] words/chapter
 
 ## Chapter 1: [Title]
-- **Hook strategy:** [Type] -- [Specific hook description in 1-2 sentences]
-- **Core argument:** [Single sentence central claim]
-- **Key arguments:**
-  1. [Argument 1]
-  2. [Argument 2]
-  3. [Argument 3]
-- **Supporting scriptures:** [Scripture 1], [Scripture 2], ...
+- **Core point:** [Single proposition this chapter teaches]
+- **opener_type:** [anchor_scripture | plain_declaration | definition]
+- **Anchor scripture:** [Reference -- mandatory when opener_type is anchor_scripture; omit otherwise]
+- **Key scriptures:** [2-6 references, KJV default]
+- **list_structure:** [stem: "[repeated grammatical frame]", count: N] OR [flowing]
+- **key_statement:** [One-line quotable aphorism -- distinct across all chapters]
+- **testimony_seed:** [source_path:line OR empty with note "no testimony available -- use biblical retelling, everyday analogy, or third-party anecdote"]
 - **Momentum position:** [Foundation | Building | Accelerating | Climax | Landing]
-- **Connects to:** Ch [X] (foreshadows...), Ch [Y] (builds on...)
+- **Connects to:** Ch [X] (builds on...), Ch [Y] (applies...)
 - **Target word count:** ~[N] words
-- **Ending style:** [cliffhanger_seed | reflective_hook]
-- **central_image:** [One dominant sensory anchor -- e.g. "a lighthouse visible through fog"]
-- **vulnerability_beat_seed:** [source_path:line OR empty with note "no vulnerability seed available -- skip beat"]
 
 ## Chapter 2: [Title]
-- **Hook strategy:** [Type] -- [Specific hook description in 1-2 sentences]
-- **Core argument:** [Single sentence central claim]
-- **Key arguments:**
-  1. [Argument 1]
-  2. [Argument 2]
-  3. [Argument 3]
-- **Supporting scriptures:** [Scripture 1], [Scripture 2], ...
+- **Core point:** [Single proposition this chapter teaches]
+- **opener_type:** [anchor_scripture | plain_declaration | definition]
+- **Anchor scripture:** [Reference -- mandatory when opener_type is anchor_scripture; omit otherwise]
+- **Key scriptures:** [2-6 references, KJV default]
+- **list_structure:** [stem: "[repeated grammatical frame]", count: N] OR [flowing]
+- **key_statement:** [One-line quotable aphorism -- distinct from Chapter 1's key statement]
+- **testimony_seed:** [source_path:line OR empty with note "no testimony available -- use biblical retelling, everyday analogy, or third-party anecdote"]
 - **Momentum position:** [Foundation | Building | Accelerating | Climax | Landing]
-- **Connects to:** Ch [X] (foreshadows...), Ch [Y] (builds on...)
+- **Connects to:** Ch [X] (builds on...), Ch [Y] (applies...)
 - **Target word count:** ~[N] words
-- **Ending style:** [cliffhanger_seed | reflective_hook]
-- **central_image:** [One dominant sensory anchor -- distinct from Chapter 1's image]
-- **vulnerability_beat_seed:** [source_path:line OR empty with note "no vulnerability seed available -- skip beat"]
 
 [... continue for all chapters ...]
 ```
 
 Every chapter MUST have all fields present. No field may be omitted for any chapter.
 
-The "Supporting scriptures" field may be "[N/A -- non-theological voice profile]" if the voice profile does not have a Theological/Domain Framework section.
+The "Key scriptures" field may be "[N/A -- non-theological voice profile]" if the voice profile does not have a Theological/Domain Framework section.
 
-For Source Ingestion Mode, add a "Source Material Notes" bullet after "Ending style" for each chapter:
+For Source Ingestion Mode, add a "Source Material Notes" bullet after "Target word count" for each chapter:
 ```markdown
-- **Ending style:** [cliffhanger_seed | reflective_hook]
+- **Target word count:** ~[N] words
 - **Source Material Notes:** [Key quotes, illustrations, or source references for this chapter]
 ```
 
@@ -241,7 +235,9 @@ After writing `chapter-outline.md`, report to the orchestrator:
 
 ## Refrain Candidate Gate (Phase 13, D-08)
 
-> Refrains are whitelisted phrases that may appear verbatim across chapters without tripping the Phase 13 dedup audit. Because a naively-inferred refrain becomes a loophole (Phase 13's root cause was a phrase that was de-facto treated as a refrain but never declared), this gate is MANDATORY — refrains cannot be auto-inferred from the brief alone. The author must confirm each candidate phrase before it is written into the Book DNA refrains block.
+> Refrains are whitelisted phrases that may appear verbatim across chapters without tripping the Phase 13 dedup audit. Because a naively-inferred refrain becomes a loophole (Phase 13's root cause was a phrase that was de-facto treated as a refrain but never declared), this gate is MANDATORY -- refrains cannot be auto-inferred from the brief alone. The author must confirm each candidate phrase before it is written into the Book DNA refrains block.
+
+**Auto-declared stems (no author gate required):** Before surfacing candidates to the author, the outliner AUTO-DECLARES each list chapter's stem (from `list_structure`) as a refrain with `scope: chapter_body` and `max_uses: [point count]`. These are pre-confirmed -- the outliner writes them directly into the Book DNA refrains block and reports them to the author as informational only, not blocking. The author confirmation gate covers only book-level maxims, repeated definitions, and any additional phrases the outliner proposes. Scripture blocks and benediction formulas ("May you...") are always exempt from dedup and never declared.
 
 ### Step 1: Extract refrain candidates
 
@@ -260,11 +256,11 @@ BEFORE writing `book-dna.md`, present the candidates to the author in plain text
 
 1. **Keep as refrain.** Author specifies `max_uses` (integer or the string `unlimited`) and `scope` (one of `whole_book`, `chapter_endings`, `front_matter_only`, `body_only`).
 2. **Demote to normal prose.** The phrase is removed from the refrain block; `craft-check.js --novelty` will flag any repetition.
-3. **Ignore** (candidate is noise — do not include at all).
+3. **Ignore** (candidate is noise -- do not include at all).
 
-Also offer: "Add a refrain I missed" — the author can specify a phrase the outliner did not propose.
+Also offer: "Add a refrain I missed" -- the author can specify a phrase the outliner did not propose.
 
-The gate BLOCKS outline-to-Book-DNA handoff until the author has answered every candidate. The orchestrator spawns writer subagents only after this gate resolves. This is a separate gate from the existing outline approval gate — both gates fire, both must be passed.
+The gate BLOCKS outline-to-Book-DNA handoff until the author has answered every candidate. The orchestrator spawns writer subagents only after this gate resolves. This is a separate gate from the existing outline approval gate -- both gates fire, both must be passed.
 
 ### Step 3: Write refrains YAML block into Book DNA
 
@@ -284,11 +280,11 @@ Every downstream skill that reads Book DNA (writer, editor, enricher, formatter,
 
 ### Fixture bypass (D-09)
 
-The `fixtures/tiny-book/` sample fixture ships with a pre-approved `book-dna.md` that already contains the refrains block. When the orchestrator is invoked by the sample skill (`skills/sample/SKILL.md`), the refrain candidate gate is SKIPPED — the pre-populated refrain block is authoritative. Detection signal: the orchestrator passes a project path pointing under `fixtures/tiny-book/` AND the `book-dna.md` at that path already contains a refrains YAML block. Under those two conditions, the gate bypasses non-interactively. This mirrors the outline-approval gate's fixture bypass in Phase 11 D-09.
+The `fixtures/tiny-book/` sample fixture ships with a pre-approved `book-dna.md` that already contains the refrains block. When the orchestrator is invoked by the sample skill (`skills/sample/SKILL.md`), the refrain candidate gate is SKIPPED -- the pre-populated refrain block is authoritative. Detection signal: the orchestrator passes a project path pointing under `fixtures/tiny-book/` AND the `book-dna.md` at that path already contains a refrains YAML block. Under those two conditions, the gate bypasses non-interactively. This mirrors the outline-approval gate's fixture bypass in Phase 11 D-09.
 
 ### Reinforcement of the distinctness rule
 
-The outliner's existing **Central Image Distinctness Check** (section 3, Step 5 area) is reinforced, not contradicted, by this gate. The old rule said "central images should be distinct across chapters." Phase 13 tightens this: same motif family is allowed, same descriptive vehicle is not. The refrain whitelist is the ONLY exception path. If a chapter's `central_image` field is near-identical to another chapter's, the outliner MUST propose one of them as a refrain candidate with `max_uses ≥ 2` OR rewrite one of the `central_image` values to use a distinct vehicle in the same family.
+The outliner's existing **Key Statement Distinctness Check** (section 3) is reinforced, not contradicted, by this gate. If a chapter's `key_statement` is near-identical to another chapter's, the outliner MUST propose one of them as a whole-book refrain with a budget OR rewrite one of the values to a clearly distinct aphorism. The refrain whitelist is the ONLY exception path for repeated aphorisms.
 
 ## 6. Post-Approval: Generate Book DNA
 
@@ -325,28 +321,30 @@ Copy from `voice-profile.md` if present. If the voice profile has no Theological
 Copy the Book Arc line from `chapter-outline.md`.
 
 #### 5. Chapter Map
-Build one entry per chapter from the outline. Each entry MUST carry every structured field, including the two Phase 10 additions `central_image` and `vulnerability_beat_seed`. Use a sub-list layout per chapter (preferred) because the two new fields push a table layout too wide. Minimal required shape:
+Build one entry per chapter from the outline. Each entry MUST carry every structured field from the approved outline. Use a sub-list layout per chapter. Exact shape required:
 
 ```markdown
 - **Ch [N]: [Title]**
-  - Core argument: [one sentence]
-  - Opening hook strategy: [type -- 1-2 sentence description]
-  - Key scriptures: [comma-separated]
-  - Connects to: [Ch X (foreshadows ...), Ch Y (builds on ...)]
+  - Core point: [one sentence -- the single proposition this chapter teaches]
+  - opener_type: [anchor_scripture | plain_declaration | definition]
+  - Anchor scripture: [reference -- quoted as chapter epigraph if opener_type is anchor_scripture]
+  - Key scriptures: [comma-separated references]
+  - list_structure: [stem: "[the repeated point-opener frame]", count: N] OR [flowing]
+  - key_statement: [the chapter's one-line quotable aphorism -- distinct across all chapters unless declared as a refrain]
+  - testimony_seed: [source_path:line OR empty with note "no testimony available -- use biblical retelling, everyday analogy, or third-party anecdote"]
+  - Connects to: [Ch X (builds on ...), Ch Y (applies ...)]
   - Momentum position: [Foundation | Building | Accelerating | Climax | Landing]
-  - central_image: [the dominant sensory anchor from the outline]
-  - vulnerability_beat_seed: [source_path:line OR empty with "no vulnerability seed available -- skip beat"]
 ```
 
-Both `central_image` and `vulnerability_beat_seed` are mandatory fields in the Chapter Map. Data is extracted directly from each chapter's structured fields in the outline — if either field is missing from the outline, return to Section 3 and populate it before emitting the Book DNA.
+All fields are mandatory in the Chapter Map. If any field is missing from the outline, return to Section 3 and populate it before emitting the Book DNA. The writer reads `opener_type`, `list_structure`, `key_statement`, and `testimony_seed` as hard constraints at draft time -- see `references/dag-craft-rules.md` § DAG-01, § DAG-03, § DAG-04, § DAG-08.
 
 #### 6. Running Themes
 Analyse the outline and identify 3-7 themes that recur across multiple chapters. For each theme, note:
 - Which chapter **introduces** the theme
 - Which chapters **develop** it
-- Which chapter provides the **climax** of that theme
+- Which chapter provides the **strongest treatment** of that theme
 
-Format: `- [Theme name]: Introduced Ch [X], developed Ch [Y, Z], climax Ch [W]`
+Format: `- [Theme name]: Introduced Ch [X], developed Ch [Y, Z], strongest treatment Ch [W]`
 
 #### 7. Key Terms and Jargon
 Extract key terms from the outline that need consistent definition across chapters. For each term:
@@ -359,23 +357,23 @@ These terms must be used consistently by every chapter agent. A term defined in 
 #### 8. Cross-Chapter Continuity
 Based on the "Connects to" fields in the outline, write explicit continuity notes:
 
-- **Foreshadowing:** "Chapter [X] sets up [concept] that pays off in Chapter [Y]"
-- **Callbacks:** "Chapter [X] references back to the illustration from Chapter [Y]"
-- **Running metaphors:** Any metaphor that should recur across chapters, with the chapters where it appears
-- **Recurring imagery:** Visual or conceptual imagery that builds throughout the book
+- **Builds on:** "Chapter [X] assumes the definition of [concept] established in Chapter [Y]"
+- **Applies:** "Chapter [X] applies the principle from Chapter [Y] to [specific situation]"
+- **Recurring verses:** Any proof text that functions as a book-level refrain, with the chapters where it appears
+- **Key term reuse:** Coined terms that recur across chapters and must be used consistently
 
 #### 9. Style Rules
 Derive from voice profile and outline:
 - **Spelling convention:** Default to British/SA English unless voice profile specifies otherwise
-- **Scripture translation default:** From voice profile's Scripture Handling section, or NKJV if not specified
-- **Target words per chapter:** From the outline's Size Tier section
-- **Formatting rules:** Any specific formatting instructions from the voice profile (e.g., "no em dashes", "bold for emphasis")
+- **Scripture translation default:** KJV -- alternates always labelled (NASB preferred, then NLT, NKJV, NIV, AMP, TLB)
+- **Target words per chapter:** From the outline's Size Tier section; chapter length is driven by point count -- imbalance across chapters is acceptable
+- **Formatting rules:** Bold numbered full-sentence point headings; scripture as blockquotes with reference lines; no em dashes; no italics-for-emphasis in prose
 
 #### 10. Add READ-ONLY marker and version stamp
 At the very top of `book-dna.md`, before the title, add these two HTML comments in this exact order (version stamp on line 1, READ-ONLY marker on line 2):
 
 ```
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.0.0 -->
 <!-- READ-ONLY: Do NOT modify this document during parallel chapter generation. Updates happen between pipeline stages only. -->
 ```
 
@@ -390,11 +388,12 @@ After writing `book-dna.md`, confirm completion:
 
 ## 7. Important Constraints
 
-- **Never skip the narrative arc design step.** Chapters without momentum positioning produce flat books that feel like a collection of blog posts rather than a progressive argument.
-- **Source Ingestion Mode must TRANSFORM source structure, not mirror it.** A sermon series has standalone talks; a book has a progressive argument. These are fundamentally different structures.
+- **Never skip the topical progression design step.** Chapters without momentum positioning produce books that feel like a collection of unrelated tracts rather than a coherent teaching series.
+- **Source Ingestion Mode must TRANSFORM source structure, not mirror it.** A sermon series has standalone talks; a book has a topical progression. These are fundamentally different structures.
 - **All outline fields are mandatory.** Do not omit any field for any chapter. If a field is not applicable (e.g., scriptures for non-theological books), use the explicit N/A notation.
-- **Per-chapter word targets must be calculated from the size tier.** Never leave word counts as placeholders or "TBD".
+- **Per-chapter word targets must be calculated from the size tier.** Never leave word counts as placeholders or "TBD". Imbalance across chapters is authentic -- do not force uniformity.
 - **Book DNA generation happens ONLY after outline approval.** If the outline has not been approved (no `<!-- APPROVED -->` marker in `chapter-outline.md`), do not generate Book DNA. The outliner's Section 6 is only invoked by the orchestrator after the user approves.
 - **The Book DNA READ-ONLY marker is critical.** It prevents parallel chapter agents from modifying the shared context document, which would cause voice drift and data corruption. Never omit it.
 - **Cross-chapter connections are not optional.** Every chapter must reference at least one other chapter. Isolated chapters produce disjointed books.
-- **The climax must deliver on the opening.** During the coherence check, verify that the climax chapter resolves the tension established in the foundation chapters.
+- **Counted titles must match point counts.** If a chapter title declares "Seven Ways to...", the chapter's `list_structure` count must be 7 and the writer must deliver exactly 7 points. Verify this before finalising the outline.
+- **Chapter closes are always landing, never unresolved.** Every chapter ends with exhortation, benediction, command, or scripture per DAG-07. No open questions, no teasers, no forward hooks. The Landing momentum position closes the whole book -- all others simply stop after the final point lands.

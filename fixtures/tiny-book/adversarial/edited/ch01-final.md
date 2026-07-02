@@ -1,14 +1,40 @@
-<!-- generated-by: dag-book-crafter v1.1.0 -->
-<!-- provenance: brief.md:1 -->
+<!-- generated-by: dag-book-crafter v1.0.0 -->
 
-# Chapter 1: The First Small Light
+# Chapter 1: What It Means to Be Strong
 
-I woke at three in the morning to the unlit bedside lamp beside me, a black shape in a blacker room, and I knew before I knew anything else that I would not sleep again that night. The unlit bedside lamp was the first thing my hand reached for, and my hand stopped halfway, as if switching it on would be a kind of admitting.
+Strength, in the biblical sense, is the capacity to endure, resist, and advance against opposition — not in your own natural ability, but in the power of God working through you. This is not strength that the world celebrates. The world celebrates muscle and money and the kind of courage that does not shake. But the strength the Bible commands is different. It is a strength that begins with a decision.
 
-I lay there. I thought about the day behind me and the day ahead of me. I thought about the people I had failed in small ways that felt, at three in the morning, like large ways. The weight of it pressed on my chest, not metaphorically, but the actual physical sensation of a ribcage unwilling to rise.
+## The World's Idea of Strength Is Wrong
 
-This is where most of the honest conversations with God begin, I think. Not in chapels. Not in worship sets. In the long blue hour where the unlit bedside lamp sits like a witness and you are too tired to be performative and too awake to be asleep.
+Most believers are waiting to feel strong before they act strong. They are waiting for the fear to leave, for the pressure to ease, for the circumstances to improve — and then, they say, they will be bold. They will pray. They will stand. But this is not how the Bible works.
 
-I want to tell you what I learned in that hour. I learned that God is not afraid of three-in-the-morning prayers. I learned that the unlit bedside lamp was never the enemy; it was the invitation. I learned that the weight of it pressed on my chest was not punishment. It was gravity doing what gravity does to unheld things.
+Consider what God said to Joshua when Moses had just died and the Israelites were standing before the most difficult assignment of their generation. He did not say, "Wait until you feel confident." He said:
 
-I eventually reached out and turned the lamp on. Warm yellow bloomed across the ceiling. I said, out loud, to no one and to everyone, "Alright. Alright." And that was the first prayer of the new thing.
+> *Be STRONG and of a good courage; be not afraid, neither be thou dismayed: for the Lord thy God is with thee whithersoever thou goest.*
+> -- Joshua 1:9
+
+Notice that the command came before the victory. Joshua was instructed to be strong before a single city had fallen. Strength was not the reward for obedience — it was the starting point for it. You must understand this. Do not wait to feel ready. Decide to be strong, and the feeling will follow the decision.
+
+## Strength Begins With a Decision
+
+Years ago, a young man from a farming village enlisted to be a soldier. He arrived at the barracks with all the enthusiasm in the world, but his body was entirely unprepared. When the first long march came, he fell behind the other recruits. When the first physical test came, his arms were too tired to hold his weapon steady. He had courage enough — what he lacked was the strength that comes only from consistent preparation. He eventually learned this. But he lost months he could not recover. Do not make the same mistake. Strengthen yourself before the battle, not during it!
+
+This is where many believers find themselves today. You have the Word of God. You have access to prayer. You have the Holy Spirit living inside you. But you have not been building your strength in these resources consistently enough to stand when the pressure arrives.
+
+> *Finally, my brethren, BE STRONG IN THE LORD, and in the power of his might.*
+> -- Ephesians 6:10
+
+In other words, the instruction is to draw your strength from the Lord himself, not from your own reserves. The believer who tries to be strong in himself will always reach his limit. The believer who is strong in the Lord has access to a limitless supply.
+
+## What Makes a Believer Genuinely Strong
+
+Are you drawing on God's power daily? Are you building your spirit through the Word and prayer? Are you surrounding yourself with people who are going in the right direction? Or are you running empty and calling it faithfulness?
+
+You must answer these questions honestly. A believer who neglects his spirit is a soldier who does not maintain his weapons. He will be surprised when the battle begins and he finds himself unable to fight.
+
+Strength is a decision before it is a feeling.
+
+Decide today that you will be strong. Decide that you will pray. Decide that you will build. And as you make that decision, God will honour it with His enabling power. He always does.
+
+> *The Lord is my strength and my shield; my heart trusted in him, and I am helped.*
+> -- Psalm 28:7

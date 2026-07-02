@@ -57,7 +57,7 @@ Use the `Agent` tool to spawn the `dag-book-crafter:orchestrator` skill. The inv
 
 - **Project path:** `${CLAUDE_PLUGIN_ROOT}/fixtures/tiny-book/run/` (this overrides the orchestrator's default `~/Documents/Books/` location — D-10)
 - **Brief:** the full contents of `${CLAUDE_PLUGIN_ROOT}/fixtures/tiny-book/brief.md` (read it first, then paste into the prompt)
-- **Voice profile:** `spiritual-default`
+- **Voice profile:** `dag-default`
 - **Size tier:** `booklet`
 - **Execution mode:** **Full Pipeline, no review gates.** State this verbatim. The fixture is pre-approved (D-09) so every approval gate (outline approval, edit review, etc.) must be bypassed.
 - **Final .docx output path:** Instruct the formatter to write the final `.docx` to `${CLAUDE_PLUGIN_ROOT}/fixtures/tiny-book/run/final/` explicitly. Use plain language such as: *"Write the final .docx to `${CLAUDE_PLUGIN_ROOT}/fixtures/tiny-book/run/final/` — do not use the default `~/Documents/Books/` location."* The PASS line path in §5 is locked to `fixtures/tiny-book/run/final/<name>.docx` per D-12, so the sample skill owns this override.

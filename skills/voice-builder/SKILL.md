@@ -169,19 +169,19 @@ Each anti-pattern should include a brief "because" explaining why it violates th
 
 **## [Domain] Framework**
 
-Only include if domain was detected AND user confirmed (see Section 6). Extract the domain-specific beliefs, positions, or framework from the source material. Use the same structure as the spiritual-default.md Theological Framework section: a bulleted list of core positions with brief explanations.
+Only include if domain was detected AND user confirmed (see Section 6). Extract the domain-specific beliefs, positions, or framework from the source material. Use the same structure as the dag-default.md Theological/Domain Framework section: a bulleted list of core positions with brief explanations.
 
-**## Reader Moments**
+**## Reader Situations**
 
-Always include this section when the corpus supports it. It enables CRAFT-06 enforcement in the editor — the writer selects ≥2 concrete reader-moments per chapter to anchor abstract claims.
+Always include this section when the corpus supports it. It enables DAG-07 enforcement in the editor -- the writer selects ≥2 concrete reader situations per chapter to anchor direct address and application commands.
 
-During Pass 1 corpus analysis, extract concrete everyday scenes the source material mentions or implies. Group them by mood: anxiety moments, grief moments, doubt moments, joy moments, longing moments, relief moments, and so on. Each moment must be a specific lived experience (e.g. "the 2am phone-check after an argument", "the grocery-aisle grief flash when their favourite cereal appears") — not an abstract feeling ("feeling anxious", "being sad").
+During Pass 1 corpus analysis, extract concrete ministry and Christian-life situations the source material mentions or implies. Group them by category: ministry and calling, Christian living, warning situations, and any others that emerge from the corpus. Each situation must be a specific lived scenario (e.g. "the associate pastor tempted to criticise his senior in private", "the believer too busy to pray who checks the clock five minutes in") -- not an abstract feeling.
 
-**Target output:** ≥12 moments across ≥3 mood categories. Format as a `## Reader Moments` section with `### [Mood]` subheadings, matching the schema in `references/voice-profiles/voice-profile-spec.md` § 8 and the example shape in `references/voice-profiles/spiritual-default.md` § Reader Moments.
+**Target output:** ≥12 situations across ≥3 categories. Format as a `## Reader Situations` section with `### [Category]` subheadings, matching the schema in `references/voice-profiles/voice-profile-spec.md` § 8 and the example shape in `references/voice-profiles/dag-default.md` § Reader Situations.
 
-**Partial-corpus fallback:** If the source corpus does not yield enough concrete moments (fewer than 8), emit the `## Reader Moments` section with whatever was found and append an HTML comment: `<!-- reader_moments_partial: only N moments extracted from corpus; editor runs CRAFT-06 in flag-only mode -->`. The editor will honour that marker and skip hard-fail on CRAFT-06 for books generated with this profile.
+**Partial-corpus fallback:** If the source corpus does not yield enough concrete situations (fewer than 8), emit the `## Reader Situations` section with whatever was found and append an HTML comment: `<!-- reader_situations_partial: only N situations extracted from corpus; editor runs DAG-07 in flag-only mode -->`. The editor will honour that marker and skip hard-fail on DAG-07 for books generated with this profile.
 
-**No-corpus fallback:** If fewer than 3 concrete moments can be extracted, omit the section entirely. Custom profiles without Reader Moments cause the editor to run CRAFT-06 in flag-only mode automatically (per voice-profile-spec.md § 8).
+**No-corpus fallback:** If fewer than 3 concrete situations can be extracted, omit the section entirely. Custom profiles without Reader Situations cause the editor to run DAG-07 in flag-only mode automatically (per voice-profile-spec.md § 8).
 
 **## Calibration Examples**
 

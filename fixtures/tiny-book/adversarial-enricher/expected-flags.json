@@ -1,22 +1,22 @@
 {
   "tier1": {
     "repeated_spans": [],
-    "vulnerability_beat_reuse": [],
-    "central_image_reuse": [],
+    "illustration_reuse": [],
+    "key_statement_reuse": [],
     "refrain_overuse": []
   },
   "tier2": {
     "discussion_question_stems": [
-      { "stem": "what does this chapter reveal about the character of god when you are afraid", "min_chapters": 2, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
+      { "stem": "What does this chapter teach you about the strength God requires from you", "min_chapters": 2, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
     ],
     "prayer_point_repetition": [
-      { "phrase": "father i ask you to meet me in the dark", "min_chapters": 2, "theological_gated": true, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
+      { "phrase": "Father, I ask you to make me strong in the evil day", "min_chapters": 2, "files": ["enrichments/ch01-enrichments.md", "enrichments/ch02-enrichments.md"] }
     ],
     "vulnerability_bleed_to_summary": [
-      { "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md", "span": "my hands would not stop shaking as i tried to pray" }
+      { "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md", "span": "the strength God demands is not the product of human effort alone — it flows from a connection with the source of all power" }
     ],
     "vehicle_reuse_in_backmatter": [
-      { "vehicle": "phone glow over the ceiling", "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md" }
+      { "vehicle": "vine drawing from its root", "source_chapter": "ch01", "duplicate_file": "enrichments/ch02-enrichments.md" }
     ]
   },
   "flag": true,

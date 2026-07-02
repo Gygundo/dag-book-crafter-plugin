@@ -112,13 +112,13 @@ function convertSmartQuotes(text) {
 }
 ```
 
-### Strip HTML Comments (CRAFT-15 / D-21)
+### Strip HTML Comments (F-15 / D-21)
 
-Before passing any chapter markdown to docx-js, the formatter MUST strip every HTML comment from the source. Chapters emitted upstream carry two mandatory header comments — `<!-- provenance: {source_path}:{line} -->` on line 1 and `<!-- generated-by: dag-book-crafter v1.1.0 -->` on line 2 — plus trailing `<!-- METADATA -->` and (from the editor) `<!-- VOICE AUDIT -->` blocks. None of these comments may reach the final `.docx`.
+Before passing any chapter markdown to docx-js, the formatter MUST strip every HTML comment from the source. Chapters emitted upstream carry two mandatory header comments — `<!-- provenance: {source_path}:{line} -->` on line 1 and `<!-- generated-by: dag-book-crafter v1.0.0 -->` on line 2 — plus trailing `<!-- METADATA -->` and (from the editor) `<!-- VOICE AUDIT -->` blocks. None of these comments may reach the final `.docx`.
 
 **Rule:** Run `content = content.replace(/<!--[\s\S]*?-->/g, '')` over the chapter text immediately after reading the file and before any other parsing. This single regex covers provenance comments, `generated-by` version stamps, METADATA blocks, VOICE AUDIT blocks, and any other HTML comment an upstream skill may emit. Use `[\s\S]` (not `.`) so the pattern matches across newlines; use the non-greedy `*?` so adjacent comments do not collapse into one match.
 
-**Post-condition assertion:** After the final `.docx` is written, the formatter asserts that the rendered document contains zero occurrences of the literal strings `generated-by` and `provenance:` in any text run. If either string survives into the document body, the .docx is considered corrupted and the formatter reports a CRAFT-15 formatter failure.
+**Post-condition assertion:** After the final `.docx` is written, the formatter asserts that the rendered document contains zero occurrences of the literal strings `generated-by` and `provenance:` in any text run. If either string survives into the document body, the .docx is considered corrupted and the formatter reports a F-15 formatter failure.
 
 ### parseChapterMarkdown(content)
 
@@ -143,8 +143,8 @@ function parseChapterMarkdown(content) {
   // Strip ALL remaining HTML comments (provenance, generated-by version stamps,
   // and any other upstream comments). This covers both
   // <!-- provenance: sources/ch01.md:12 --> and
-  // <!-- generated-by: dag-book-crafter v1.1.0 -->.
-  // Per CRAFT-15 / D-21, no HTML comment may survive into the .docx.
+  // <!-- generated-by: dag-book-crafter v1.0.0 -->.
+  // Per F-15 / D-21, no HTML comment may survive into the .docx.
   content = content.replace(/<!--[\s\S]*?-->/g, '').trim();
 
   const lines = content.split('\n');
@@ -201,15 +201,42 @@ function parseChapterMarkdown(content) {
       if (refLine) {
         paragraphs.push(new Paragraph({
           style: "ScriptureReference",
-          children: [new TextRun({ text: refLine, font: "Georgia", size: 20 })],
+          children: [new TextRun({ text: refLine, font: "Georgia", size: 20, bold: true })],
         }));
       }
       continue;
     }
 
+    // Detect numbered point heading (DAG-03 list chapter): **N. Full sentence.**
+    // Also handles ### N. Full sentence. writer convention.
+    if (/^\*\*\d+\..+\*\*\s*$/.test(line) || (/^#{2,3}\s+\d+\./.test(line))) {
+      const headingText = line.replace(/^\*\*|\*\*\s*$/g, '').replace(/^#{2,3}\s+/, '').trim();
+      paragraphs.push(new Paragraph({
+        style: "NumberedPointHeading",
+        children: [new TextRun({ text: headingText, bold: true, font: "Georgia", size: 26 })],
+      }));
+      i++;
+      continue;
+    }
+
+    // Detect section heading (DAG-03 flowing chapter): ## or ### Short Title Case
+    if (/^#{2,3}\s+/.test(line)) {
+      const headingText = line.replace(/^#{2,3}\s+/, '').trim();
+      paragraphs.push(new Paragraph({
+        style: "SectionHeading",
+        children: [new TextRun({ text: headingText, bold: true, font: "Georgia", size: 24 })],
+      }));
+      i++;
+      continue;
+    }
+
     // Collect regular paragraph (may span multiple non-empty lines until blank line)
     const paraLines = [];
-    while (i < lines.length && lines[i].trim() && !lines[i].trim().startsWith(':::') && !isScriptureBlockStart(lines, i)) {
+    while (i < lines.length && lines[i].trim()
+      && !lines[i].trim().startsWith(':::')
+      && !isScriptureBlockStart(lines, i)
+      && !/^\*\*\d+\..+\*\*\s*$/.test(lines[i].trim())
+      && !/^#{2,3}\s+/.test(lines[i].trim())) {
       paraLines.push(lines[i].trim());
       i++;
     }
@@ -359,7 +386,7 @@ function renderEnrichmentParagraphs(enrichment) {
 
 ## 4. Document Styles
 
-**Typography convention (per D-11):** Chapter headings and section headings use Calibri (sans-serif) for a modern bestseller look. Body text, front matter, back matter, and all non-heading text use Georgia (serif) for readability. This mixed-font approach is standard in modern Christian non-fiction publishing.
+**Typography convention (per D-11):** Chapter headings use Calibri (sans-serif) for visual contrast; numbered point headings and section headings use Georgia bold for the Dag teaching style. Body text, front matter, back matter, and all non-heading text use Georgia (serif) for readability. This mixed-font approach is standard in modern Christian non-fiction publishing.
 
 Define the complete styles object for the Document:
 
@@ -394,18 +421,37 @@ const bookStyles = {
       run: { font: "Georgia", size: 22, italics: true }, // 11pt italic
       paragraph: {
         indent: { left: convertInchesToTwip(0.5), right: convertInchesToTwip(0.5) },
-        spacing: { before: 240, after: 120, line: 360 },
+        spacing: { before: 360, after: 120, line: 360 }, // full blank-line gap before block
       },
     },
     {
       id: "ScriptureReference",
       name: "Scripture Reference",
       basedOn: "Normal",
-      run: { font: "Georgia", size: 20 }, // 10pt
+      run: { font: "Georgia", size: 20, bold: true }, // 10pt bold
       paragraph: {
         alignment: AlignmentType.RIGHT,
         indent: { left: convertInchesToTwip(0.5), right: convertInchesToTwip(0.5) },
-        spacing: { after: 240 },
+        spacing: { after: 360 }, // full blank-line gap after block
+      },
+    },
+    {
+      id: "NumberedPointHeading",
+      name: "Numbered Point Heading",
+      basedOn: "Normal",
+      run: { font: "Georgia", size: 26, bold: true }, // 13pt bold -- DAG-03 numbered point
+      paragraph: {
+        spacing: { before: 360, after: 120 },
+      },
+    },
+    {
+      id: "SectionHeading",
+      name: "Section Heading",
+      basedOn: "Normal",
+      run: { font: "Georgia", size: 24, bold: true }, // 12pt bold centred -- DAG-03 flowing chapter
+      paragraph: {
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 360, after: 120 },
       },
     },
     {
@@ -652,7 +698,7 @@ ONE section containing ALL chapters. Chapters are separated by `pageBreakBefore:
 }
 ```
 
-The `buildChapterContent` function iterates over each chapter file in order:
+The `buildChapterContent` function iterates over each chapter file in order. Each chapter opens with a centred "Chapter N" label (page break before) followed by the chapter title as HEADING_1 (centred, in TOC). Only HEADING_1 paragraphs appear in the TOC; the label paragraph does not.
 
 ```javascript
 function buildChapterContent(chapterFiles, chapterTitles) {
@@ -661,10 +707,18 @@ function buildChapterContent(chapterFiles, chapterTitles) {
     const chapterContent = fs.readFileSync(chapterFiles[i], 'utf-8');
     const chapterTitle = chapterTitles[i];
 
-    // Chapter heading with page break
+    // "Chapter N" label -- centred, page break before, NOT in TOC
+    children.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      pageBreakBefore: true,
+      spacing: { before: 720, after: 120 },
+      children: [new TextRun({ text: `Chapter ${i + 1}`, font: "Calibri", size: 36, color: "555555" })],
+    }));
+
+    // Chapter title -- HEADING_1 centred (goes into TOC)
     children.push(new Paragraph({
       heading: HeadingLevel.HEADING_1,
-      pageBreakBefore: true,
+      alignment: AlignmentType.CENTER,
       children: [new TextRun(chapterTitle)],
     }));
 
@@ -999,7 +1053,7 @@ function parseChapterMarkdown(content) {
   content = content.replace(/<!--\s*VOICE AUDIT[\s\S]*?-->/, '').trim();
 
   // Strip ALL remaining HTML comments (provenance + generated-by version stamps).
-  // Per CRAFT-15 / D-21, no HTML comment may survive into the .docx.
+  // Per F-15 / D-21, no HTML comment may survive into the .docx.
   content = content.replace(/<!--[\s\S]*?-->/g, '').trim();
 
   const lines = content.split('\n');
@@ -1056,15 +1110,42 @@ function parseChapterMarkdown(content) {
       if (refLine) {
         paragraphs.push(new Paragraph({
           style: "ScriptureReference",
-          children: [new TextRun({ text: refLine, font: "Georgia", size: 20 })],
+          children: [new TextRun({ text: refLine, font: "Georgia", size: 20, bold: true })],
         }));
       }
       continue;
     }
 
+    // Detect numbered point heading (DAG-03 list chapter): **N. Full sentence.**
+    // Also handles ### N. Full sentence. writer convention.
+    if (/^\*\*\d+\..+\*\*\s*$/.test(line) || (/^#{2,3}\s+\d+\./.test(line))) {
+      const headingText = line.replace(/^\*\*|\*\*\s*$/g, '').replace(/^#{2,3}\s+/, '').trim();
+      paragraphs.push(new Paragraph({
+        style: "NumberedPointHeading",
+        children: [new TextRun({ text: headingText, bold: true, font: "Georgia", size: 26 })],
+      }));
+      i++;
+      continue;
+    }
+
+    // Detect section heading (DAG-03 flowing chapter): ## or ### Short Title Case
+    if (/^#{2,3}\s+/.test(line)) {
+      const headingText = line.replace(/^#{2,3}\s+/, '').trim();
+      paragraphs.push(new Paragraph({
+        style: "SectionHeading",
+        children: [new TextRun({ text: headingText, bold: true, font: "Georgia", size: 24 })],
+      }));
+      i++;
+      continue;
+    }
+
     // Collect regular paragraph (may span multiple non-empty lines until blank line)
     const paraLines = [];
-    while (i < lines.length && lines[i].trim() && !lines[i].trim().startsWith(':::') && !isScriptureBlockStart(lines, i)) {
+    while (i < lines.length && lines[i].trim()
+      && !lines[i].trim().startsWith(':::')
+      && !isScriptureBlockStart(lines, i)
+      && !/^\*\*\d+\..+\*\*\s*$/.test(lines[i].trim())
+      && !/^#{2,3}\s+/.test(lines[i].trim())) {
       paraLines.push(lines[i].trim());
       i++;
     }
@@ -1214,18 +1295,37 @@ const bookStyles = {
       run: { font: "Georgia", size: 22, italics: true }, // 11pt italic
       paragraph: {
         indent: { left: convertInchesToTwip(0.5), right: convertInchesToTwip(0.5) },
-        spacing: { before: 240, after: 120, line: 360 },
+        spacing: { before: 360, after: 120, line: 360 }, // full blank-line gap before block
       },
     },
     {
       id: "ScriptureReference",
       name: "Scripture Reference",
       basedOn: "Normal",
-      run: { font: "Georgia", size: 20 }, // 10pt
+      run: { font: "Georgia", size: 20, bold: true }, // 10pt bold
       paragraph: {
         alignment: AlignmentType.RIGHT,
         indent: { left: convertInchesToTwip(0.5), right: convertInchesToTwip(0.5) },
-        spacing: { after: 240 },
+        spacing: { after: 360 }, // full blank-line gap after block
+      },
+    },
+    {
+      id: "NumberedPointHeading",
+      name: "Numbered Point Heading",
+      basedOn: "Normal",
+      run: { font: "Georgia", size: 26, bold: true }, // 13pt bold -- DAG-03 numbered point
+      paragraph: {
+        spacing: { before: 360, after: 120 },
+      },
+    },
+    {
+      id: "SectionHeading",
+      name: "Section Heading",
+      basedOn: "Normal",
+      run: { font: "Georgia", size: 24, bold: true }, // 12pt bold centred -- DAG-03 flowing chapter
+      paragraph: {
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 360, after: 120 },
       },
     },
     {
@@ -1264,9 +1364,17 @@ async function main() {
   const bodyChildren = [];
   for (let i = 0; i < chapterFiles.length; i++) {
     const content = fs.readFileSync(chapterFiles[i], 'utf-8');
+    // "Chapter N" label -- centred, page break before, NOT in TOC
+    bodyChildren.push(new Paragraph({
+      alignment: AlignmentType.CENTER,
+      pageBreakBefore: true,
+      spacing: { before: 720, after: 120 },
+      children: [new TextRun({ text: `Chapter ${i + 1}`, font: "Calibri", size: 36, color: "555555" })],
+    }));
+    // Chapter title -- HEADING_1 centred (goes into TOC)
     bodyChildren.push(new Paragraph({
       heading: HeadingLevel.HEADING_1,
-      pageBreakBefore: true,
+      alignment: AlignmentType.CENTER,
       children: [new TextRun(CHAPTER_TITLES[i] || `Chapter ${i + 1}`)],
     }));
     const { paragraphs } = parseChapterMarkdown(content);

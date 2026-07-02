@@ -110,14 +110,16 @@ For each chapter of a theological book, generate 2-4 prayer points.
 - "Father, I thank You that [specific truth from chapter] is not a future promise but a present reality. I declare that [specific implication from the chapter's argument]."
 - "Lord, I receive the truth that [specific revelation]. Like [biblical figure mentioned in chapter], I choose [specific response connected to chapter content]."
 - "I pray for eyes to see that [specific reframing from chapter]. You are the God who [specific attribute explored in chapter], and I trust [specific aspect of the chapter's conclusion]."
+- "May you [specific blessing drawn from the chapter's core truth] -- in Jesus' name." *(Benediction form: "May you..." is a permitted and authentic closing form in the dag-default voice; use as a chapter-close prayer point.)*
 
 ### Prayer voice calibration
 
-Prayer points must match the theological framework in the voice profile:
-- Grace-based theology: prayers of gratitude and declaration, not striving or self-effort
-- Identity in Christ: prayers that affirm who the believer IS, not what they must DO
-- New Covenant lens: prayers that celebrate the finished work, not plead for what is already given
-- Authority of the believer: prayers of bold declaration, not timid begging
+Prayer points must match the dag-default voice and theological framework:
+- Direct "you" address throughout -- prayer points speak to the reader as the subject, even when addressed to God
+- Bold declaration over timid petition: "I declare that..." / "May you walk in..." rather than "Please help me to try to..."
+- Supernatural affirming as plain fact: the anointing, breakthrough, and blessing are stated as reachable realities
+- Commands and exhortations are permitted within prayers: "Decide today to..." / "Refuse to be intimidated..."
+- "May you..." benediction forms are encouraged at chapter closes; they are authentic Dag style and are dedup-exempt
 
 ## 6. Foreword (ENH-06)
 
@@ -139,18 +141,19 @@ Default to author-voice mode unless the Book DNA metadata contains a "Foreword m
 - The foreword does NOT give away climax revelations
 - The foreword TEASES the journey without revealing destinations
 - Match the book's voice profile for tone and vocabulary
+- **Dag voice requirements:** Direct "you" address from the first paragraph; no literary scene-setting (no atmosphere, weather, slow builds, or sensory openers); plain declarative sentences; the foreword begins with a claim or a direct address to the reader, not a scene or story
 
 ## 6.1 Anti-Loop Clause (Foreword)
 
-> The SC-6 proof run revealed that the enricher copies verbatim sentences from edited chapters into the foreword. Three 6+ word spans from ch01 bled into front-matter/foreword.md, causing craft-check.js --novelty to flag 4 repeated_spans. This clause is the structural fix on the enricher side — mirroring the writer's Anti-Loop Clause (Phase 13, D-30).
+> The SC-6 proof run revealed that the enricher copies verbatim sentences from edited chapters into the foreword. Three 6+ word spans from ch01 bled into front-matter/foreword.md, causing craft-check.js --novelty to flag 4 repeated_spans. This clause is the structural fix on the enricher side.
 
 When generating the foreword, you read all edited chapters for context. You MUST NOT copy from them. Honour these rules:
 
 1. **No 6+ word phrase reuse from any chapter or enrichment file.** Before committing any sentence in the foreword, check whether a 6-or-more-word span appears in any `edited/ch*-final.md` file or any `enrichments/ch*-enrichments.md` file. If yes, REWRITE the sentence using different words. The foreword frames PURPOSE — it does not quote chapters.
 
-2. **No vulnerability beat reproduction.** If an edited chapter contains a first-person vulnerability beat (a named confession, doubt, fear, or struggle in the middle third), the foreword MUST NOT reproduce that scene — even paraphrased. The foreword may reference the THEME of vulnerability (e.g., "this book doesn't hide from the hard moments") but must not retell the specific scene. Vulnerability beats are single-use per Phase 13 D-30 rule 2.
+2. **No first-person testimony reproduction.** If an edited chapter contains first-person testimony drawn from a `testimony_seed`, the foreword MUST NOT reproduce that testimony — even paraphrased. The foreword may reference the THEME (e.g., "this book draws on real experience") but must not retell the specific account. First-person testimony is single-use per DAG-08.
 
-3. **Central image vehicle distinctness.** If the foreword uses imagery from the book's motif family, it must use a DIFFERENT vehicle from any chapter's central_image. Read the Book DNA Chapter Map to see which vehicles are already assigned. The foreword's imagery should complement, not duplicate.
+3. **Key statement distinctness.** The foreword's own aphorisms and maxims must be freshly composed, not copied from any chapter's declared `key_statement` field. Read the Book DNA Chapter Map to see which key statements are already assigned to chapters. The foreword's language should complement, not duplicate.
 
 4. **Refrains are the ONLY permitted verbatim reuse.** Read the refrains YAML block from `[project_directory]/book-dna.md`. Each entry has phrase, max_uses, and scope. You may use each refrain phrase up to its max_uses budget in the declared scope. Every other verbatim span copied from a chapter is a violation.
 
@@ -160,10 +163,10 @@ The orchestrator's post-enricher novelty gate (Stage 4.6) runs `craft-check.js -
 
 **Output format for foreword (`front-matter/foreword.md`):**
 
-**Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `front-matter/foreword.md`** (line 1, above the `# Foreword` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
+**Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of `front-matter/foreword.md`** (line 1, above the `# Foreword` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
 
 ```markdown
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.0.0 -->
 # Foreword
 
 [500-800 word foreword text]
@@ -178,10 +181,10 @@ generated: [date]
 
 ## 7. Output Format
 
-For each chapter, write `enrichments/ch[NN]-enrichments.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of every `enrichments/ch[NN]-enrichments.md` file** (line 1, above the `# Enrichments` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
+For each chapter, write `enrichments/ch[NN]-enrichments.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of every `enrichments/ch[NN]-enrichments.md` file** (line 1, above the `# Enrichments` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
 
 ```markdown
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.0.0 -->
 # Enrichments: Chapter [N] - [Chapter Title]
 
 ## Discussion Questions
@@ -238,7 +241,7 @@ generated: [date]
 - Do NOT write discussion questions from the summary alone -- read the FULL chapter text to find specific arguments, illustrations, and scriptures to reference.
 - Do NOT write prayer points that are rephrased teaching. Prayer points are RESPONSES to revelation, not summaries of it.
 - Do NOT write a foreword that summarises the book. A foreword frames PURPOSE.
-- Do NOT break voice. All enrichment content must match the book's voice profile. Academic-sounding discussion questions on a conversational book will feel jarring.
+- Do NOT break voice. All enrichment content must match the dag-default voice: direct "you" address, plain declarative sentences, commands permitted. Academic-sounding discussion questions feel jarring against the teaching register.
 - Do NOT include prayer points for non-theological books. Check the `is_theological` flag and skip entirely.
 - Do NOT mention specific chapter numbers in the foreword. The foreword teases the journey, it does not provide a road map.
 - Do NOT modify any input files (edited chapters, book-dna.md, voice-profile.md, chapter-outline.md). The enricher is read-only on all inputs.

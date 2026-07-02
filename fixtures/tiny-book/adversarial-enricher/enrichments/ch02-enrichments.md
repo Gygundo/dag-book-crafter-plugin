@@ -1,17 +1,17 @@
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.0.0 -->
 # Chapter 2 Enrichments
 
-## Central Image Call-out
-phone glow over the ceiling — the residual memory of the night before, still hanging in the kitchen air.
+## Illustration Call-out
+The vine and its root (from Chapter 1) — the same vehicle applies here: the believer who has drifted from prayer and fellowship is like a vine that has lost its root connection. The lion targets the straggler who is trying to stand in his own strength.
 
 ## Chapter Summary
-Morning arrives and the narrator stands at the counter with nothing prepared. my hands would not stop shaking as I tried to pray, and yet the kitchen, with its widening yellow pool of light, becomes a quiet place of mercy rather than failure.
+Three reasons compel every believer toward strength: the enemy hunts the weak, God's command carries enabling power, and the people around you are silently drawing from your example. The strength God demands is not the product of human effort alone — it flows from a connection with the source of all power. There is no legitimate reason to remain weak when both the command and the supply are already present.
 
 ## Discussion Questions
-1. what does this chapter reveal about the character of god when you are afraid
-2. Where in your own morning routine have you noticed grace meeting you before you were ready?
-3. What would it look like to walk into mercy rather than try to earn it?
+1. What does this chapter teach you about the strength God requires from you
+2. In what specific area of your life is weakness allowing the enemy room to operate?
+3. Who in your sphere is drawing strength — or weakness — from how you carry your assignment?
 
 ## Prayer Points
-- father i ask you to meet me in the dark before the day has even started, so that the light I walk into is already yours.
-- Thank God for kitchens and kettles and ordinary rooms that hold holy moments.
+- Father, I ask you to make me strong in the evil day, and let me be an example of your enabling power to everyone watching me.
+- Thank God for the three-fold mandate of this chapter — that He has named the threat, supplied the resource, and extended the mission to others.
