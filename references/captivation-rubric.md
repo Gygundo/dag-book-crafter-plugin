@@ -2,26 +2,26 @@
 schema_version: 2
 total_range: [0, 16]
 components:
-  - key: pacing_variety
-    label: "Pacing Variety"
+  - key: clarity_of_point
+    label: "Clarity of Point"
     range: [0, 2]
-  - key: emotional_connection
-    label: "Emotional Connection"
+  - key: scripture_saturation
+    label: "Scripture Saturation"
     range: [0, 2]
-  - key: reader_engagement
-    label: "Reader Engagement"
+  - key: structural_parallelism
+    label: "Structural Parallelism"
     range: [0, 2]
-  - key: opening_engagement
-    label: "Opening Engagement"
+  - key: direct_address
+    label: "Direct Address"
     range: [0, 2]
-  - key: chapter_ending_momentum
-    label: "Chapter-Ending Momentum"
+  - key: simplicity
+    label: "Simplicity"
     range: [0, 2]
-  - key: craft_density
-    label: "Craft Density"
+  - key: emphasis_repetition
+    label: "Emphasis & Repetition"
     range: [0, 2]
-  - key: cross_chapter_craft
-    label: "Cross-Chapter Craft"
+  - key: illustration_discipline
+    label: "Illustration Discipline"
     range: [0, 2]
   - key: novelty_variation
     label: "Novelty / Variation"
@@ -42,144 +42,107 @@ output_fields:
   - rewrite_targets
 ---
 
-# Captivation Rubric
+# Captivation Rubric (Dag Teaching Style)
 
-> Captivation scoring for chapter-level quality. 8 components × 0-2 points = 0-16 total. Schema version 2 (Phase 13 — adds Novelty / Variation component and binary novelty_dedup dimension). Invoked by editor Pass 1 (§2.4, §2.5, §2.5.5) and Pass 2 (§3.3, §3.4) — scoring logic lives here as the single source of truth.
-
-> **Rubric extended from 5 to 7 components in CRAFT-10.** Original 5-component scores must remain byte-identical on the baseline fixture per CRAFT-09. The first five component blocks below are locked — they must not be edited, reordered, or moved. Craft Density and Cross-Chapter Craft were appended at the end of the Components section; their scores are additive, not a re-weighting of the originals. Phase 13 extended 7 to 8 components by appending Novelty / Variation; all first-seven component bodies retain their semantic shape but reference 0-16 aggregation instead of 0-14.
+> Chapter-level quality scoring for the Dag fork. 8 components × 0-2 points = 0-16 total, same schema shape as book-crafter v2 so the sample gate and editor machinery are unchanged — but every component measures fidelity to the Dag teaching style instead of literary-bestseller craft. Invoked by editor Pass 1 and Pass 2 — scoring logic lives here as the single source of truth.
 
 ## Components
 
-### Pacing Variety
+### Clarity of Point
 
-Measure paragraph length distribution across the chapter. Count the number of sentences per paragraph and categorise:
-- **Short** (1-2 sentences): impact paragraphs, dramatic beats
-- **Medium** (3-4 sentences): explanation, argument development
-- **Long** (5-6 sentences): storytelling, scene-setting, extended illustrations
+Does the chapter state its point plainly and immediately, and does every section make exactly one point?
 
-Calculate the dominant category percentage. Flag the chapter if 80% or more paragraphs fall in a single category.
+**Detection approach:** Read the chapter opener — it must be an anchor scripture, plain declaration, or definition (DAG-01), with the chapter's thesis unmistakable within the first two prose sentences. Then scan each numbered point/section: one proposition each, stated in the heading itself.
 
 **Scoring:**
-- 2 points: Good mix (no category exceeds 60%)
-- 1 point: Some variety (dominant category 60-80%)
-- 0 points: Monotone (dominant category 80%+)
+- 2 points: Opener declares the theme within two sentences; every point heading is a complete one-proposition sentence
+- 1 point: Theme clear but delayed past the first paragraph, OR some point headings are vague labels rather than propositions
+- 0 points: Chapter opens with narrative warm-up or the reader cannot say what the chapter claims after the first 150 words
 
-**Detection approach:** Split chapter text on blank lines to get paragraphs. Count sentences per paragraph (split on `.`, `!`, `?`). Categorise each paragraph. Calculate distribution.
+### Scripture Saturation
 
-### Emotional Connection
+Verse-first architecture: is every major point anchored to a quoted scripture block, at authentic density?
 
-Check for the presence of personal stories, anecdotes, or vulnerability markers in the chapter. Look for indicators:
-- Personal pronouns in narrative context: "I remember", "I recall", "I was", "I felt"
-- Vulnerability phrases: "I didn't understand", "I failed", "I struggled", "I was wrong"
-- Story markers: "there was a time", "picture this", "let me tell you about", "imagine"
-- Scene-setting language: specific places, times, sensory details
-
-Flag the chapter if NO vulnerability or personal story markers are found. Every chapter needs at least one human-experience moment per D-13.
+**Detection approach:** Count scripture blocks vs chapter body words (target ≥1 per 350 words, floor 3 per DAG-02). Check each block has a reference line, KJV default / labelled alternates, and is followed within 2 paragraphs by a plain-words restatement or application.
 
 **Scoring:**
-- 2 points: Personal story/vulnerability present with specific detail
-- 1 point: Some emotional connection (general references but no specific story)
-- 0 points: No personal stories, anecdotes, or vulnerability markers found
+- 2 points: Density met, every block interpreted, ≥1 block carries ALL-CAPS emphasis on its operative phrase
+- 1 point: Density met but ≥1 block left uninterpreted, OR density slightly under (≥1 per 500 words)
+- 0 points: Fewer than 3 blocks, or blocks dropped in without interpretation, or non-KJV base text unlabelled
 
-**Soft threshold for teaching-heavy chapters:** A chapter in a "Building" momentum position with complex theological content may score 1 point here without triggering a rewrite. Only score 0 triggers a "significant" flag.
+### Structural Parallelism
 
-### Reader Engagement
+The numbered-list skeleton: counted titles, parallel stems, bold full-sentence points.
 
-Count instances of direct reader engagement language in the chapter:
-- "you" / "your" / "yourself" used in direct address (not quoting scripture)
-- Rhetorical questions (sentences ending in `?` that are not scripture)
-- "imagine" / "picture" / "consider" as direct invitations
+**Detection approach:** For list chapters (outline `list_structure` with a stem), verify the point count matches any counted title, points are numbered with bold complete-sentence headings, and ≥60% of points reuse the declared stem frame. For flowing chapters, verify short title-case section headings are present (2-4).
 
 **Scoring:**
-- 2 points: Frequent engagement (10+ instances per chapter)
-- 1 point: Occasional engagement (3-9 instances)
-- 0 points: Absent or rare (0-2 instances)
+- 2 points: Count matches title, stems parallel throughout, points follow the atomic unit (heading → scripture → restatement → application)
+- 1 point: List present but stem drifts across points, or count mismatch of one, or atomic unit frequently incomplete
+- 0 points: Designated list chapter rendered as undifferentiated essay prose
 
-### Opening Engagement
+### Direct Address
 
-For each chapter, validate that the first 200 words contain a story, anecdote, or vivid scene -- not a teaching statement, definition, or theological declaration.
+The preacher speaking TO the reader: you-density, commands, question volleys, exhortation close.
 
-**Detection approach:** Read the first 200 words. Check for:
-- Story/scene indicators: past tense narrative ("I was sitting", "She walked into"), sensory details, dialogue, specific places/times
-- Teaching indicators: present tense declarative statements, definitions ("Grace is..."), "In this chapter" openings, thesis statements
+**Detection approach:** Count "you/your/yourself" in author prose (target ≥8 per 1,000 words), imperative commands (≥3), rhetorical questions (≥4, ideally in volleys). Check the final paragraph lands (command, benediction, prayer, exclamation, scripture, or stated moral — never cliffhanger).
 
 **Scoring:**
-- 2 points: Clear story/scene in first 200 words
-- 1 point: Some narrative elements but mixed with teaching
-- 0 points: Opens with pure theology, definition, or declaration (no narrative)
+- 2 points: All four thresholds met, chapter closes with exhortation/benediction energy
+- 1 point: You-density met but commands or questions sparse, or flat (non-cliffhanger) ending
+- 0 points: Detached third-person register, or chapter ends on a cliffhanger/teaser
 
-Flag chapters that score 0 -- they open with teaching instead of story per D-01.
+### Simplicity
 
-### Chapter-Ending Momentum
+Plain language at grade 6-8: short sentences, defined terms, zero hedging.
 
-For each chapter, check that the ending has either a cliffhanger seed or a reflective landing + forward hook. Read the chapter outline's ending_style field and validate the chapter delivers it.
-
-**Detection approach:** Read the final 150 words. Check for:
-- **cliffhanger_seed indicators:** Questions ("But what if...?"), tension points ("There's something we haven't addressed"), preview language ("What comes next changes everything"), unresolved threads
-- **reflective_hook indicators:** Reflective/applicational tone in penultimate paragraph, followed by forward-looking language in the final 1-2 sentences ("And that truth? It's just the beginning")
+**Detection approach:** Average author-prose sentence length (≤18 words, target 12-16); scan for banned hedging phrases (DAG-06); check any hard word gets a one-sentence definition; ≤1 transliterated term, glossed simply; paragraphs ≤~120 words.
 
 **Scoring:**
-- 2 points: Clear ending momentum matching the outline's ending_style
-- 1 point: Some forward momentum but doesn't match the specified style
-- 0 points: Chapter just stops -- no forward hook, no reflection, no momentum
+- 2 points: Sentence average in range, zero hedging, all terms defined, paragraphs short
+- 1 point: Sentence average 18-22, or one undefined hard term, or a long paragraph
+- 0 points: Any hedging phrase, academic register, or sentence average >22
 
-Flag chapters that score 0 -- they end without any forward momentum per D-02.
+### Emphasis & Repetition
 
-### Craft Density
+The signature emphasis devices that make the style quotable.
 
-Maps to CRAFT-02/03/04 coverage. Measures how tightly the chapter earns its abstractions — does the scene-first craft actually thread through the whole chapter, or does it only appear at the opener before collapsing into teaching?
-
-Two sub-checks, each worth 1 point:
-
-- **Central image zonal presence (0-1):** Is the chapter's central image (per outline `central_image` field / Book DNA Chapter Map) present in at least two of the three chapter zones — opening (first 200 words), middle (middle third of the chapter body), closing (final 200 words)? One zone only = 0. Two or three zones = 1.
-- **Vulnerability beat in middle third with resolved seed (0-1):** Is there an author vulnerability beat (first-person, specific, non-fabricated) in the middle third of the chapter, AND does it trace back to a `vulnerability_beat_seed` pointer (sources/, sources-adapted/, voice-profile.md, or book-dna.md)? Absent or ungrounded = 0. Present AND seeded = 1.
+**Detection approach:** Check for (a) ≥1 standalone one-line key statement (the outline's `key_statement` present in the chapter), (b) ALL-CAPS phrase inside ≥1 scripture quote, (c) ≥1 anaphora run (identical opener ×3+) OR definition-refrain restatement, (d) exclamation punchlines closing paragraphs.
 
 **Scoring:**
-- 2 points: Both sub-checks pass
-- 1 point: Exactly one sub-check passes
-- 0 points: Neither sub-check passes
+- 2 points: Key statement lands + CAPS-in-quote + at least one anaphora run or refrain
+- 1 point: Two of the three device families present
+- 0 points: One or none — the chapter reads as flat exposition
 
-Half-point increments not allowed — the score is 0, 1, or 2.
+### Illustration Discipline
 
-Anchor to calibration exemplars at `${CLAUDE_PLUGIN_ROOT}/references/bestseller-calibration.md` § Score Level 3 / 6 / 9 (Craft Density column). Use the exemplars as calibration, not as templates.
+Brief, functional illustrations with the lesson stated — never literary scenes, never fabricated testimony.
 
-### Cross-Chapter Craft
-
-Evaluates cross-chapter coherence of craft rules. Unlike the first six components (which score a single chapter in isolation), this component is evaluated over the whole manuscript — but it is recorded on each chapter's scorecard so Pass 2 and the CRAFT-16 diagnostic step can surface it per chapter.
-
-Two sub-checks, each worth 1 point:
-
-- **Central-image distinctness across chapters (0-1):** Scan every chapter's `central_image` field. If any two chapters have near-identical images (same sensory anchor, same metaphor vehicle), that is a fail — images blur into each other and the reader loses the per-chapter craft signature. All distinct = 1. Any collision = 0.
-- **Transliterated-term variety across chapters (0-1):** Scan the transliterated Greek/Hebrew terms actually invoked in each chapter (per CRAFT-02 cap). If the same 3 terms recur in every chapter (lexical fatigue — e.g. charis/pistis/agape in chapters 1-2-3-4-5), that is a fail. Variety across chapters = 1. Same 3 in ≥ 3 chapters = 0.
+**Detection approach:** Count illustrations (1-3 per chapter). Each: ≤300 words, opens with a formula time-marker or frame ("Years ago...", "The story below teaches us..."), ends with the moral stated explicitly. First-person testimony must trace to a `testimony_seed`; without a seed the illustration must be biblical retelling, everyday analogy, or anonymised third-party.
 
 **Scoring:**
-- 2 points: Both sub-checks pass across the manuscript
-- 1 point: Exactly one sub-check passes
-- 0 points: Neither sub-check passes
-
-Anchor to calibration exemplars at `${CLAUDE_PLUGIN_ROOT}/references/bestseller-calibration.md` § Score Level 3 / 6 / 9 (Cross-Chapter Craft column). This is the only component where a single chapter's score depends on other chapters; editor Pass 2 computes it once and stamps the same value onto every chapter scorecard.
+- 2 points: 1-3 illustrations, all within length, all with stated morals, all testimony seeded
+- 1 point: Illustration overlong or a moral left implicit, but no fabrication
+- 0 points: Zero illustrations in a chapter that needs one, a literary scene-setting opener, or ANY fabricated first-person testimony (this also triggers DAG-08 auto-revise)
 
 ### Novelty / Variation
 
-Measures how VARIED the chapter prose is across a whole-manuscript scan, not just whether craft elements are present. Independent from the binary `novelty_dedup` gate: this component scores on a gradient, the binary gate says whether a hard flag was found. Both exist; both read by the sample gate.
+Measures whether the chapter's NON-EXEMPT prose is varied across a whole-manuscript scan. Deliberate repetition is native to this style, so the exemption list is wider than book-crafter's: scripture blocks, declared refrains (list stems, key statements, definitions), and benediction formulas are exempt. Everything else must not loop.
 
-This component is evaluated over the whole manuscript (same as Cross-Chapter Craft) and stamped onto every chapter's scorecard.
+This component is evaluated over the whole manuscript and stamped onto every chapter's scorecard.
 
 **Sub-checks (collapse into one 0-2 score):**
 
-- **Central-image vehicle distinctness at descriptive-phrase level:** Compare each chapter's central_image field AND the actual descriptive prose used to render it in each zone. If any two chapters use the same DESCRIPTIVE VEHICLE (same sensory anchor, same metaphor family — not just concept), this sub-check fails.
-- **Cross-artefact 6+ word span dedup:** Scan `front-matter/*.md` + `edited/ch*-final.md`. If any 6+ word span appears in ≥2 files (outside scripture blockquotes and declared refrains within their `max_uses` budget), this sub-check fails.
-- **Vulnerability-beat single-location:** Each vulnerability beat (sourced per CRAFT-04) should appear in exactly one artefact. Reuse across foreword and a chapter, or across two chapters, fails this sub-check.
+- **Illustration distinctness:** No two chapters may reuse the same illustration, anecdote, or analogy vehicle. A verse may repeat; a story may not.
+- **Cross-artefact 6+ word span dedup:** Scan `front-matter/*.md` + `edited/ch*-final.md`. Any 6+ word span appearing in ≥2 files — outside scripture blocks and declared refrains within their `max_uses` budget — fails this sub-check.
+- **Aphorism freshness:** Each chapter's key statement must be distinct across the book (unless declared as a whole-book refrain with budget).
 
 **Scoring:**
-- **2 points:** All three sub-checks pass. Vehicles fully distinct per chapter; no 6+ word span repetition across artefacts; vulnerability beats single-location.
-- **1 point:** Motif family consistent, vehicles mostly distinct, minor phrase echoes — but every echo falls under a declared refrain in Book DNA's `refrains:` block within its `max_uses` budget.
-- **0 points:** Vehicle repetition caught by the central-image vehicle check OR a verbatim 6+ word cross-artefact span caught by Tier 1 OR a vulnerability beat reused across artefacts OR any Tier 2 rule flagged.
+- 2 points: All sub-checks pass — repetition is confined to the exempt classes
+- 1 point: Minor echoes, but every echo falls under a declared refrain within its `max_uses` budget
+- 0 points: A repeated illustration, a verbatim 6+ word non-exempt span across artefacts, or an undeclared repeated aphorism
 
-Anchor to the Tier 1 and Tier 2 rule sets documented in Editor Pass 3 §4.4.5 Novelty and Dedup Audit. The binary `novelty_dedup` dimension is an independent gate — a chapter can score 0 here AND ship a `novelty_dedup: fail` verdict simultaneously.
-
-**Relationship to the binary `novelty_dedup` dimension:**
-The 0-2 `novelty_variation` component contributes to `captivation_total`. The binary `novelty_dedup` is a SEPARATE output field per schema v2 `dimensions` block. The sample release gate requires BOTH `captivation_total >= captivation_total_min` AND `novelty_dedup == pass` — either failing hard-fails the release. This structurally prevents the "14/14 with duplicates ships" failure mode that triggered Phase 13.
+**Relationship to the binary `novelty_dedup` dimension:** the 0-2 component contributes to `captivation_total`; the binary `novelty_dedup` is a separate output field. The sample release gate requires BOTH `captivation_total >= captivation_total_min` AND `novelty_dedup == pass`.
 
 ## Scoring Aggregation
 
@@ -187,14 +150,14 @@ Each chapter receives a `captivation_total` (0-16) based on eight components (0-
 
 | Component | What it measures | Source |
 |-----------|-----------------|--------|
-| Opening engagement | Story/scene in first 200 words | Pass 2 |
-| Ending momentum | Cliffhanger or reflective hook | Pass 2 |
-| Pacing variety | Paragraph length distribution | Pass 1 |
-| Emotional connection | Personal stories/vulnerability markers | Pass 1 |
-| Reader engagement | "you", rhetorical questions, direct address | Pass 1 |
-| Craft Density | Central image zonal presence + seeded vulnerability beat | Pass 1 |
-| Cross-Chapter Craft | Image distinctness + transliterated-term variety across chapters | Pass 2 |
-| Novelty / Variation | Vehicle distinctness + cross-artefact dedup + vulnerability-beat single-location | Pass 3 |
+| Clarity of Point | Plain opener + one proposition per point | Pass 1 |
+| Scripture Saturation | Verse-first density + interpretation | Pass 1 |
+| Structural Parallelism | Counted lists, parallel stems, atomic unit | Pass 1 |
+| Direct Address | You-density, commands, questions, landing | Pass 1 |
+| Simplicity | Sentence length, no hedging, defined terms | Pass 1 |
+| Emphasis & Repetition | Key statements, CAPS-in-quote, anaphora | Pass 1 |
+| Illustration Discipline | Brief functional stories, stated morals, seeded testimony | Pass 2 |
+| Novelty / Variation | Non-exempt prose distinct across manuscript | Pass 3 |
 
 Total range: **0-16**.
 
@@ -203,12 +166,8 @@ Total range: **0-16**.
 | Total | Band | Meaning |
 |-------|------|---------|
 | 0-6   | Below craft floor | Chapter requires revision |
-| 7-9   | Weak | Ships only if no hard gates fired and momentum position permits |
+| 7-9   | Weak | Ships only if no hard gates fired |
 | 10-12 | Competent | Ships as-is |
-| 13-16 | Strong | Bestseller-track quality |
+| 13-16 | Strong | Authentic Dag-teaching-style quality |
 
-**Momentum-aware threshold:** A chapter in a "Building" momentum position with teaching-heavy content can score in the 7-9 band without triggering a rewrite recommendation. Only chapters in the 0-6 band trigger a "significant" severity flag for captivation specifically.
-
-**Sample release gate (schema v2):** The release gate requires BOTH `captivation_total >= 10` AND `novelty_dedup == pass`. Either failing hard-fails the release. See `skills/sample/SKILL.md §4-§5` for the canonical YAML read.
-
-**Legacy 0-10 reference:** The original five components (Pacing Variety, Emotional Connection, Reader Engagement, Opening Engagement, Chapter-Ending Momentum) still sum to 0-10 at the prose-semantic level and the Phase 7 baseline still holds for that semantic shape. The sha256 lock on those five bodies has been regenerated for Phase 13 because the aggregation prose references 0-16 instead of 0-14; the component bodies themselves retain their original scoring logic.
+**Sample release gate (schema v2):** The release gate requires BOTH `captivation_total >= 10` AND `novelty_dedup == pass`. Either failing hard-fails the release. See `skills/sample/SKILL.md` for the canonical YAML read.

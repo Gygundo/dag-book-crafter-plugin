@@ -41,17 +41,17 @@ Interpretive lens for domain-specific content. Required for theological books. C
 ### 7. Scripture Handling
 Translation defaults, quoting style, citation conventions. Only for profiles that reference religious texts. Omit for secular profiles.
 
-### 8. Reader Moments (recommended, optional for custom profiles)
+### 8. Reader Situations (recommended, optional for custom profiles)
 
-A bulleted list of **at least 12 concrete everyday scenes** grouped by mood (anxiety, grief, doubt, joy, etc.). Writer selects ≥2 per chapter for CRAFT-06 enforcement — these moments anchor abstract theological or conceptual claims to experiences the reader has actually lived.
+A bulleted list of **at least 12 concrete reader situations** grouped by category (ministry and calling, Christian living, warnings, etc.). Writer selects ≥2 per chapter to anchor application — these situations ground commands and warnings in circumstances the reader actually lives in.
 
-**Structure:** A `## Reader Moments` heading followed by `### [Mood]` subheadings. Each mood contains 2-4 one-line bullets describing a specific scene. Aim for ≥12 moments across ≥3 mood categories.
+**Structure:** A `## Reader Situations` heading followed by `### [Category]` subheadings. Each category contains 2-4 one-line bullets describing a specific situation. Aim for ≥12 situations across ≥3 categories.
 
-**Recommended for:** spiritual, pastoral, self-help, memoir, and any voice profile that will be used for CRAFT-06-enforced book projects.
+**Recommended for:** spiritual, pastoral, leadership, and any voice profile used for topical teaching books.
 
-**When absent from a profile:** Editor runs CRAFT-06 in flag-only mode — no hard fail, no auto-revise. Diagnostic report still notes missing reader-moment citations but the pipeline proceeds.
+**When absent from a profile:** Editor notes missing situation anchoring in the diagnostic report but the pipeline proceeds (flag-only).
 
-See `references/voice-profiles/spiritual-default.md` § Reader Moments for an example.
+See `references/voice-profiles/dag-default.md` § Reader Situations for an example.
 
 ## Validation Rules
 
