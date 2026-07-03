@@ -95,7 +95,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/craft-check.js [project_directory]/drafts/ch[
     "DAG-05": { "pass": true, "evidence": "1,840 words (within target)", "citations": [] },
     "DAG-06": { "pass": false, "evidence": "hedging phrase: 'perhaps we might'", "citations": ["L134"] },
     "DAG-07": { "pass": false, "evidence": "you-density 6.2/1000w; 2 imperatives; 3 questions", "citations": [] },
-    "version_stamp": { "pass": true, "evidence": "<!-- generated-by: dag-book-crafter v1.1.0 -->", "citations": ["L2"] }
+    "version_stamp": { "pass": true, "evidence": "<!-- generated-by: dag-book-crafter v1.2.0 -->", "citations": ["L2"] }
   }
 }
 ```
@@ -115,7 +115,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/craft-check.js [project_directory]/drafts/ch[
 | DAG-06 | > 1 transliterated term | **Auto-revise** - see §2.9 |
 | DAG-07 | you-density < 8/1000w, < 3 imperatives, or < 4 questions | **Flag only** |
 | DAG-09 | em dash in author prose, banned AI-ism phrase, emoji, or ≥ 2 negation-pivots ("isn't just X, it's Y" family) | **Auto-revise** - rewrite the specific sentence(s) as plain declarations; scripture blockquotes are exempt |
-| version_stamp | missing `<!-- generated-by: dag-book-crafter v1.1.0 -->` | **Auto-fix** - prepend stamp (do not round-trip to writer) |
+| version_stamp | missing `<!-- generated-by: dag-book-crafter v1.2.0 -->` | **Auto-fix** - prepend stamp (do not round-trip to writer) |
 
 **Revision request contract:** when auto-revising, write the writer instruction to `[project_directory]/revisions/ch[NN]-request.md` with fields `reason`, `failed_check`, `scope` (opener / sentence-range / full-chapter), `evidence`, `citations`. The orchestrator routes the request to the writer.
 
@@ -244,7 +244,7 @@ For non-theological books, skip this sub-check entirely.
 
 Save each edited chapter to `[project_directory]/edited/ch[NN]-pass1.md` with the voice audit metadata block appended at the end.
 
-**Version stamp:** Every pass1 chapter file inherits its first two lines from the writer's draft - line 1 is `<!-- provenance: {source_path}:{line} -->` and line 2 is `<!-- generated-by: dag-book-crafter v1.1.0 -->`. Preserve both lines exactly. If either is missing, prepend it before writing the pass1 file. Version-stamp auto-fix is performed here, not round-tripped to the writer.
+**Version stamp:** Every pass1 chapter file inherits its first two lines from the writer's draft - line 1 is `<!-- provenance: {source_path}:{line} -->` and line 2 is `<!-- generated-by: dag-book-crafter v1.2.0 -->`. Preserve both lines exactly. If either is missing, prepend it before writing the pass1 file. Version-stamp auto-fix is performed here, not round-tripped to the writer.
 
 Chapter file structure emitted by Pass 1:
 
@@ -430,9 +430,9 @@ Save each chapter to `[project_directory]/edited/ch[NN]-pass2.md`.
 
 If no changes were needed for a chapter, copy the pass1 file as-is to pass2.
 
-**Version stamp:** Pass 2 preserves the two header comments inherited from Pass 1 - line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.1.0 -->`. If either is missing, auto-fix by prepending before writing the pass2 file.
+**Version stamp:** Pass 2 preserves the two header comments inherited from Pass 1 - line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.2.0 -->`. If either is missing, auto-fix by prepending before writing the pass2 file.
 
-Write `[project_directory]/reports/flow-report.md`. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `flow-report.md`.**
+Write `[project_directory]/reports/flow-report.md`. **Prepend `<!-- generated-by: dag-book-crafter v1.2.0 -->` as the first line of `flow-report.md`.**
 
 ```markdown
 # Flow Report: [Book Title]
@@ -642,9 +642,9 @@ Every `reason:` must contain both a source location (file or span reference) and
 
 Save final edited chapters to `[project_directory]/edited/ch[NN]-final.md`. If no changes were needed in this pass, copy from pass2.
 
-**Version stamp:** Each `edited/ch[NN]-final.md` preserves line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.1.0 -->`. If either is missing, auto-fix before writing.
+**Version stamp:** Each `edited/ch[NN]-final.md` preserves line 1 provenance and line 2 `<!-- generated-by: dag-book-crafter v1.2.0 -->`. If either is missing, auto-fix before writing.
 
-Write `[project_directory]/reports/consistency-report.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line.**
+Write `[project_directory]/reports/consistency-report.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.2.0 -->` as the first line.**
 
 ```markdown
 # Consistency Report: [Book Title]

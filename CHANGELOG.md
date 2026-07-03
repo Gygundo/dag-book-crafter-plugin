@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.0] - 2026-07-03
+
+Enrichment made opt-in (default OFF) to match the analysed Dag corpus.
+
+- **Stage 4.5 enricher no longer runs by default.** Analysed Dag Heward-Mills books end each chapter on the final numbered point - never with summaries, discussion questions, or application worksheets. The orchestrator now routes Stage 4 approval straight to Stage 5 unless the user explicitly asks for study/group material.
+- **Foreword is a separate opt-in** within Stage 4.5 (several analysed Dag books carry no foreword). The enricher writes `front-matter/foreword.md` only when the orchestrator passes an explicit foreword request. Dedication, About the Author, and book-list back matter remain default (authentic).
+- Stage 4.6 post-enricher novelty gate only runs when Stage 4.5 ran.
+- State detection treats an absent/empty `enrichments/` directory as the normal completed path, not pending work; Stage 5 readiness no longer requires enrichments or a foreword.
+- Sample skill runs the pipeline without the enrich stage.
+- Docs updated: orchestrator/enricher skills, `references/pipeline-stages.md`, `CLAUDE.md`.
+
 ## [1.1.0] - 2026-07-03
 
 Anti-AI-slop enforcement (DAG-09).

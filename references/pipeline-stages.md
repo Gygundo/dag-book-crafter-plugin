@@ -78,10 +78,12 @@ Intermediate artefacts: `edited/ch[NN]-pass1.md`, `edited/ch[NN]-pass2.md` (kept
 
 **Rolling window:** For books with 16+ chapters, Pass 1 uses chapter-editor subagents. Each receives the current chapter plus 500 words overlap from adjacent chapters.
 
-## Stage 4.5: Content Enrichment (enricher skill)
+## Stage 4.5: Content Enrichment (enricher skill) [OPT-IN, default OFF]
+
+**This stage does not run by default.** Authentic Dag Heward-Mills chapters end on the final numbered point - never with summaries, discussion questions, or application worksheets - and several analysed Dag books carry no foreword. The orchestrator routes through this stage only when the user explicitly asks for study/group material; the foreword is a separate opt-in within the stage. The default pipeline is Stage 4 -> Stage 5.
 
 **Input:** All `edited/ch[NN]-final.md` files + `book-dna.md` + `voice-profile.md`
-**Output:** `enrichments/ch[NN]-enrichments.md` per chapter + `front-matter/foreword.md`
+**Output:** `enrichments/ch[NN]-enrichments.md` per chapter (+ `front-matter/foreword.md` only if separately requested)
 **Parallel:** No -- processes chapters sequentially
 
 Per-chapter enrichments include:
@@ -94,7 +96,7 @@ Foreword:
 - Two modes: author voice (default) or endorser draft
 - Does NOT summarise chapters or spoil climax revelations
 
-The formatter renders enrichment sections inline after each chapter body in the .docx.
+When this stage ran, the formatter renders enrichment sections inline after each chapter body in the .docx. In the default flow no enrichment content exists and the formatter renders none.
 
 ## Stage 5: Format (formatter skill)
 
@@ -145,5 +147,5 @@ Stage 5 is complete when `output/` directory contains a `.docx` file.
 | Research | `research/` dir has `ch*-research.md` files matching outline chapter count | `research/ch01-research.md` |
 | Write | `drafts/` dir has `ch*-draft.md` files matching outline chapter count | `drafts/ch01-draft.md` |
 | Edit | `edited/` dir has `ch*-final.md` files matching outline chapter count AND no `<!-- REVISION IN PROGRESS -->` marker in `reports/consistency-report.md` | `edited/ch01-final.md` + `reports/consistency-report.md` |
-| Enrichment | `enrichments/` dir has `ch*-enrichments.md` files matching chapter count AND `front-matter/foreword.md` exists | `enrichments/ch01-enrichments.md` + `front-matter/foreword.md` |
+| Enrichment (opt-in) | `enrichments/` dir has `ch*-enrichments.md` files matching chapter count (absence = stage skipped, the default) | `enrichments/ch01-enrichments.md` |
 | Format | `output/` dir contains `.docx` file | `output/[Title].docx` |

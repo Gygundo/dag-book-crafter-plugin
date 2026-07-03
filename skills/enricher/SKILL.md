@@ -1,13 +1,15 @@
 ---
 name: enricher
-description: "Generates reader engagement content for each chapter: discussion questions, chapter summaries, prayer points (theological books only), and a book foreword. Called by the orchestrator as Stage 4.5 after editing is complete. Reads edited chapter files and Book DNA to produce enrichment artefacts."
+description: "OPT-IN stage, default OFF: generates reader engagement content for each chapter (discussion questions, chapter summaries, prayer points for theological books) and optionally a book foreword. Only invoked when the user explicitly requests study/group material - authentic Dag books carry none of this. Called by the orchestrator as Stage 4.5 after editing is complete."
 user-invocable: false
 allowed-tools: Read, Write, Bash, Glob, Grep
 ---
 
 # Content Enricher
 
-Generates supplementary content that deepens reader engagement with each chapter. Produces per-chapter enrichments (discussion questions, summaries, prayer points for theological books) and a book foreword. Runs as Stage 4.5 in the pipeline, after editing and before formatting.
+Generates supplementary content that deepens reader engagement with each chapter. Produces per-chapter enrichments (discussion questions, summaries, prayer points for theological books) and, only when separately requested, a book foreword. Runs as Stage 4.5 in the pipeline, after editing and before formatting.
+
+> **OPT-IN, default OFF.** Analysed Dag Heward-Mills books end each chapter on the final numbered point - never with summaries, discussion questions, or worksheets - and several carry no foreword. This skill therefore runs only when the user explicitly asks for study/group material, and generates the foreword only when the orchestrator's invocation includes a foreword request. If invoked without an explicit user opt-in, return to the orchestrator without writing anything.
 
 ## 1. Overview
 
@@ -121,9 +123,9 @@ Prayer points must match the dag-default voice and theological framework:
 - Commands and exhortations are permitted within prayers: "Decide today to..." / "Refuse to be intimidated..."
 - "May you..." benediction forms are encouraged at chapter closes; they are authentic Dag style and are dedup-exempt
 
-## 6. Foreword (ENH-06)
+## 6. Foreword (ENH-06) [only when requested]
 
-Generate a single foreword for the entire book.
+Generate a single foreword for the entire book - ONLY if the orchestrator's invocation includes an explicit foreword request. By default skip this whole section and write no `front-matter/foreword.md`: several analysed Dag books carry no foreword.
 
 **Input:** Read `book-dna.md` (title, themes, arc, audience), the chapter outline from `chapter-outline.md`, and the chapter summaries already generated in this enrichment pass.
 
@@ -163,10 +165,10 @@ The orchestrator's post-enricher novelty gate (Stage 4.6) runs `craft-check.js -
 
 **Output format for foreword (`front-matter/foreword.md`):**
 
-**Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `front-matter/foreword.md`** (line 1, above the `# Foreword` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
+**Prepend `<!-- generated-by: dag-book-crafter v1.2.0 -->` as the first line of `front-matter/foreword.md`** (line 1, above the `# Foreword` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
 
 ```markdown
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.2.0 -->
 # Foreword
 
 [500-800 word foreword text]
@@ -181,10 +183,10 @@ generated: [date]
 
 ## 7. Output Format
 
-For each chapter, write `enrichments/ch[NN]-enrichments.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of every `enrichments/ch[NN]-enrichments.md` file** (line 1, above the `# Enrichments` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
+For each chapter, write `enrichments/ch[NN]-enrichments.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.2.0 -->` as the first line of every `enrichments/ch[NN]-enrichments.md` file** (line 1, above the `# Enrichments` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
 
 ```markdown
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.2.0 -->
 # Enrichments: Chapter [N] - [Chapter Title]
 
 ## Discussion Questions

@@ -63,7 +63,7 @@ Use the `Agent` tool to spawn the `dag-book-crafter:orchestrator` skill. The inv
 - **Final .docx output path:** Instruct the formatter to write the final `.docx` to `${CLAUDE_PLUGIN_ROOT}/fixtures/tiny-book/run/final/` explicitly. Use plain language such as: *"Write the final .docx to `${CLAUDE_PLUGIN_ROOT}/fixtures/tiny-book/run/final/` - do not use the default `~/Documents/Books/` location."* The PASS line path in §5 is locked to `fixtures/tiny-book/run/final/<name>.docx` per D-12, so the sample skill owns this override.
 - **Fresh-run trigger:** include the phrase **"start fresh"** in the prompt **only if** §2 set `RERUN=1`.
 
-Wait for the pipeline to complete (outline → research → write → edit → enrich → format). Do not return control until the orchestrator has either finished or errored.
+Wait for the pipeline to complete (outline → research → write → edit → format; the opt-in enrich stage is NOT part of the sample run and must be skipped). Do not return control until the orchestrator has either finished or errored.
 
 After completion, verify the final `.docx` landed where expected:
 

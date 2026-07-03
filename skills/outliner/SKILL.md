@@ -179,7 +179,7 @@ This gives the writer agent concrete material to weave in, maintaining continuit
 
 ## 5. Output: chapter-outline.md
 
-Write the outline to `[project]/chapter-outline.md` in this exact format. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `chapter-outline.md`** before the `# Book Outline: [Title]` heading. The comment is stripped by the formatter before .docx emission and exists only as a regression-chain anchor for Phase 12 tooling.
+Write the outline to `[project]/chapter-outline.md` in this exact format. **Prepend `<!-- generated-by: dag-book-crafter v1.2.0 -->` as the first line of `chapter-outline.md`** before the `# Book Outline: [Title]` heading. The comment is stripped by the formatter before .docx emission and exists only as a regression-chain anchor for Phase 12 tooling.
 
 ```markdown
 # Book Outline: [Title]
@@ -373,7 +373,7 @@ Derive from voice profile and outline:
 At the very top of `book-dna.md`, before the title, add these two HTML comments in this exact order (version stamp on line 1, READ-ONLY marker on line 2):
 
 ```
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.2.0 -->
 <!-- READ-ONLY: Do NOT modify this document during parallel chapter generation. Updates happen between pipeline stages only. -->
 ```
 

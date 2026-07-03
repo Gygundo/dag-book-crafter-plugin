@@ -129,7 +129,7 @@ The first two lines of every chapter draft MUST be (exact order):
 
 ```
 <!-- provenance: {source_path}:{line} -->   (source-ingestion projects only; omit in topic-brief mode)
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.2.0 -->
 ```
 
 Both comments are stripped by the formatter before .docx emission - they exist for craft verification and version tracking only. In topic-brief mode, omit the provenance line and emit only the `generated-by` stamp.
@@ -382,7 +382,7 @@ The first two lines of every chapter draft MUST be (exact order):
 
 ```
 <!-- provenance: {source_path}:{line} -->   (source-ingestion projects only; omit in topic-brief mode)
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.2.0 -->
 ```
 
 Followed by `# Chapter N: Title` on line 3 or later. Both comments are stripped by the formatter before .docx emission.
@@ -391,7 +391,7 @@ Full file layout:
 
 ```markdown
 <!-- provenance: sources/{file}.md:{line} -->
-<!-- generated-by: dag-book-crafter v1.1.0 -->
+<!-- generated-by: dag-book-crafter v1.2.0 -->
 # Chapter [N]: [Title]
 
 [Chapter content - numbered bold point headings or short section headings, scripture blocks, plain declarative prose]

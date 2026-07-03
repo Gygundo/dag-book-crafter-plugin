@@ -33,10 +33,13 @@ USER INPUT (topic brief OR existing content)
     |-- Stage 4: EDIT (editor skill + chapter-editor agents for large books)
     |   Output: edited/ch01-final.md, edited/ch02-final.md, ...
     |
-    |-- Stage 4.5: ENRICH (enricher skill)
-    |   Output: enrichments/ch01-enrichments.md, ..., front-matter/foreword.md
+    |-- Stage 4.5: ENRICH (enricher skill) [OPT-IN, default OFF]
+    |   Only runs when the user explicitly asks for study/group material
+    |   (discussion questions, summaries, prayer points). Authentic Dag books
+    |   end each chapter on the final numbered point - no study apparatus.
+    |   Output: enrichments/ch01-enrichments.md, ... (+ foreword only if requested)
     |
-    |-- Stage 4.6: POST-ENRICHER NOVELTY GATE (craft-check.js --novelty)
+    |-- Stage 4.6: POST-ENRICHER NOVELTY GATE (craft-check.js --novelty) [only if 4.5 ran]
     |   Gate: novelty_dedup pass/fail against full corpus including foreword
     |
     |-- Stage 5: FORMAT (formatter skill)
@@ -168,14 +171,16 @@ Work backwards from the most advanced stage:
 1. Check for output/*.docx
    -> If exists: pipeline is COMPLETE
 
-1.5. Check for enrichments/ch*-enrichments.md AND front-matter/foreword.md
-   -> If enrichment file count matches chapter count AND foreword.md exists: Stage 4.5 COMPLETE
+1.5. Check for enrichments/ch*-enrichments.md [OPT-IN stage - absence is the normal state]
+   -> If no enrichments/ directory or it is empty: Stage 4.5 SKIPPED (default). Do NOT
+      treat this as pending work - proceed with detection at step 2.
+   -> If enrichment file count matches chapter count: Stage 4.5 COMPLETE
    -> If enrichment count > 0 but less than chapter count: Stage 4.5 PARTIALLY COMPLETE
-   -> If no enrichments but edited files exist with no revision marker: Stage 4.5 NOT STARTED (proceed to Stage 4.5)
+      (the user previously opted in - resume enrichment)
 
-1.6. If Stage 4.5 COMPLETE, check post-enricher novelty gate status:
+1.6. Only if Stage 4.5 ran (enrichments exist), check post-enricher novelty gate status:
    -> Read reports/consistency-report.md, extract novelty_dedup field value
-   -> If novelty_dedup: pass AND front-matter/foreword.md exists: Stage 4.6 COMPLETE
+   -> If novelty_dedup: pass: Stage 4.6 COMPLETE
    -> If novelty_dedup: fail: Stage 4.6 FAILED (pipeline halted, needs Mode 7 or manual fix)
    -> If no novelty_dedup field but enrichments exist: Stage 4.6 NOT RUN (re-run Stage 4.6)
 
@@ -267,13 +272,14 @@ When Stage 4 is in review (revisions requested), display:
     [x] Cross-chapter validation
     [~] Revision requested: Ch 3, Ch 7
 
-[ ] Stage 4.5: Content Enrichment (enricher)
+[ ] Stage 4.5: Content Enrichment (enricher) -- OPT-IN, skipped unless requested
+    [Only shown when the user opted in:]
     [ ] Discussion questions: 0/[N] chapters
     [ ] Chapter summaries: 0/[N] chapters
     [ ] Prayer points: 0/[N] chapters [or "N/A -- non-theological"]
-    [ ] Foreword: pending
+    [ ] Foreword: pending [only if separately requested]
 
-[ ] Stage 4.6: Post-Enricher Novelty Gate (craft-check.js --novelty)
+[ ] Stage 4.6: Post-Enricher Novelty Gate (craft-check.js --novelty) -- only if 4.5 ran
 
 [ ] Stage 5: Formatting (formatter)
     [ ] .docx generation
@@ -519,7 +525,7 @@ See: [project_directory]/reports/consistency-report.md
 Which would you like?
 ```
 
-**On Option 1 (Approve):** Proceed to Stage 4.5 (Content Enrichment).
+**On Option 1 (Approve):** Proceed directly to Stage 5 (Format). Stage 4.5 (Content Enrichment) is OPT-IN and default OFF - authentic Dag chapters end on the final numbered point with no study apparatus. Only route through Stage 4.5 if the user has explicitly asked for study/group material (discussion questions, summaries, prayer points) for this book.
 
 **On Option 2 (Revise chapters -- ITER-03, ITER-04, ITER-05):**
 
@@ -635,10 +641,13 @@ Flag-only checks (DAG-03, DAG-04, DAG-07) do NOT write revision requests and do 
 
 `reports/revision-log.md` survives across orchestrator restarts and across Mode 3 (Resume) re-entries. On Resume, the orchestrator reads the revision log and restores per-chapter `revision_count` before deciding whether further revision is permitted. Mode 6 (Fresh) deletes `reports/` which clears the log - fresh runs start every chapter at `revision_count: 0`.
 
-#### Stage 4.5: Content Enrichment
+#### Stage 4.5: Content Enrichment [OPT-IN, default OFF]
+
+> **This stage does not run by default.** Analysed Dag Heward-Mills books end each chapter on the final numbered point - never with summaries, discussion questions, or application worksheets. Run this stage ONLY when the user explicitly asks for study/group material. The foreword is a separate opt-in within this stage: several analysed Dag books carry no foreword, so generate one only if the user asked for it specifically. When the user has not opted in, skip straight from the Stage 4 approval gate to Stage 5.
 
 **Step 1: Verify readiness**
 
+0. Confirm the user explicitly requested enrichment for this book. If not, skip to Stage 5.
 1. Confirm Stage 4 is COMPLETE: all `edited/ch[NN]-final.md` files exist AND `reports/consistency-report.md` exists AND no `<!-- REVISION IN PROGRESS -->` marker
 2. Check if `enrichments/` already has all expected files (resume logic)
 
@@ -651,15 +660,15 @@ The enricher will:
 1. Read all `edited/ch[NN]-final.md` files and `book-dna.md`
 2. Determine if the book is theological (from voice profile)
 3. Generate per-chapter enrichments (discussion questions, summaries, prayer points if theological)
-4. Generate a foreword in `front-matter/foreword.md`
+4. Generate a foreword in `front-matter/foreword.md` ONLY if the user separately requested one (pass this as an explicit argument to the enricher; default is no foreword)
 
 **Step 3: Verify enrichment output**
 
 After the enricher returns:
 1. Count `enrichments/ch[NN]-enrichments.md` files -- must match chapter count
 2. Verify each enrichment file contains the `<!-- ENRICHMENT METADATA` marker
-3. Verify `front-matter/foreword.md` exists and contains `<!-- FOREWORD METADATA` marker
-4. Display: "Stage 4.5 complete: [N] chapter enrichments + foreword generated"
+3. If a foreword was requested: verify `front-matter/foreword.md` exists and contains `<!-- FOREWORD METADATA` marker
+4. Display: "Stage 4.5 complete: [N] chapter enrichments generated" (+ "and foreword" if requested)
 
 **Step 4: Post-enricher novelty gate (Stage 4.6)**
 
@@ -696,7 +705,7 @@ Parse the JSON output.
 1. Confirm Stage 4 is COMPLETE: all `edited/ch[NN]-final.md` files exist AND `reports/consistency-report.md` exists AND no `<!-- REVISION IN PROGRESS -->` marker
 2. Confirm `book-dna.md` exists in the project directory
 3. Create `output/` directory if it does not exist: `mkdir -p [project_directory]/output`
-4. Confirm Stage 4.5 is COMPLETE: `enrichments/` has files matching chapter count AND `front-matter/foreword.md` exists
+4. Only if the user opted into Stage 4.5: confirm it is COMPLETE (`enrichments/` has files matching chapter count) and Stage 4.6 passed. In the default (no-enrichment) flow there is nothing to check here - the formatter handles absent enrichments/foreword natively.
 
 **Step 2: Invoke the formatter**
 

@@ -13,7 +13,9 @@ Stage 1    outliner         (topical outline; booklet default 8-15 short chapter
 Stage 2    researcher       (per-point KJV proof texts, illustration candidates)
 Stage 3    writer           (parallel chapter-writer subagents)
 Stage 4    editor           (3 passes + deterministic craft-check.js)
-Stage 4.5  enricher         (discussion questions, summaries, prayer points, foreword)
+Stage 4.5  enricher         (OPT-IN, default OFF: discussion questions, summaries, prayer
+                             points; foreword only if separately requested - authentic Dag
+                             chapters end on the final numbered point)
 Stage 5    formatter        (docx-js; centred chapter headings, indented scripture blocks)
 ```
 

@@ -450,7 +450,7 @@ withTmpDir(dir => {
   const edDir = path.join(dir, 'edited');
   fs.mkdirSync(fmDir, { recursive: true });
   fs.mkdirSync(edDir, { recursive: true });
-  const base = '<!-- generated-by: dag-book-crafter v1.1.0 -->\n\n> *For by grace you have been saved through faith and this is not of yourselves.*\n> -- Ephesians 2:8\n\n';
+  const base = '<!-- generated-by: dag-book-crafter v1.2.0 -->\n\n> *For by grace you have been saved through faith and this is not of yourselves.*\n> -- Ephesians 2:8\n\n';
   fs.writeFileSync(path.join(fmDir, 'foreword.md'), base + 'Unique prose for the foreword only, not repeated.\n');
   fs.writeFileSync(path.join(edDir, 'ch01-final.md'), base + 'Unique prose for chapter one only, not repeated.\n');
   fs.writeFileSync(path.join(dir, 'book-dna.md'), '# Book DNA\n\nrefrains: []\n');
@@ -477,7 +477,7 @@ withTmpDir(dir => {
 withTmpDir(dir => {
   const edDir = path.join(dir, 'edited');
   fs.mkdirSync(edDir);
-  fs.writeFileSync(path.join(edDir, 'ch01-final.md'), '<!-- generated-by: dag-book-crafter v1.1.0 -->\n\nCompletely unique prose here with nothing repeated.\n');
+  fs.writeFileSync(path.join(edDir, 'ch01-final.md'), '<!-- generated-by: dag-book-crafter v1.2.0 -->\n\nCompletely unique prose here with nothing repeated.\n');
   const dnaPath = path.join(dir, 'book-dna.md');
   fs.writeFileSync(dnaPath, '# Book DNA\n\nNo refrains key at all.\n');
 
