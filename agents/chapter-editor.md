@@ -1,6 +1,6 @@
 ---
 name: chapter-editor
-description: "Edits a single chapter for voice consistency and captivation quality against the DAG teaching voice profile. Checks all DAG-01..08 rule conformance, anti-pattern compliance, and rubric scoring. Used by the editor skill for rolling-window editing on books with 16+ chapters."
+description: "Edits a single chapter for voice consistency and captivation quality against the DAG teaching voice profile. Checks all DAG-01..09 rule conformance, anti-pattern compliance, and rubric scoring. Used by the editor skill for rolling-window editing on books with 16+ chapters."
 tools: Read, Write, Bash, Grep, Glob
 model: inherit
 maxTurns: 30
