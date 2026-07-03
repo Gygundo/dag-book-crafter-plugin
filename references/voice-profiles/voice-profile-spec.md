@@ -43,7 +43,7 @@ Translation defaults, quoting style, citation conventions. Only for profiles tha
 
 ### 8. Reader Situations (recommended, optional for custom profiles)
 
-A bulleted list of **at least 12 concrete reader situations** grouped by category (ministry and calling, Christian living, warnings, etc.). Writer selects ≥2 per chapter to anchor application — these situations ground commands and warnings in circumstances the reader actually lives in.
+A bulleted list of **at least 12 concrete reader situations** grouped by category (ministry and calling, Christian living, warnings, etc.). Writer selects ≥2 per chapter to anchor application - these situations ground commands and warnings in circumstances the reader actually lives in.
 
 **Structure:** A `## Reader Situations` heading followed by `### [Category]` subheadings. Each category contains 2-4 one-line bullets describing a specific situation. Aim for ≥12 situations across ≥3 categories.
 

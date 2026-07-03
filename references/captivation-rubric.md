@@ -44,7 +44,7 @@ output_fields:
 
 # Captivation Rubric (Dag Teaching Style)
 
-> Chapter-level quality scoring for the Dag fork. 8 components × 0-2 points = 0-16 total, same schema shape as book-crafter v2 so the sample gate and editor machinery are unchanged — but every component measures fidelity to the Dag teaching style instead of literary-bestseller craft. Invoked by editor Pass 1 and Pass 2 — scoring logic lives here as the single source of truth.
+> Chapter-level quality scoring for the Dag fork. 8 components × 0-2 points = 0-16 total, same schema shape as book-crafter v2 so the sample gate and editor machinery are unchanged - but every component measures fidelity to the Dag teaching style instead of literary-bestseller craft. Invoked by editor Pass 1 and Pass 2 - scoring logic lives here as the single source of truth.
 
 ## Components
 
@@ -52,7 +52,7 @@ output_fields:
 
 Does the chapter state its point plainly and immediately, and does every section make exactly one point?
 
-**Detection approach:** Read the chapter opener — it must be an anchor scripture, plain declaration, or definition (DAG-01), with the chapter's thesis unmistakable within the first two prose sentences. Then scan each numbered point/section: one proposition each, stated in the heading itself.
+**Detection approach:** Read the chapter opener - it must be an anchor scripture, plain declaration, or definition (DAG-01), with the chapter's thesis unmistakable within the first two prose sentences. Then scan each numbered point/section: one proposition each, stated in the heading itself.
 
 **Scoring:**
 - 2 points: Opener declares the theme within two sentences; every point heading is a complete one-proposition sentence
@@ -85,7 +85,7 @@ The numbered-list skeleton: counted titles, parallel stems, bold full-sentence p
 
 The preacher speaking TO the reader: you-density, commands, question volleys, exhortation close.
 
-**Detection approach:** Count "you/your/yourself" in author prose (target ≥8 per 1,000 words), imperative commands (≥3), rhetorical questions (≥4, ideally in volleys). Check the final paragraph lands (command, benediction, prayer, exclamation, scripture, or stated moral — never cliffhanger).
+**Detection approach:** Count "you/your/yourself" in author prose (target ≥8 per 1,000 words), imperative commands (≥3), rhetorical questions (≥4, ideally in volleys). Check the final paragraph lands (command, benediction, prayer, exclamation, scripture, or stated moral - never cliffhanger).
 
 **Scoring:**
 - 2 points: All four thresholds met, chapter closes with exhortation/benediction energy
@@ -112,11 +112,11 @@ The signature emphasis devices that make the style quotable.
 **Scoring:**
 - 2 points: Key statement lands + CAPS-in-quote + at least one anaphora run or refrain
 - 1 point: Two of the three device families present
-- 0 points: One or none — the chapter reads as flat exposition
+- 0 points: One or none - the chapter reads as flat exposition
 
 ### Illustration Discipline
 
-Brief, functional illustrations with the lesson stated — never literary scenes, never fabricated testimony.
+Brief, functional illustrations with the lesson stated - never literary scenes, never fabricated testimony.
 
 **Detection approach:** Count illustrations (1-3 per chapter). Each: ≤300 words, opens with a formula time-marker or frame ("Years ago...", "The story below teaches us..."), ends with the moral stated explicitly. First-person testimony must trace to a `testimony_seed`; without a seed the illustration must be biblical retelling, everyday analogy, or anonymised third-party.
 
@@ -134,11 +134,11 @@ This component is evaluated over the whole manuscript and stamped onto every cha
 **Sub-checks (collapse into one 0-2 score):**
 
 - **Illustration distinctness:** No two chapters may reuse the same illustration, anecdote, or analogy vehicle. A verse may repeat; a story may not.
-- **Cross-artefact 6+ word span dedup:** Scan `front-matter/*.md` + `edited/ch*-final.md`. Any 6+ word span appearing in ≥2 files — outside scripture blocks and declared refrains within their `max_uses` budget — fails this sub-check.
+- **Cross-artefact 6+ word span dedup:** Scan `front-matter/*.md` + `edited/ch*-final.md`. Any 6+ word span appearing in ≥2 files - outside scripture blocks and declared refrains within their `max_uses` budget - fails this sub-check.
 - **Aphorism freshness:** Each chapter's key statement must be distinct across the book (unless declared as a whole-book refrain with budget).
 
 **Scoring:**
-- 2 points: All sub-checks pass — repetition is confined to the exempt classes
+- 2 points: All sub-checks pass - repetition is confined to the exempt classes
 - 1 point: Minor echoes, but every echo falls under a declared refrain within its `max_uses` budget
 - 0 points: A repeated illustration, a verbatim 6+ word non-exempt span across artefacts, or an undeclared repeated aphorism
 

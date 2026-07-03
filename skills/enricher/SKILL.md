@@ -149,9 +149,9 @@ Default to author-voice mode unless the Book DNA metadata contains a "Foreword m
 
 When generating the foreword, you read all edited chapters for context. You MUST NOT copy from them. Honour these rules:
 
-1. **No 6+ word phrase reuse from any chapter or enrichment file.** Before committing any sentence in the foreword, check whether a 6-or-more-word span appears in any `edited/ch*-final.md` file or any `enrichments/ch*-enrichments.md` file. If yes, REWRITE the sentence using different words. The foreword frames PURPOSE — it does not quote chapters.
+1. **No 6+ word phrase reuse from any chapter or enrichment file.** Before committing any sentence in the foreword, check whether a 6-or-more-word span appears in any `edited/ch*-final.md` file or any `enrichments/ch*-enrichments.md` file. If yes, REWRITE the sentence using different words. The foreword frames PURPOSE - it does not quote chapters.
 
-2. **No first-person testimony reproduction.** If an edited chapter contains first-person testimony drawn from a `testimony_seed`, the foreword MUST NOT reproduce that testimony — even paraphrased. The foreword may reference the THEME (e.g., "this book draws on real experience") but must not retell the specific account. First-person testimony is single-use per DAG-08.
+2. **No first-person testimony reproduction.** If an edited chapter contains first-person testimony drawn from a `testimony_seed`, the foreword MUST NOT reproduce that testimony - even paraphrased. The foreword may reference the THEME (e.g., "this book draws on real experience") but must not retell the specific account. First-person testimony is single-use per DAG-08.
 
 3. **Key statement distinctness.** The foreword's own aphorisms and maxims must be freshly composed, not copied from any chapter's declared `key_statement` field. Read the Book DNA Chapter Map to see which key statements are already assigned to chapters. The foreword's language should complement, not duplicate.
 
@@ -163,10 +163,10 @@ The orchestrator's post-enricher novelty gate (Stage 4.6) runs `craft-check.js -
 
 **Output format for foreword (`front-matter/foreword.md`):**
 
-**Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of `front-matter/foreword.md`** (line 1, above the `# Foreword` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
+**Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `front-matter/foreword.md`** (line 1, above the `# Foreword` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
 
 ```markdown
-<!-- generated-by: dag-book-crafter v1.0.0 -->
+<!-- generated-by: dag-book-crafter v1.1.0 -->
 # Foreword
 
 [500-800 word foreword text]
@@ -181,10 +181,10 @@ generated: [date]
 
 ## 7. Output Format
 
-For each chapter, write `enrichments/ch[NN]-enrichments.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of every `enrichments/ch[NN]-enrichments.md` file** (line 1, above the `# Enrichments` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
+For each chapter, write `enrichments/ch[NN]-enrichments.md` with this exact structure. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of every `enrichments/ch[NN]-enrichments.md` file** (line 1, above the `# Enrichments` heading). The version stamp is required on every generated artefact; the formatter strips all HTML comments before .docx emission.
 
 ```markdown
-<!-- generated-by: dag-book-crafter v1.0.0 -->
+<!-- generated-by: dag-book-crafter v1.1.0 -->
 # Enrichments: Chapter [N] - [Chapter Title]
 
 ## Discussion Questions

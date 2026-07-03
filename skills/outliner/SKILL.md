@@ -51,14 +51,14 @@ Generate a book outline from scratch using the topic brief, key themes, target a
 | Short     | 15-25    | 20-35K      | ~1,000-2,000 | |
 | Standard  | 15-25    | 35-50K      | ~1,500-3,000 | |
 
-Choose a specific chapter count within the tier range based on the complexity and breadth of the topic. A narrow topic with deep treatment favours fewer, longer chapters. A broad topic with survey treatment favours more, shorter chapters. Chapter length imbalance across the book is authentic — a 700-word chapter may sit beside a 3,000-word one.
+Choose a specific chapter count within the tier range based on the complexity and breadth of the topic. A narrow topic with deep treatment favours fewer, longer chapters. A broad topic with survey treatment favours more, shorter chapters. Chapter length imbalance across the book is authentic - a 700-word chapter may sit beside a 3,000-word one.
 
 ### Step 2: Design the topical progression
 
 Before writing individual chapters, map the book's overall topical progression. Chapters are self-contained; the arc orders topics, it does not create suspense or withhold resolution.
 
 - **What to understand first:** Which foundational truths, definitions, or warnings must be established before the other teaching makes sense?
-- **What builds on it:** What sequence of topics deepens understanding naturally — each chapter assuming what was taught before?
+- **What builds on it:** What sequence of topics deepens understanding naturally - each chapter assuming what was taught before?
 - **Strongest chapters:** Which topics deserve the fullest treatment and sit at the book's peak? These are where the main burden of proof lies.
 - **Commissioning close:** How does the book land the reader? A final exhortation, call to action, or blessing that sends them out to act on what they have learned.
 
@@ -179,7 +179,7 @@ This gives the writer agent concrete material to weave in, maintaining continuit
 
 ## 5. Output: chapter-outline.md
 
-Write the outline to `[project]/chapter-outline.md` in this exact format. **Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of `chapter-outline.md`** before the `# Book Outline: [Title]` heading. The comment is stripped by the formatter before .docx emission and exists only as a regression-chain anchor for Phase 12 tooling.
+Write the outline to `[project]/chapter-outline.md` in this exact format. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of `chapter-outline.md`** before the `# Book Outline: [Title]` heading. The comment is stripped by the formatter before .docx emission and exists only as a regression-chain anchor for Phase 12 tooling.
 
 ```markdown
 # Book Outline: [Title]
@@ -373,7 +373,7 @@ Derive from voice profile and outline:
 At the very top of `book-dna.md`, before the title, add these two HTML comments in this exact order (version stamp on line 1, READ-ONLY marker on line 2):
 
 ```
-<!-- generated-by: dag-book-crafter v1.0.0 -->
+<!-- generated-by: dag-book-crafter v1.1.0 -->
 <!-- READ-ONLY: Do NOT modify this document during parallel chapter generation. Updates happen between pipeline stages only. -->
 ```
 

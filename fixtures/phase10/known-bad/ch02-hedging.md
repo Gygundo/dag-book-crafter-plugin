@@ -5,7 +5,7 @@
 > *Finally, my brethren, BE STRONG IN THE LORD, and in the power of his might.*
 > -- Ephesians 6:10
 
-The Bible commands strength. God does not hedge on this point. But some scholars believe that the call to strength in Ephesians 6 is primarily about corporate church life rather than individual spiritual discipline. It could be argued that Paul's concern here is less about personal strength and more about communal resilience. However, what is clear is that strength matters — and you need it.
+The Bible commands strength. God does not hedge on this point. But some scholars believe that the call to strength in Ephesians 6 is primarily about corporate church life rather than individual spiritual discipline. It could be argued that Paul's concern here is less about personal strength and more about communal resilience. However, what is clear is that strength matters - and you need it.
 
 **1. You must be strong because the enemy is hunting the weak.**
 
@@ -21,7 +21,7 @@ Build your strength. Get into the Word. Stay in prayer. Give the enemy as little
 > *He giveth power to the faint; and to them that have no might he INCREASETH STRENGTH.*
 > -- Isaiah 40:29
 
-In other words, your weakness is not the final word. God meets the weak person who comes to Him and supplies what is lacking. The supply is already there — you must come and draw on it daily.
+In other words, your weakness is not the final word. God meets the weak person who comes to Him and supplies what is lacking. The supply is already there - you must come and draw on it daily.
 
 **3. You must be strong because others are watching and drawing from your example.**
 

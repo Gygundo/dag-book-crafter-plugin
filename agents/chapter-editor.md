@@ -27,10 +27,10 @@ You will receive these arguments:
 1. **Read Book DNA first** -- extract voice profile summary, theological framework, chapter map fields (`opener_type`, `list_structure`, `key_statement`, `testimony_seed`), refrains block, key terms, running themes, and cross-chapter continuity notes. This is your primary guide for what the voice should sound like and what content rules to enforce.
 
 2. **Read the full voice profile** (`dag-default.md`) -- pay particular attention to:
-   - Vocabulary > Use list (words and phrases characteristic of this voice — teaching framers, exhortation stems, vocatives, blessing/prophecy formulas)
-   - Vocabulary > Avoid list (academic hedging, scholarly apparatus, meta-scaffolding, sensory scene-setting — hard constraint)
+   - Vocabulary > Use list (words and phrases characteristic of this voice - teaching framers, exhortation stems, vocatives, blessing/prophecy formulas)
+   - Vocabulary > Avoid list (academic hedging, scholarly apparatus, meta-scaffolding, sensory scene-setting - hard constraint)
    - Sentence Patterns (average 12–16 words, short declarative stacking, anaphora, rhetorical question volleys, exclamation punchlines)
-   - Anti-Patterns section (behaviours that break the voice — hard constraint)
+   - Anti-Patterns section (behaviours that break the voice - hard constraint)
    - Theological Framework (the interpretive lens for theological content)
    - Reader Situations (concrete situations to anchor application in)
 
@@ -47,7 +47,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/craft-check.js [current_chapter_path]
 Parse the JSON output for DAG-01, DAG-02, DAG-04, DAG-05, DAG-06, DAG-07, and version_stamp results. Enforce per the policy in `skills/editor/SKILL.md` § 2.0:
 - Auto-revise triggers: DAG-01 story-marker opener, DAG-02 density underflow, DAG-05 overflow, DAG-06 hedging phrase or > 1 transliterated term
 - Flag only: DAG-04, DAG-07
-- Auto-fix: missing version stamp (prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as line 2)
+- Auto-fix: missing version stamp (prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as line 2)
 
 6. **Perform the voice consistency audit** (LLM judgment on top of deterministic results):
 
@@ -55,7 +55,7 @@ Parse the JSON output for DAG-01, DAG-02, DAG-04, DAG-05, DAG-06, DAG-07, and ve
 
    b. **Sentence length distribution** -- count words per author-prose sentence (exclude blockquote lines starting with `>` and heading lines starting with `#` or `**N.`). Calculate average sentence length. Flag chapters with average > 18 words. Flag individual paragraphs > ~120 words.
 
-   c. **Anti-pattern detection** -- check for each anti-pattern in `dag-default.md` § Anti-Patterns. **Important: "You see,", "Notice,", "Listen," and evaluative adverb openers are PERMITTED and AUTHENTIC — never flag them.** See `skills/editor/SKILL.md` § 2.10.
+   c. **Anti-pattern detection** -- check for each anti-pattern in `dag-default.md` § Anti-Patterns. **Important: "You see,", "Notice,", "Listen," and evaluative adverb openers are PERMITTED and AUTHENTIC - never flag them.** See `skills/editor/SKILL.md` § 2.10.
 
    d. **Theological guardrail check** -- validate chapter content against the Book DNA Theological Framework. Flag cessationist framing, performance-based-guilt framing, or claims resting on scholarship rather than scripture and testimony.
 

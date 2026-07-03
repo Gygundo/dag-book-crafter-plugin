@@ -16,7 +16,7 @@ The sermon adapter converts spoken transcript to WRITTEN Dag register. It conver
 
 It keeps (these are target features, not problems to fix):
 - Numbered points (retained with bold full-sentence headings per DAG-03)
-- Repetition-for-emphasis (retained as anaphora — identical openers ×3+ per the voice profile)
+- Repetition-for-emphasis (retained as anaphora - identical openers ×3+ per the voice profile)
 - Block-quoted scripture with commentary (retained in blockquote format with reference lines per DAG-02)
 
 After adaptation, the outliner's Source Ingestion Mode reads from `sources-adapted/` instead of `sources/`.
@@ -31,7 +31,7 @@ The outliner generates a chapter-by-chapter structure including:
 - Chapter titles and opener types (anchor_scripture, plain_declaration, or definition per DAG-01)
 - Key arguments and supporting scriptures per chapter
 - Topical arc with momentum positioning (chapters ordered from foundation to commissioning close; self-contained, no cross-chapter suspense)
-- Book size tier: booklet (8–15 chapters, 10–20K words, ~800–2,000 words/chapter — default), short (15–25 chapters, 20–35K words), standard (15–25 chapters, 35–50K words)
+- Book size tier: booklet (8–15 chapters, 10–20K words, ~800–2,000 words/chapter - default), short (15–25 chapters, 20–35K words), standard (15–25 chapters, 35–50K words)
 
 ## Stage 2: Research (researcher skill)
 
@@ -40,9 +40,9 @@ The outliner generates a chapter-by-chapter structure including:
 **Parallel:** Yes -- one researcher subagent per chapter, batched in waves of 8-10
 
 Per-chapter research includes:
-- Scripture references (actual Bible text, KJV default — alternates labelled with translation name, e.g. NASB)
+- Scripture references (actual Bible text, KJV default - alternates labelled with translation name, e.g. NASB)
 - Per-point proof texts and brief cross-references across Old and New Testaments
-- Greek/Hebrew word studies limited to at most one simple gloss per chapter (DAG-06: "'Aman' means 'to nurture'" style — no academic apparatus)
+- Greek/Hebrew word studies limited to at most one simple gloss per chapter (DAG-06: "'Aman' means 'to nurture'" style - no academic apparatus)
 - Illustration candidates and supporting material
 
 ## Stage 3: Write (writer skill + chapter-writer subagent)
@@ -60,9 +60,9 @@ Each chapter agent reads the full Book DNA for voice consistency and its chapter
 **Parallel:** Partially -- Pass 1 voice audit can use parallel subagents for 16+ chapter books; Passes 2-3 are sequential
 
 Editing passes (sequential):
-1. **Pass 1: Voice + DAG craft checks** -- runs `scripts/craft-check.js` deterministic checks (DAG-01..08) and scores all 8 rubric components (clarity_of_point, scripture_saturation, structural_parallelism, direct_address, simplicity, emphasis_repetition, illustration_discipline, novelty_variation). Audits vocabulary, sentence rhythm, and anti-patterns against the voice profile. Normalises drift.
+1. **Pass 1: Voice + DAG craft checks** -- runs `scripts/craft-check.js` deterministic checks (DAG-01..09) and scores all 8 rubric components (clarity_of_point, scripture_saturation, structural_parallelism, direct_address, simplicity, emphasis_repetition, illustration_discipline, novelty_variation). Audits vocabulary, sentence rhythm, and anti-patterns against the voice profile. Normalises drift.
 2. **Pass 2: Opener/landing audits, key statement audit, testimony seed audit, illustration discipline** -- verifies each chapter opens with the outline's declared opener_type; confirms the key_statement lands in the chapter text; checks each first-person illustration traces to a testimony_seed; audits illustration count and length (DAG-08).
-3. **Pass 3: Cross-chapter validation** -- builds term index, validates scripture translation consistency (KJV unlabelled, alternates labelled), tracks theme development; applies widened dedup exemptions (scripture blocks, declared refrains, and benedictions are exempt — verse repetition across chapters is a feature, not a defect).
+3. **Pass 3: Cross-chapter validation** -- builds term index, validates scripture translation consistency (KJV unlabelled, alternates labelled), tracks theme development; applies widened dedup exemptions (scripture blocks, declared refrains, and benedictions are exempt - verse repetition across chapters is a feature, not a defect).
 
 Intermediate artefacts: `edited/ch[NN]-pass1.md`, `edited/ch[NN]-pass2.md` (kept for debugging, not used by pipeline state detection)
 

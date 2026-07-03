@@ -4,7 +4,7 @@
 
 Strength, in the Scripture, is the God-given capacity to endure, resist, and advance against opposition in the power of God. It is a spiritual capacity, not a natural one. And it begins with a decision.
 
-Many believers are waiting to feel strong before they act. But the Bible does not ask you to feel strong. It asks you to be strong — and there is a difference. You do not wait for the feeling. You make the decision, and the feeling follows.
+Many believers are waiting to feel strong before they act. But the Bible does not ask you to feel strong. It asks you to be strong - and there is a difference. You do not wait for the feeling. You make the decision, and the feeling follows.
 
 > *Finally, my brethren, BE STRONG IN THE LORD, and in the power of his might.*
 > -- Ephesians 6:10
@@ -23,4 +23,4 @@ In other words, the believer who trusts God is helped. Not the believer who feel
 
 This is His word to you. Be strong. Do not be afraid. He is with you.
 
-But there is something we have not talked about yet. There is a dimension of strength that most believers never discover — and what comes next changes everything.
+But there is something we have not talked about yet. There is a dimension of strength that most believers never discover - and what comes next changes everything.

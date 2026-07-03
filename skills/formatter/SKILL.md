@@ -114,7 +114,7 @@ function convertSmartQuotes(text) {
 
 ### Strip HTML Comments (F-15 / D-21)
 
-Before passing any chapter markdown to docx-js, the formatter MUST strip every HTML comment from the source. Chapters emitted upstream carry two mandatory header comments — `<!-- provenance: {source_path}:{line} -->` on line 1 and `<!-- generated-by: dag-book-crafter v1.0.0 -->` on line 2 — plus trailing `<!-- METADATA -->` and (from the editor) `<!-- VOICE AUDIT -->` blocks. None of these comments may reach the final `.docx`.
+Before passing any chapter markdown to docx-js, the formatter MUST strip every HTML comment from the source. Chapters emitted upstream carry two mandatory header comments - `<!-- provenance: {source_path}:{line} -->` on line 1 and `<!-- generated-by: dag-book-crafter v1.1.0 -->` on line 2 - plus trailing `<!-- METADATA -->` and (from the editor) `<!-- VOICE AUDIT -->` blocks. None of these comments may reach the final `.docx`.
 
 **Rule:** Run `content = content.replace(/<!--[\s\S]*?-->/g, '')` over the chapter text immediately after reading the file and before any other parsing. This single regex covers provenance comments, `generated-by` version stamps, METADATA blocks, VOICE AUDIT blocks, and any other HTML comment an upstream skill may emit. Use `[\s\S]` (not `.`) so the pattern matches across newlines; use the non-greedy `*?` so adjacent comments do not collapse into one match.
 
@@ -143,7 +143,7 @@ function parseChapterMarkdown(content) {
   // Strip ALL remaining HTML comments (provenance, generated-by version stamps,
   // and any other upstream comments). This covers both
   // <!-- provenance: sources/ch01.md:12 --> and
-  // <!-- generated-by: dag-book-crafter v1.0.0 -->.
+  // <!-- generated-by: dag-book-crafter v1.1.0 -->.
   // Per F-15 / D-21, no HTML comment may survive into the .docx.
   content = content.replace(/<!--[\s\S]*?-->/g, '').trim();
 

@@ -5,14 +5,14 @@
 > *Finally, my brethren, BE STRONG IN THE LORD, and in the power of his might.*
 > -- Ephesians 6:10
 
-The Bible does not suggest that you be strong. It commands it. And where God commands, He also enables. But you must understand why this command exists — because when you understand the reasons, you will stop treating strength as an optional extra and start pursuing it with everything you have.
+The Bible does not suggest that you be strong. It commands it. And where God commands, He also enables. But you must understand why this command exists - because when you understand the reasons, you will stop treating strength as an optional extra and start pursuing it with everything you have.
 
 **1. You must be strong because the enemy is actively hunting you.**
 
 > *Be sober, be vigilant; because your adversary the devil, as a ROARING LION, walketh about, seeking whom he may devour.*
 > -- 1 Peter 5:8
 
-In other words, the enemy is not resting. He is strategic. He identifies the weak believer — the one who is not in the Word, not in prayer, not in fellowship — and he targets that believer precisely. A weak spirit cannot stand against the pressure of life. This is not a metaphor. This is the reality of spiritual warfare. The enemy knows exactly when your armour is thin — and he targets that moment.
+In other words, the enemy is not resting. He is strategic. He identifies the weak believer - the one who is not in the Word, not in prayer, not in fellowship - and he targets that believer precisely. A weak spirit cannot stand against the pressure of life. This is not a metaphor. This is the reality of spiritual warfare. The enemy knows exactly when your armour is thin - and he targets that moment.
 
 Do not be the believer the enemy finds unguarded. Build your strength. The lion goes for the weak, not the strong. When you are strong in the Lord, you become a difficult target.
 
@@ -23,7 +23,7 @@ When God told Moses, and then Joshua, to be strong, He was not giving an empty i
 > *He giveth power to the faint; and to them that have no might he INCREASETH STRENGTH.*
 > -- Isaiah 40:29
 
-In other words, your weakness is not the end of the story. It is the starting point. God takes the person who has nothing left and increases their strength. But you must come to Him. You must ask. You must draw on what He has made available. The supply is there — you must connect to it.
+In other words, your weakness is not the end of the story. It is the starting point. God takes the person who has nothing left and increases their strength. But you must come to Him. You must ask. You must draw on what He has made available. The supply is there - you must connect to it.
 
 **3. You must be strong because others are watching you and drawing their courage from you.**
 
@@ -32,7 +32,7 @@ You are not living in isolation. Your children are watching you. The younger bel
 > *Wherefore lift up the hands which hang down, and the feeble knees.*
 > -- Hebrews 12:12
 
-The Scripture above is addressed to people who are almost done — people whose hands have dropped and whose knees are buckling. The instruction is not to rest. The instruction is to lift up. When you strengthen yourself, you strengthen the people connected to you.
+The Scripture above is addressed to people who are almost done - people whose hands have dropped and whose knees are buckling. The instruction is not to rest. The instruction is to lift up. When you strengthen yourself, you strengthen the people connected to you.
 
 You cannot have victory unless you first decide to be strong.
 

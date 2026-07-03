@@ -6,7 +6,7 @@ allowed-tools: Read, Write, Bash, Grep, Glob, Agent
 
 # Dag Book Crafter Orchestrator
 
-Master pipeline controller for the dag-book-crafter plugin. This plugin writes short, easy-to-read, topical books in the Dag Heward-Mills teaching style — numbered points, verse-first architecture, plain declarative prose, direct address to the reader. This skill manages the entire book-writing lifecycle: creating new projects, detecting pipeline state, chaining sequential stages, spawning parallel chapter agents, and displaying progress dashboards.
+Master pipeline controller for the dag-book-crafter plugin. This plugin writes short, easy-to-read, topical books in the Dag Heward-Mills teaching style - numbered points, verse-first architecture, plain declarative prose, direct address to the reader. This skill manages the entire book-writing lifecycle: creating new projects, detecting pipeline state, chaining sequential stages, spawning parallel chapter agents, and displaying progress dashboards.
 
 ## 1. Pipeline Overview
 
@@ -295,7 +295,7 @@ When executing the next stage in the pipeline:
 
 ### Step 0: Fresh Mode Preprocessing
 
-When Mode 6 (Fresh Run) is active, the fresh preprocessing steps in Section 6 (Mode 6) run BEFORE normal state detection. After the user confirms the delete list and the locked delete operation completes, fall through to Step 1 below and proceed with normal state detection — because every downstream artefact has been deleted, state detection will correctly identify the earliest pipeline stage as the next stage.
+When Mode 6 (Fresh Run) is active, the fresh preprocessing steps in Section 6 (Mode 6) run BEFORE normal state detection. After the user confirms the delete list and the locked delete operation completes, fall through to Step 1 below and proceed with normal state detection - because every downstream artefact has been deleted, state detection will correctly identify the earliest pipeline stage as the next stage.
 
 ### Step 1: Identify the Next Stage
 
@@ -549,7 +549,7 @@ Compile all `edited/ch[NN]-final.md` files into a single markdown document and p
 
 ##### Revision Cap and Divergent-Improvement Detection
 
-This subsection wires the hard 2-revision cap and divergent-improvement detection into the chapter revision loop above. It applies to BOTH the Stage 4 Option 2 user-driven revision flow (steps a-f) AND every editor-triggered auto-revise call (DAG-01 story-opener failure, DAG-02 scripture density failure, DAG-05 overflow failure, DAG-06 hedging/transliteration failure, and DAG-08 fabricated testimony failure). Flag-only failures (DAG-03, DAG-04, DAG-07) do NOT trigger the revision loop — they only append to the diagnostic report assembled by editor §4.6.
+This subsection wires the hard 2-revision cap and divergent-improvement detection into the chapter revision loop above. It applies to BOTH the Stage 4 Option 2 user-driven revision flow (steps a-f) AND every editor-triggered auto-revise call (DAG-01 story-opener failure, DAG-02 scripture density failure, DAG-05 overflow failure, DAG-06 hedging/transliteration failure, and DAG-08 fabricated testimony failure). Flag-only failures (DAG-03, DAG-04, DAG-07) do NOT trigger the revision loop - they only append to the diagnostic report assembled by editor §4.6.
 
 **Per-chapter revision state.**
 
@@ -595,14 +595,14 @@ After each revision N where N ≥ 1 (i.e. after revision_count increments to 1 o
 
 1. For each of the 8 captivation components, compute `delta = scores[N] - scores[N-1]`.
 2. If ANY single component has `delta < 0` (revision N scores LOWER than revision N-1 on that sub-component, even if the total went up), declare **divergent improvement**.
-3. On divergent improvement: roll back to revision N-1 — restore `drafts/ch[NN]-draft.md` from the previous `revisions/ch[NN]-v[VV]-draft.md`, re-run editor Pass 1 on the rolled-back draft to restore `edited/ch[NN]-final.md`, set `status: divergent` and `final_revision: N-1` in the revision log, and STOP the revision loop for this chapter.
+3. On divergent improvement: roll back to revision N-1 - restore `drafts/ch[NN]-draft.md` from the previous `revisions/ch[NN]-v[VV]-draft.md`, re-run editor Pass 1 on the rolled-back draft to restore `edited/ch[NN]-final.md`, set `status: divergent` and `final_revision: N-1` in the revision log, and STOP the revision loop for this chapter.
 4. Append a flag to the `DAG Craft Diagnostic` section of `reports/consistency-report.md` (the section editor §4.6 assembles) using exactly this format so §4.6 can render it under "Revision Cap Notes":
 
    ```
    Chapter [NN]: divergent improvement detected at revision [N]. Accepted revision [N-1] (component [X] dropped from [A] to [B]).
    ```
 
-The detection is intentionally STRICT: any single sub-component regression trips it. The rationale (D-09 + Pitfall 4) is that "total went up but one component dropped" is the signature failure mode of forced rewrites on judgment checks — the rewrite trades depth in one dimension for surface gains in another.
+The detection is intentionally STRICT: any single sub-component regression trips it. The rationale (D-09 + Pitfall 4) is that "total went up but one component dropped" is the signature failure mode of forced rewrites on judgment checks - the rewrite trades depth in one dimension for surface gains in another.
 
 **Revision exhaustion handling (cap hit).**
 
@@ -633,7 +633,7 @@ Flag-only checks (DAG-03, DAG-04, DAG-07) do NOT write revision requests and do 
 
 **State persistence.**
 
-`reports/revision-log.md` survives across orchestrator restarts and across Mode 3 (Resume) re-entries. On Resume, the orchestrator reads the revision log and restores per-chapter `revision_count` before deciding whether further revision is permitted. Mode 6 (Fresh) deletes `reports/` which clears the log — fresh runs start every chapter at `revision_count: 0`.
+`reports/revision-log.md` survives across orchestrator restarts and across Mode 3 (Resume) re-entries. On Resume, the orchestrator reads the revision log and restores per-chapter `revision_count` before deciding whether further revision is permitted. Mode 6 (Fresh) deletes `reports/` which clears the log - fresh runs start every chapter at `revision_count: 0`.
 
 #### Stage 4.5: Content Enrichment
 
@@ -663,7 +663,7 @@ After the enricher returns:
 
 **Step 4: Post-enricher novelty gate (Stage 4.6)**
 
-> The editor's §4.4.5 Novelty and Dedup Audit runs during Stage 4, before the foreword exists. This gate runs AFTER Stage 4.5 so the full corpus — including the enricher-generated foreword — is checked for verbatim overlap. It is the structural fix for the SC-6 proof run failure where three 6+ word spans bled from ch01 into the foreword undetected.
+> The editor's §4.4.5 Novelty and Dedup Audit runs during Stage 4, before the foreword exists. This gate runs AFTER Stage 4.5 so the full corpus - including the enricher-generated foreword - is checked for verbatim overlap. It is the structural fix for the SC-6 proof run failure where three 6+ word spans bled from ch01 into the foreword undetected.
 
 Run the deterministic novelty check against the full corpus:
 
@@ -830,16 +830,16 @@ If any of these phrases appear in the user's utterance during orchestrator invoc
 
 2. **Compute the delete list and preserve list** against the project directory:
    - **Delete list:** `chapter-outline.md`, `research/`, `drafts/`, `edited/`, `revisions/`, `enrichments/`, `front-matter/`, `reports/`, `output/`
-   - **Conditional delete — `book-dna.md`:** Delete by default. **EXCEPTION (Phase 13, D-09 fixture bypass):** If `book-dna.md` exists AND contains a `## Refrains` section with at least one non-comment entry (fenced yaml block with one or more `- phrase:` lines), preserve it. This is the pre-approved refrains block that the outliner's Refrain Candidate Gate bypass depends on — wiping it would make the fixture-bypass precondition unreachable. The outliner's §6 Generate Book DNA path will still overwrite the Chapter Map in the preserved file after outline approval; the Refrains block is what survives. Detect via: `awk '/^## Refrains/,/^## /' book-dna.md | grep -q '^- phrase:'`.
+   - **Conditional delete - `book-dna.md`:** Delete by default. **EXCEPTION (Phase 13, D-09 fixture bypass):** If `book-dna.md` exists AND contains a `## Refrains` section with at least one non-comment entry (fenced yaml block with one or more `- phrase:` lines), preserve it. This is the pre-approved refrains block that the outliner's Refrain Candidate Gate bypass depends on - wiping it would make the fixture-bypass precondition unreachable. The outliner's §6 Generate Book DNA path will still overwrite the Chapter Map in the preserved file after outline approval; the Refrains block is what survives. Detect via: `awk '/^## Refrains/,/^## /' book-dna.md | grep -q '^- phrase:'`.
    - **Preserve list:** `sources/`, `sources-adapted/`, `brief.md`, `voice-profile.md`, and `book-dna.md` iff the conditional clause above holds.
 
-3. **Mandatory confirmation prompt — never silent delete.** Present the specific paths about to be deleted and the specific paths that will be preserved, and wait for an explicit affirmative response. If `book-dna.md` was moved to the preserve list via the D-09 clause, call it out explicitly so the user knows the refrains block is surviving:
+3. **Mandatory confirmation prompt - never silent delete.** Present the specific paths about to be deleted and the specific paths that will be preserved, and wait for an explicit affirmative response. If `book-dna.md` was moved to the preserve list via the D-09 clause, call it out explicitly so the user knows the refrains block is surviving:
 
-   > "Fresh mode will delete the following in `{project_path}`: [dynamic delete list — omit book-dna.md if preserved]. Preserved: sources/, sources-adapted/, brief.md, voice-profile.md[, book-dna.md (pre-approved refrains block detected — Phase 13 D-09)]. Proceed? (yes/no)"
+   > "Fresh mode will delete the following in `{project_path}`: [dynamic delete list - omit book-dna.md if preserved]. Preserved: sources/, sources-adapted/, brief.md, voice-profile.md[, book-dna.md (pre-approved refrains block detected - Phase 13 D-09)]. Proceed? (yes/no)"
 
    Affirmative responses: `yes`, `y`, `proceed`, `confirm` (case-insensitive). Any other response aborts Mode 6 and falls through to Mode 3 (Resume), which presents the status dashboard from the current state without deleting anything.
 
-4. **On affirmative response, perform the deletes.** The delete operation is idempotent — items in the delete list that do not exist in the project directory are skipped silently. Non-empty directories are removed recursively (`rm -rf`). Every item in the preserve list is left untouched regardless of the delete list order.
+4. **On affirmative response, perform the deletes.** The delete operation is idempotent - items in the delete list that do not exist in the project directory are skipped silently. Non-empty directories are removed recursively (`rm -rf`). Every item in the preserve list is left untouched regardless of the delete list order.
 
 5. **Re-enter state detection (Section 3).** Because the delete list covers every downstream artefact, state detection will identify the earliest pipeline stage as the next stage (Stage 0.5 if `sources-adapted/` is absent but `sources/` contains sermon-format material, otherwise Stage 1 Outline). From here the orchestrator proceeds in whichever execution mode the user requested alongside Mode 6 (Guided by default, or Full Pipeline if the user said "rerun the whole book from scratch").
 
@@ -870,7 +870,7 @@ If the invocation prompt contains any of these phrases, Mode 7 activates BEFORE 
 
 2. **Resolve the `rewrite_targets.yaml` path.** Default: `[project_directory]/reports/rewrite_targets.yaml`. If the user supplied an explicit path via `apply rewrite targets from <path>`, use that instead. If the file does not exist, halt with:
 
-   > "Mode 7: rewrite_targets.yaml not found at [path] — run editor Pass 3 first to produce the targets block."
+   > "Mode 7: rewrite_targets.yaml not found at [path] - run editor Pass 3 first to produce the targets block."
 
 3. **Parse the yaml file.** Expected shape (matches editor §4.4.5 emit contract):
 
@@ -878,11 +878,11 @@ If the invocation prompt contains any of these phrases, Mode 7 activates BEFORE 
    rewrite_targets:
      - file: edited/ch02-final.md
        span: "L21-L28"
-       reason: "verbatim overlap with front-matter/foreword.md:L12-L18 — rewrite the testimony illustration using a different sourced detail"
+       reason: "verbatim overlap with front-matter/foreword.md:L12-L18 - rewrite the testimony illustration using a different sourced detail"
        flagged_by: craft-check
      - file: edited/ch03-final.md
        span: "L40-L47"
-       reason: "same illustration vehicle (electrical socket analogy) dominates ch01 and ch03 — substitute with a distinct vehicle from the motif family"
+       reason: "same illustration vehicle (electrical socket analogy) dominates ch01 and ch03 - substitute with a distinct vehicle from the motif family"
        flagged_by: editor-pass3
    ```
 
@@ -890,27 +890,27 @@ If the invocation prompt contains any of these phrases, Mode 7 activates BEFORE 
 
 4. **Validate the `reason` field for every target.** D-12 requires specific directional hints. Reject any target whose `reason` does NOT contain BOTH (a) a source location (file reference, path, or line range `L\d+-L\d+`) AND (b) one of the directional verbs `rewrite`, `substitute`, `replace`, `different`. If any target has a generic reason, halt with:
 
-   > "Mode 7: target [file] has insufficient reason — D-12 requires a specific cross-reference and directional instruction. Edit rewrite_targets.yaml and retry."
+   > "Mode 7: target [file] has insufficient reason - D-12 requires a specific cross-reference and directional instruction. Edit rewrite_targets.yaml and retry."
 
 5. **Validate file paths for traversal safety (Pitfall 6).** For each `target.file`, compute `absolute_path = path.resolve(projectDir, target.file)` and assert `absolute_path.startsWith(projectDir)`. Any `../` escape causes an immediate halt with:
 
-   > "Mode 7: path traversal detected in target [file] — aborting to protect files outside the project directory."
+   > "Mode 7: path traversal detected in target [file] - aborting to protect files outside the project directory."
 
-6. **Mandatory confirmation prompt — never silent delete.** Surface a prompt listing EVERY chapter that will be re-run and EVERY file that will be deleted:
+6. **Mandatory confirmation prompt - never silent delete.** Surface a prompt listing EVERY chapter that will be re-run and EVERY file that will be deleted:
 
    > "Mode 7 will re-run writer + editor for these chapters: [list]. Files to be deleted before re-run: [list of `edited/ch*-final.md` and `drafts/ch*-draft.md` paths]. Proceed? (yes/no)"
 
    Halt if the author says anything other than affirmative (`yes`, `y`, `proceed`, `confirm`, case-insensitive).
 
-7. **Delete the listed chapter files.** Delete each listed `edited/ch*-final.md` AND the corresponding `drafts/ch*-draft.md` (so filesystem-as-state makes writer regenerate them from scratch). Preserve every other chapter's files. The **explicit preserve list** — never deleted by Mode 7 — is: `sources/`, `sources-adapted/`, `brief.md`, `voice-profile.md`, `book-dna.md`, `chapter-outline.md`, `research/`, `front-matter/`, `enrichments/`, and any chapter not named in `rewrite_targets`. Never delete anything not explicitly named in `rewrite_targets`.
+7. **Delete the listed chapter files.** Delete each listed `edited/ch*-final.md` AND the corresponding `drafts/ch*-draft.md` (so filesystem-as-state makes writer regenerate them from scratch). Preserve every other chapter's files. The **explicit preserve list** - never deleted by Mode 7 - is: `sources/`, `sources-adapted/`, `brief.md`, `voice-profile.md`, `book-dna.md`, `chapter-outline.md`, `research/`, `front-matter/`, `enrichments/`, and any chapter not named in `rewrite_targets`. Never delete anything not explicitly named in `rewrite_targets`.
 
-8. **Inject each target's `reason` field into the writer's invocation prompt for that specific chapter.** Writer prompts are built per-chapter by the existing Stage 3 wave-batching logic — extend that builder to check a `rewrite_reason` parameter and, if present, append a section to the writer prompt:
+8. **Inject each target's `reason` field into the writer's invocation prompt for that specific chapter.** Writer prompts are built per-chapter by the existing Stage 3 wave-batching logic - extend that builder to check a `rewrite_reason` parameter and, if present, append a section to the writer prompt:
 
    > "REWRITE GUIDANCE (Phase 13 Mode 7, flagged_by [flagged_by]): [reason text]. Your rewrite MUST address this specific reason. Producing the same text as before is a hard fail."
 
 9. **Re-enter the orchestrator's normal state detection flow (Section 3).** Because the listed chapters' files are now deleted, the normal writer + editor stages will re-run for exactly those chapters. Other chapters remain byte-identical.
 
-10. **After the editor Pass 3 re-runs, re-check `novelty_dedup`. Do NOT auto-loop.** If it is STILL `fail`, halt and surface the new `rewrite_targets.yaml` (which may be different from the previous one — different flags, different chapters, different reasons). Tell the author:
+10. **After the editor Pass 3 re-runs, re-check `novelty_dedup`. Do NOT auto-loop.** If it is STILL `fail`, halt and surface the new `rewrite_targets.yaml` (which may be different from the previous one - different flags, different chapters, different reasons). Tell the author:
 
     > "Mode 7: dedup failure persists after scoped re-run. New rewrite_targets.yaml written at reports/rewrite_targets.yaml. Invoke Mode 7 again with the new targets, or manually rewrite the flagged spans and re-run editor."
 
@@ -918,16 +918,16 @@ If the invocation prompt contains any of these phrases, Mode 7 activates BEFORE 
 
 #### Safety invariants
 
-- **Mandatory confirmation prompt** — never proceed silently. Every Mode 7 invocation enumerates the full re-run list and delete list.
-- **Path-traversal protection** — `absolute_path` MUST start with `projectDir`. Any `../` escape aborts immediately before any file is touched.
-- **Explicit preserve list** — never delete `sources/`, `sources-adapted/`, `brief.md`, `voice-profile.md`, `book-dna.md`, `chapter-outline.md`, `research/`, `front-matter/`, `enrichments/`, or any chapter not named in `rewrite_targets`.
-- **No auto-loop** — one Mode 7 invocation triggers at most one scoped re-run; a second failure requires a second explicit Mode 7 invocation.
-- **Byte-identical untouched chapters** — chapters NOT listed in `rewrite_targets` stay byte-identical through the entire Mode 7 flow. Assert this via a pre/post file hash check if feasible; otherwise rely on the explicit preserve list as the guarantee.
-- **Reason field D-12 contract enforcement** — reject targets with generic reasons BEFORE touching any file. No destructive operation runs until every target passes validation.
+- **Mandatory confirmation prompt** - never proceed silently. Every Mode 7 invocation enumerates the full re-run list and delete list.
+- **Path-traversal protection** - `absolute_path` MUST start with `projectDir`. Any `../` escape aborts immediately before any file is touched.
+- **Explicit preserve list** - never delete `sources/`, `sources-adapted/`, `brief.md`, `voice-profile.md`, `book-dna.md`, `chapter-outline.md`, `research/`, `front-matter/`, `enrichments/`, or any chapter not named in `rewrite_targets`.
+- **No auto-loop** - one Mode 7 invocation triggers at most one scoped re-run; a second failure requires a second explicit Mode 7 invocation.
+- **Byte-identical untouched chapters** - chapters NOT listed in `rewrite_targets` stay byte-identical through the entire Mode 7 flow. Assert this via a pre/post file hash check if feasible; otherwise rely on the explicit preserve list as the guarantee.
+- **Reason field D-12 contract enforcement** - reject targets with generic reasons BEFORE touching any file. No destructive operation runs until every target passes validation.
 
 #### Relationship to other modes
 
-Mode 6 (Fresh Run) wipes the entire run directory and restarts the pipeline. Mode 7 wipes only the flagged chapters. Mode 6 is appropriate when the outline or Book DNA is wrong; Mode 7 is appropriate when only specific chapters failed the novelty audit. Mode 7 cannot run before the editor has produced a `reports/rewrite_targets.yaml` — if that file does not exist, the user needs Mode 6 (Fresh Run) or a normal Stage 4 re-run, not Mode 7. Mode 7 honours the Phase 11 D-09 fixture bypass indirectly: on the `fixtures/tiny-book/` fixture (3 chapters), Mode 7 re-runs all 3 chapters if all 3 are flagged, which is functionally equivalent to a full re-run but preserves the Mode 7 contract for larger books.
+Mode 6 (Fresh Run) wipes the entire run directory and restarts the pipeline. Mode 7 wipes only the flagged chapters. Mode 6 is appropriate when the outline or Book DNA is wrong; Mode 7 is appropriate when only specific chapters failed the novelty audit. Mode 7 cannot run before the editor has produced a `reports/rewrite_targets.yaml` - if that file does not exist, the user needs Mode 6 (Fresh Run) or a normal Stage 4 re-run, not Mode 7. Mode 7 honours the Phase 11 D-09 fixture bypass indirectly: on the `fixtures/tiny-book/` fixture (3 chapters), Mode 7 re-runs all 3 chapters if all 3 are flagged, which is functionally equivalent to a full re-run but preserves the Mode 7 contract for larger books.
 
 #### Example invocation
 

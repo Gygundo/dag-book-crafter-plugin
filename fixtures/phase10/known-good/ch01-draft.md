@@ -5,7 +5,7 @@
 > *Finally, my brethren, BE STRONG IN THE LORD, and in the power of his might.*
 > -- Ephesians 6:10
 
-God does not ask you to be strong. He commands it. And every command of God carries the enabling power to obey it. You are not being told to produce strength out of yourself — you are being told to draw on the strength that is already available in the Lord. But you must understand why this matters. You must understand why weakness is not an option for the believer who intends to fulfil his assignment.
+God does not ask you to be strong. He commands it. And every command of God carries the enabling power to obey it. You are not being told to produce strength out of yourself - you are being told to draw on the strength that is already available in the Lord. But you must understand why this matters. You must understand why weakness is not an option for the believer who intends to fulfil his assignment.
 
 **1. You must be strong because the enemy is hunting the weak.**
 
@@ -25,7 +25,7 @@ When God says "be strong", He does not say it the way a discouraged coach might 
 > *He giveth power to the faint; and to them that have no might he INCREASETH STRENGTH.*
 > -- Isaiah 40:29
 
-In other words, your weakness is not the disqualifier you think it is. It is, in fact, the exact condition God responds to. He gives power to the faint. He increases strength for those who have no might. If you feel weak today, you are in exactly the right position to receive from God — but you must come to Him. You must draw on what He has made available.
+In other words, your weakness is not the disqualifier you think it is. It is, in fact, the exact condition God responds to. He gives power to the faint. He increases strength for those who have no might. If you feel weak today, you are in exactly the right position to receive from God - but you must come to Him. You must draw on what He has made available.
 
 Are you coming to God daily in prayer? Are you bringing your weakness to Him and receiving His supply? Or are you trying to manage your assignments in your own limited strength? You cannot afford the second option. Come to Him. Receive from Him. Be strong!
 
@@ -36,11 +36,11 @@ You do not live in spiritual isolation. The younger believers in your church are
 > *Wherefore lift up the HANDS WHICH HANG DOWN, and the feeble knees.*
 > -- Hebrews 12:12
 
-In other words, strength has a ministry. When you strengthen yourself, you are not only serving your own assignment — you are serving every person connected to you. Your endurance becomes their encouragement. Your courage becomes their permission to stand.
+In other words, strength has a ministry. When you strengthen yourself, you are not only serving your own assignment - you are serving every person connected to you. Your endurance becomes their encouragement. Your courage becomes their permission to stand.
 
 God does not command what He does not also enable.
 
-Is the enemy circling you? Draw on God and be strong. Is your weakness overwhelming you? Bring it to God and be strong. Are others watching how you carry your assignment? Stand up and be strong — for their sake and for yours.
+Is the enemy circling you? Draw on God and be strong. Is your weakness overwhelming you? Bring it to God and be strong. Are others watching how you carry your assignment? Stand up and be strong - for their sake and for yours.
 
 May you receive today a fresh impartation of the strength of the Lord. May every weakness be replaced by His enabling power. May you stand, advance, and see total recovery in every area the enemy has touched. Be strong in the Lord!
 

@@ -143,7 +143,7 @@ These rules apply to all scripture references in the research artefact. They are
 
 1. **Output path:** `[project_directory]/research/ch[NN]-research.md` where NN is zero-padded (ch01, ch02, ch03, ..., ch10, ch11, etc.)
 2. **Create the `research/` directory** if it does not exist (use `mkdir -p`).
-3. **Write the complete artefact** to the file. Do not write partial artefacts. **Prepend `<!-- generated-by: dag-book-crafter v1.0.0 -->` as the first line of each `research/ch[NN]-research.md` file** (above the `# Research: Chapter [N]` heading). The version stamp is required on every generated artefact so regression tooling can anchor comparisons; the formatter strips all HTML comments before .docx emission.
+3. **Write the complete artefact** to the file. Do not write partial artefacts. **Prepend `<!-- generated-by: dag-book-crafter v1.1.0 -->` as the first line of each `research/ch[NN]-research.md` file** (above the `# Research: Chapter [N]` heading). The version stamp is required on every generated artefact so regression tooling can anchor comparisons; the formatter strips all HTML comments before .docx emission.
 4. **Return a brief summary** to the orchestrator after writing the file:
    - "Research complete for Chapter [N]: [Title]. [X] primary scriptures, [Y] word studies, [Z] cross-references."
    - For General Research Mode: "Research complete for Chapter [N]: [Title]. [X] data points, [Y] case studies, [Z] expert perspectives."
@@ -156,12 +156,12 @@ Research depth scales with the chapter's momentum position and role in the book 
 
 | Section | Minimum Count | Maximum Count |
 |---------|---------------|---------------|
-| Primary scripture passages | 2 | — |
-| Supporting passages | 2 | — |
-| Cross-references | 2 | — |
+| Primary scripture passages | 2 | - |
+| Supporting passages | 2 | - |
+| Cross-references | 2 | - |
 | Word study | 0 | **1** (DAG-06 hard cap) |
-| Types and shadows | 1 | — |
-| Illustration candidates | 2 | — |
+| Types and shadows | 1 | - |
+| Illustration candidates | 2 | - |
 
 ### Momentum-Based Scaling
 

@@ -528,6 +528,92 @@ withTmpDir(dir => {
 });
 
 // ---------------------------------------------------------------------------
+// DAG-09 — AI-slop scan
+// ---------------------------------------------------------------------------
+
+const DAG09_ANCHOR = 'You must understand what it means to be strong in the Lord.';
+const DAG09_QUOTE  = '> *Be STRONG AND OF A GOOD COURAGE; be not afraid, neither be thou dismayed: for the Lord thy God is with thee.*';
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch-emdash.md', GOOD_CHAPTER.replace(
+    DAG09_ANCHOR,
+    'You must understand what strength means — it is the power of God.'
+  ));
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-09'];
+  if (c && !c.pass && c.em_dash) pass('DAG-09: em dash in author prose fails');
+  else fail('DAG-09: em dash should fail', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  // Em dash inside a scripture blockquote is exempt
+  const p = writeChapter(dir, 'ch-quote-dash.md', GOOD_CHAPTER.replace(
+    DAG09_QUOTE,
+    '> *Be STRONG AND OF A GOOD COURAGE — be not afraid, neither be thou dismayed.*'
+  ));
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-09'];
+  if (c && c.pass) pass('DAG-09: em dash inside scripture blockquote is exempt');
+  else fail('DAG-09: blockquote em dash should be exempt', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch-onepivot.md', GOOD_CHAPTER.replace(
+    DAG09_ANCHOR,
+    'Strength is not just a feeling you wait for. ' + DAG09_ANCHOR
+  ));
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-09'];
+  if (c && c.pass && c.negation_pivot_count === 1) pass('DAG-09: single negation-pivot passes (cap 1)');
+  else fail('DAG-09: one pivot should pass', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch-twopivots.md', GOOD_CHAPTER.replace(
+    DAG09_ANCHOR,
+    'Strength is not just a feeling. Prayer is more than just words you recite. ' + DAG09_ANCHOR
+  ));
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-09'];
+  if (c && !c.pass && c.negation_pivot_count >= 2) pass('DAG-09: two negation-pivots fail (over cap)');
+  else fail('DAG-09: two pivots should fail', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch-slop.md', GOOD_CHAPTER.replace(
+    DAG09_ANCHOR,
+    'We will now delve into what the Bible says about strength. ' + DAG09_ANCHOR
+  ));
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-09'];
+  if (c && !c.pass && c.slop_phrase) pass('DAG-09: banned AI-ism ("delve") fails');
+  else fail('DAG-09: "delve" should fail', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  // "furthermore" inside a scripture blockquote is exempt (the KJV uses it)
+  const p = writeChapter(dir, 'ch-kjv-furthermore.md', GOOD_CHAPTER.replace(
+    DAG09_QUOTE,
+    '> *FURTHERMORE David the king said unto ALL THE CONGREGATION, be strong.*'
+  ));
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-09'];
+  if (c && c.pass) pass('DAG-09: "furthermore" inside scripture blockquote is exempt');
+  else fail('DAG-09: KJV "furthermore" should be exempt', c && c.evidence);
+});
+
+withTmpDir(dir => {
+  const p = writeChapter(dir, 'ch-power-of-god.md', GOOD_CHAPTER.replace(
+    DAG09_ANCHOR,
+    'The power of God is available to you today. ' + DAG09_ANCHOR
+  ));
+  const { result } = runChecker(p);
+  const c = result.checks && result.checks['DAG-09'];
+  if (c && c.pass) pass('DAG-09: "the power of God" is NOT flagged (no theological false positive)');
+  else fail('DAG-09: "the power of God" should pass', c && c.evidence);
+});
+
+// ---------------------------------------------------------------------------
 // Results
 // ---------------------------------------------------------------------------
 

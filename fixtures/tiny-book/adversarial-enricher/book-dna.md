@@ -1,15 +1,15 @@
 <!-- generated-by: dag-book-crafter v1.0.0 -->
 <!-- READ-ONLY during parallel chapter generation. Updated only between pipeline stages by the orchestrator. -->
 
-# Book DNA — You Can Be Strong (Enricher Fixture)
+# Book DNA - You Can Be Strong (Enricher Fixture)
 
-> Master context document for the adversarial enricher tier-2 fixture. The edited chapters are clean — tier-1 flaws are absent. Tier-2 flaws are planted only in the enrichments files. This fixture is NEVER shipped in the release zip.
+> Master context document for the adversarial enricher tier-2 fixture. The edited chapters are clean - tier-1 flaws are absent. Tier-2 flaws are planted only in the enrichments files. This fixture is NEVER shipped in the release zip.
 
 ## Metadata
 
 - **Title:** You Can Be Strong
 - **Subtitle:** Three Keys to Spiritual Strength
-- **Author:** [fixture — no real author]
+- **Author:** [fixture - no real author]
 - **Size tier:** booklet
 - **Target word count:** ~3000
 - **Chapter count:** 3
@@ -38,11 +38,11 @@ Chapter 1 defines strength. Chapter 2 motivates with three reasons. Chapter 3 gi
 - **Ch 1: What It Means to Be Strong**
   - Core point: Strength in the Lord is a capacity built through connection with God, not a feeling you wait for.
   - opener_type: definition
-  - Anchor scripture: (none — definition opener)
+  - Anchor scripture: (none - definition opener)
   - Key scriptures: Ephesians 6:10, Joshua 1:9, Deuteronomy 31:6
   - list_structure: flowing (2–3 short title-case section headings)
   - key_statement: "Strength is a decision before it is a feeling."
-  - testimony_seed: (empty — no testimony available; use biblical retelling, everyday analogy, or third-party anecdote)
+  - testimony_seed: (empty - no testimony available; use biblical retelling, everyday analogy, or third-party anecdote)
   - Connects to: Ch 2 (motivation), Ch 3 (action)
   - Momentum position: Foundation
 
@@ -53,18 +53,18 @@ Chapter 1 defines strength. Chapter 2 motivates with three reasons. Chapter 3 gi
   - Key scriptures: Ephesians 6:10, 1 Peter 5:8, Isaiah 40:29, Hebrews 12:12
   - list_structure: stem "You must be strong because...", count 3
   - key_statement: "God does not command what He does not also enable."
-  - testimony_seed: (empty — no testimony available; use biblical retelling, everyday analogy, or third-party anecdote)
+  - testimony_seed: (empty - no testimony available; use biblical retelling, everyday analogy, or third-party anecdote)
   - Connects to: Ch 1 (applies definition), Ch 3 (motivates action)
   - Momentum position: Building
 
 - **Ch 3: Four Ways to Become Strong**
   - Core point: Strength is built through the Word, prayer, fellowship, and tested endurance.
   - opener_type: plain_declaration
-  - Anchor scripture: (none — plain declaration opener)
+  - Anchor scripture: (none - plain declaration opener)
   - Key scriptures: Joshua 1:8, Isaiah 40:31, Hebrews 10:25, Psalm 27:14
   - list_structure: stem "Become strong by...", count 4
   - key_statement: "The believer who builds daily builds permanently."
-  - testimony_seed: (empty — no testimony available; use biblical retelling, everyday analogy, or third-party anecdote)
+  - testimony_seed: (empty - no testimony available; use biblical retelling, everyday analogy, or third-party anecdote)
   - Connects to: Ch 1 (builds definition), Ch 2 (implements motivation)
   - Momentum position: Landing
 
@@ -98,7 +98,7 @@ refrains:
 
 - Ephesians 6:10 is the anchor verse, appearing in Ch 1 and as the opener of Ch 2. Scripture block repetition is EXEMPT from dedup audit.
 - "May you..." benediction closes Ch 2 and Ch 3. Benediction formula repetition is EXEMPT from dedup audit.
-- List stems are within their declared budgets — EXEMPT from dedup audit.
+- List stems are within their declared budgets - EXEMPT from dedup audit.
 
 ## Style Rules
 

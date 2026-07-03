@@ -2,7 +2,7 @@
 
 # Chapter 3: Four Ways to Become Strong
 
-You can be strong. This is not wishful thinking — it is a statement about what God has made available to every one of His children. But strength does not come to the passive believer. It comes to the one who builds it through specific, repeated daily actions. Here are four practical ways you can become strong.
+You can be strong. This is not wishful thinking - it is a statement about what God has made available to every one of His children. But strength does not come to the passive believer. It comes to the one who builds it through specific, repeated daily actions. Here are four practical ways you can become strong.
 
 ## Spend Time in the Word Every Day
 
@@ -21,13 +21,13 @@ There is no shortcut to a life of prayer. You must schedule it. You must protect
 
 ## Stay in Fellowship with Believers Who Are Going Forward
 
-Strength is not built in isolation. God has placed believers in communities for a reason — the community is part of the means by which you stay strong. When you stay close to people who are pressing forward, you are encouraged to press forward. When you drift from fellowship, you lose that encouragement and your strength quietly diminishes.
+Strength is not built in isolation. God has placed believers in communities for a reason - the community is part of the means by which you stay strong. When you stay close to people who are pressing forward, you are encouraged to press forward. When you drift from fellowship, you lose that encouragement and your strength quietly diminishes.
 
 Watch out for the believer who tells you that he does not need fellowship anymore. He is on a downward path. You need the church. The church needs you.
 
 ## Endure Difficulty Without Quitting
 
-The fourth path to strength is the most tested: do not quit when things get hard. Endurance builds strength the way exercise builds muscle — through resistance. The believer who endures comes out of difficulty stronger than before. The believer who quits remains at the same level indefinitely.
+The fourth path to strength is the most tested: do not quit when things get hard. Endurance builds strength the way exercise builds muscle - through resistance. The believer who endures comes out of difficulty stronger than before. The believer who quits remains at the same level indefinitely.
 
 Decide today that you will endure. Decide that you will not quit your assignment, your post, your church, or your calling because of pressure. Every difficult season you endure is adding strength to your spirit that nothing else can produce.
 

@@ -1,6 +1,6 @@
 # Chapter 1: What It Means to Be Strong
 
-Strength, in the Scripture, is the God-given capacity to endure pressure, resist the enemy, and advance in your assignment without surrendering. This is not natural toughness. This is not emotional resilience produced by self-discipline. This is a spiritual capacity that comes from one source only — the Lord Himself.
+Strength, in the Scripture, is the God-given capacity to endure pressure, resist the enemy, and advance in your assignment without surrendering. This is not natural toughness. This is not emotional resilience produced by self-discipline. This is a spiritual capacity that comes from one source only - the Lord Himself.
 
 Do not confuse the world's idea of strength with the Bible's idea of strength. The world calls you strong when you do not need anyone. The Bible calls you strong when you have learned how to draw on God.
 

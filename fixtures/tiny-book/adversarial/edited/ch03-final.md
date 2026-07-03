@@ -2,7 +2,7 @@
 
 # Chapter 3: Four Ways to Become Strong
 
-You can be strong. This is not wishful thinking — it is a statement about what God has made available to every one of His children. But you must pursue strength deliberately. Strength does not come to the passive believer. It comes to the one who takes specific steps to build it.
+You can be strong. This is not wishful thinking - it is a statement about what God has made available to every one of His children. But you must pursue strength deliberately. Strength does not come to the passive believer. It comes to the one who takes specific steps to build it.
 
 Here are four ways to become strong.
 
@@ -22,11 +22,11 @@ Prayer is the connection between your weakness and God's power. The believer who
 > *But they that wait upon the Lord shall RENEW THEIR STRENGTH; they shall mount up with wings as eagles.*
 > -- Isaiah 40:31
 
-In other words, renewed strength is the direct result of waiting on the Lord. When you pray, you are not simply speaking into the air — you are connecting to the source of all strength. Make prayer your daily discipline, not your emergency option.
+In other words, renewed strength is the direct result of waiting on the Lord. When you pray, you are not simply speaking into the air - you are connecting to the source of all strength. Make prayer your daily discipline, not your emergency option.
 
 **3. Become strong by staying in fellowship with believers who are going forward.**
 
-Years ago, a young man from a farming village enlisted to be a soldier. He arrived at the barracks with enthusiasm but his body was entirely unprepared. When the first long march came, he fell behind. When the first physical test came, his arms were too tired to hold his weapon steady. He had courage enough — what he lacked was the strength that comes only from consistent preparation. He eventually learned this. But he lost months he could not recover. Do not make the same mistake. Strengthen yourself before the battle, not during it!
+Years ago, a young man from a farming village enlisted to be a soldier. He arrived at the barracks with enthusiasm but his body was entirely unprepared. When the first long march came, he fell behind. When the first physical test came, his arms were too tired to hold his weapon steady. He had courage enough - what he lacked was the strength that comes only from consistent preparation. He eventually learned this. But he lost months he could not recover. Do not make the same mistake. Strengthen yourself before the battle, not during it!
 
 > *And let us consider one another to provoke unto love and to good works: NOT FORSAKING THE ASSEMBLING OF OURSELVES TOGETHER.*
 > -- Hebrews 10:25
@@ -40,7 +40,7 @@ Strength is not only built in the quiet seasons. It is built most powerfully in 
 > *Wait on the Lord: be of good courage, and he shall STRENGTHEN THINE HEART.*
 > -- Psalm 27:14
 
-In other words, endurance is not passivity. It is active waiting — pressing forward in faith when circumstances say stop. Choose to endure. Choose to press. What looks like a test is actually a training session.
+In other words, endurance is not passivity. It is active waiting - pressing forward in faith when circumstances say stop. Choose to endure. Choose to press. What looks like a test is actually a training session.
 
 Unless you decide to be strong, you cannot have victory.
 

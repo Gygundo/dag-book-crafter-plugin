@@ -4,7 +4,7 @@
 
 One day, a young pastor who had been serving faithfully for three years received news that a larger, well-resourced church nearby was openly criticising his ministry. The accusations were unfair. The congregation was unsettled. His natural strength had run out, and he did not know how to respond.
 
-This is the moment this chapter is written for. Not the moment after you have recovered — but the moment when you do not yet know how to stand.
+This is the moment this chapter is written for. Not the moment after you have recovered - but the moment when you do not yet know how to stand.
 
 Strength, in the biblical sense, is not the absence of pressure. It is the God-given capacity to endure pressure, resist the enemy, and advance in your assignment without surrendering. That capacity must be built before the crisis arrives.
 
@@ -18,7 +18,7 @@ Are you keeping the channels of prayer open daily? Are you in the Word consisten
 > *Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.*
 > -- Joshua 1:9 (NASB)
 
-In other words, the command to be strong always travels with a promise of God's presence. You are not told to find courage inside yourself. You are told to draw on the One who is with you — and that changes everything.
+In other words, the command to be strong always travels with a promise of God's presence. You are not told to find courage inside yourself. You are told to draw on the One who is with you - and that changes everything.
 
 Strength is a decision before it is a feeling.
 
